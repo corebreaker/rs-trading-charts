@@ -1,0 +1,25 @@
+[package]
+name = "trading-charts"
+readme = "../README.md"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+description.workspace = true
+repository.workspace = true
+documentation.workspace = true
+license.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+console_error_panic_hook = { workspace = true }
+console_log = { workspace = true }
+leptos = { workspace = true }
+log = { workspace = true }
+
+[dev-dependencies]
+js-sys = { workspace = true }
+wasm-bindgen = { workspace = true }
+wasm-bindgen-test = { workspace = true }
+wasm-bindgen-futures = { workspace = true }
+web-sys = { workspace = true }

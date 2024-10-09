@@ -1,0 +1,36 @@
+[workspace]
+resolver = "2"
+members = ["trading-charts", "example"]
+default-members = ["trading-charts"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["Frédéric Meyer <frederic.meyer.77@gmail.com>"]
+description = "Rust binding of Lightweight Charts for Leptos"
+repository = "https://github.com/corebreaker/rs-trading-charts"
+documentation = "https://docs.rs/rs-trading-charts/"
+readme = "README.md"
+license = "MIT"
+keywords = [
+    "leptos",
+]
+
+categories = [
+    "finance",
+    "web-programming",
+    "charting",
+    "trading",
+    "wasm",
+]
+
+[workspace.dependencies]
+console_error_panic_hook = "0.1"
+console_log = "1.0"
+js-sys = "0.3"
+leptos = { version = "0.7.0-gamma2", features = ["csr"] }
+log = "0.4"
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+wasm-bindgen-test = "0.3"
+web-sys = { version = "0.3", features = ["Document", "Element", "HtmlElement", "Node", "Window"] }
