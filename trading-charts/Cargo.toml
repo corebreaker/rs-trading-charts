@@ -14,12 +14,8 @@ categories.workspace = true
 [dependencies]
 console_error_panic_hook = { workspace = true }
 console_log = { workspace = true }
+js-sys = { workspace = true }
 leptos = { workspace = true }
 log = { workspace = true }
-
-[dev-dependencies]
-js-sys = { workspace = true }
 wasm-bindgen = { workspace = true }
-wasm-bindgen-test = { workspace = true }
-wasm-bindgen-futures = { workspace = true }
 web-sys = { workspace = true }

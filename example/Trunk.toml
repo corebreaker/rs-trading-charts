@@ -2,7 +2,7 @@
 target = "./index.html"
 
 [watch]
-watch = ["../trading-charts/src"]
+watch = ["../trading-charts"]
 
 [serve]
 address = "127.0.0.1"
