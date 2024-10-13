@@ -1,0 +1,27 @@
+{
+  "name": "trading-charts-bindings",
+  "version": "0.1.0",
+  "description": "NodeJS bindings for Trading Charts",
+  "main": "src/index.mjs",
+  "scripts": {
+    "build": "node ./build/build.mjs --minify",
+    "build-dev": "node ./build/build.mjs",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/corebreaker/rs-trading-charts.git"
+  },
+  "author": "Frédéric Meyer <frederic.meyer.77@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/corebreaker/rs-trading-charts/issues"
+  },
+  "homepage": "https://github.com/corebreaker/rs-trading-charts#readme",
+  "dependencies": {
+    "lightweight-charts": "^4.2.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0"
+  }
+}
