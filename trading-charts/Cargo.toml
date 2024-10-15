@@ -17,5 +17,7 @@ console_log = { workspace = true }
 js-sys = { workspace = true }
 leptos = { workspace = true }
 log = { workspace = true }
+serde = { workspace = true }
+serde-wasm-bindgen = { workspace = true }
 wasm-bindgen = { workspace = true }
 web-sys = { workspace = true }
