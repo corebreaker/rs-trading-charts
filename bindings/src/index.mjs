@@ -1,49 +1,204 @@
-import {createChart} from "lightweight-charts";
+import {createChart} from 'lightweight-charts';
+import uuidv4 from "@bundled-es-modules/uuid/v4.js";
+
+const allowedSeriesTypes = ['area', 'baseline', 'bar', 'candlestick', 'histogram', 'line'];
+const markerProps = {
+    size: false,
+    color: false,
+    position: ['aboveBar', 'belowBar', 'inBar'],
+    shape: ['arrowUp', 'arrowDown', 'circle', 'square', 'triangleUp', 'triangleDown']
+};
+
+function makeSeriesName(type) {
+    if (!allowedSeriesTypes.includes(type)) {
+        throw new Error(`Series type "${type}" is not supported`);
+    }
+
+    const title = type.charAt(0).toUpperCase() + type.slice(1);
+
+    return `add${title}Series`;
+}
+
+function makeMarkerProps(options) {
+    const res = {};
+
+    for (const name of Object.keys(markerProps)) {
+        const value = options[name];
+
+        if (value && (!markerProps[name] || markerProps[name].includes(value))) {
+            res[name] = value;
+        }
+    }
+
+    return res;
+}
 
 export class TradingChart {
-  constructor() {
-    this.chart = null;
-  }
+    constructor() {
+        this._chart = null;
+        this._series = {};
+    }
 
-  bindChart(node) {
-    const chartOptions = {
-        layout: {
-            textColor: 'black',
-            background: { type: 'solid', color: 'white' }
+    _checkChart() {
+        if (!this._chart)
+            throw new Error('Chart is not bound to DOM');
+    }
+
+    _getSeries(seriesId) {
+        const series = this._series[seriesId];
+        if (!series) {
+            throw new Error(`Series with id '${seriesId}' not found`);
         }
-    };
 
-    console.log("Refreshing chart with ID: ", node.id);
-    const chart = createChart(node, chartOptions);
-    const candlestickSeries = chart.addCandlestickSeries({
-        upColor: '#26a69a',
-        downColor: '#ef5350',
-        borderVisible: false,
-        wickUpColor: '#26a69a',
-        wickDownColor: '#ef5350'
-    });
+        return series;
+    }
 
-    const data = [
-        { open: 10, high: 10.63, low: 9.49, close: 9.55, time: 1642427876 },
-        { open: 9.55, high: 10.30, low: 9.42, close: 9.94, time: 1642514276 },
-        { open: 9.94, high: 10.17, low: 9.92, close: 9.78, time: 1642600676 },
-        { open: 9.78, high: 10.59, low: 9.18, close: 9.51, time: 1642687076 },
-        { open: 9.51, high: 10.46, low: 9.10, close: 10.17, time: 1642773476 },
-        { open: 10.17, high: 10.96, low: 10.16, close: 10.47, time: 1642859876 },
-        { open: 10.47, high: 11.39, low: 10.40, close: 10.81, time: 1642946276 },
-        { open: 10.81, high: 11.60, low: 10.30, close: 10.75, time: 1643032676 },
-        { open: 10.75, high: 11.60, low: 10.49, close: 10.93, time: 1643119076 },
-        { open: 10.93, high: 11.53, low: 10.76, close: 10.96, time: 1643205476 }
-    ];
+    bindChart(node, options = null) {
+        if (this._chart)
+            this.destroy();
 
-    candlestickSeries.setData(data);
-    chart.timeScale().fitContent();
+        this._chart = createChart(node, options || {});
+    }
 
-    this.chart = chart;
-  }
+    destroy() {
+        for (const seriesId of Object.keys(this._series)) {
+            this.removeSeries(seriesId);
+        }
 
-  show() {
-    console.log('show');
-    return 'Hello, me!';
-  }
+        if (this._chart)
+            this._chart.remove();
+    }
+
+    addSeries(seriesDesc) {
+        this._checkChart();
+
+        const optId = seriesDesc.id;
+        const type = seriesDesc.type;
+        const data = seriesDesc.data;
+        const options = seriesDesc.options || {};
+
+        if (optId && this._series[optId]) {
+            throw new Error(`Series with id '${optId}' already exists`);
+        }
+
+        if (!type) {
+            throw new Error('Series type is required');
+        }
+
+        const id = uuidv4();
+        const series = this._chart[makeSeriesName(type)](options);
+        if (data) {
+            series.setData(data);
+            this._chart.timeScale().fitContent();
+        }
+
+        this._series[id] = {
+            id,
+            api: series,
+            markers: [],
+
+            updateMarkers() {
+                console.log('updateMarkers:', this.markers);
+                this.api.setMarkers(this.markers);
+            },
+
+            setMarker(markerDesc) {
+                console.log('setMarker:', markerDesc);
+                const { time, text, options } = markerDesc;
+                if (!time) {
+                    throw new Error('Marker time is required');
+                }
+
+                const idx = this.markers.findIndex(m => m.time === time);
+                if (idx >= 0) {
+                    this.markers.splice(idx, 1);
+                }
+
+                if (markerDesc.type && markerDesc.type !== 'remove') {
+                    const marker = {time};
+                    switch (markerDesc.type) {
+                        case 'buy':
+                            Object.assign(marker, {
+                                text: text || 'B',
+                                position: 'belowBar',
+                                shape: 'arrowUp',
+                                color: 'green',
+                                size: 1,
+                            });
+                            break;
+
+                        case 'sell':
+                            Object.assign(marker, {
+                                text: text || 'S',
+                                position: 'aboveBar',
+                                shape: 'arrowDown',
+                                color: 'red',
+                                size: 1,
+                            });
+                            break;
+
+                        default:
+                            Object.assign(marker, {_bad: true});
+                    }
+
+                    if (!marker._bad)
+                        this.markers.push(Object.assign(marker, makeMarkerProps(options || {})));
+                }
+            }
+        };
+
+        return id;
+    }
+
+    removeSeries(seriesId) {
+        if (!this._chart)
+            return false;
+
+        const series = this._getSeries[seriesId];
+
+        series.api.setMarkers([]);
+        this._chart.removeSeries(series.api);
+        delete this._series[seriesId.id];
+
+        return true;
+    }
+
+    updateData(seriesDesc) {
+        this._checkChart();
+
+        const series = this._getSeries(seriesDesc.id);
+
+        series.api.setData(seriesDesc.data);
+        this._chart.timeScale().fitContent();
+    }
+
+    updateOptions(seriesDesc) {
+        this._checkChart();
+
+        const series = this._getSeries(seriesDesc.id);
+
+        series.api.applyOptions(seriesDesc.options);
+    }
+
+    setMarker(seriesId, marker) {
+        this._checkChart();
+
+        const series = this._getSeries(seriesId)
+
+        series.setMarker(marker);
+        series.updateMarkers();
+    }
+
+    setMarkers(seriesId, markers) {
+        this._checkChart();
+
+        const series = this._getSeries(seriesId)
+
+        series.markers = [];
+        for (const marker of markers) {
+            series.setMarker(marker);
+        }
+
+        series.updateMarkers();
+    }
 }

@@ -8,7 +8,7 @@ async function main() {
         platform: 'node',
         minify: process.argv.includes('--minify'),
         format: 'esm',
-        allowOverwrite: true,
+        allowOverwrite: true
     });
 }
 
