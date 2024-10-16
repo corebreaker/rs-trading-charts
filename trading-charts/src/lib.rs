@@ -1,7 +1,7 @@
+mod bindings;
+
 use serde::{Deserialize, Serialize};
 use serde_wasm_bindgen::to_value;
-use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
-use web_sys::HtmlDivElement;
 use leptos::{
     tachys::{
         html::{node_ref::NodeRefAttribute, attribute::global::StyleAttribute},
@@ -157,46 +157,39 @@ struct Marker {
 }
 
 impl Marker {
-    fn new() -> Self {
+    fn buy() -> Self {
         Self {
             time:   1642773476,
             r#type: String::from("buy"),
-            text:   String::from("Buy here"),
+            text:   String::from("Yes, buy here"),
+        }
+    }
+
+    fn sell() -> Self {
+        Self {
+            time:   1643119076,
+            r#type: String::from("sell"),
+            text:   String::from("Sell here, sure ?"),
         }
     }
 }
 
-#[wasm_bindgen(module = "/bindings/module.mjs")]
-extern "C" {
-    type TradingChart;
-
-    #[wasm_bindgen(constructor)]
-    fn new() -> TradingChart;
-
-    #[wasm_bindgen(method)]
-    fn bindChart(this: &TradingChart, node: HtmlDivElement, options: JsValue);
-
-    #[wasm_bindgen(method)]
-    fn addSeries(this: &TradingChart, series: JsValue) -> String;
-
-    #[wasm_bindgen(method)]
-    fn setMarker(this: &TradingChart, seriesId: String, marker: JsValue);
-}
-
 #[component]
 pub fn Chart() -> impl IntoView {
-    let chart = TradingChart::new();
+    let chart = bindings::TradingChart::new();
     let node_ref = NodeRef::<Div>::new();
     let _ = Effect::new(move || {
         if let Some(node) = node_ref.get() {
             let series = Series::new();
             let options = Options::new();
-            let marker = Marker::new();
+            let buyMarker = Marker::buy();
+            let sellMarker = Marker::sell();
 
-            chart.bindChart(node, to_value(&options).unwrap());
+            chart.bindChart(node, to_value(&options).unwrap()).unwrap();
 
-            let seriesId = chart.addSeries(to_value(&series).unwrap());
-            chart.setMarker(seriesId, to_value(&marker).unwrap());
+            let seriesId = chart.addSeries(to_value(&series).unwrap()).unwrap();
+            chart.setMarker(seriesId.clone(), to_value(&buyMarker).unwrap()).unwrap();
+            chart.setMarker(seriesId.clone(), to_value(&sellMarker).unwrap()).unwrap();
         }
     });
 

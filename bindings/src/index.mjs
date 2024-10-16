@@ -39,9 +39,11 @@ export class TradingChart {
         this._series = {};
     }
 
-    _checkChart() {
+    _getChart() {
         if (!this._chart)
             throw new Error('Chart is not bound to DOM');
+
+        return this._chart;
     }
 
     _getSeries(seriesId) {
@@ -53,13 +55,6 @@ export class TradingChart {
         return series;
     }
 
-    bindChart(node, options = null) {
-        if (this._chart)
-            this.destroy();
-
-        this._chart = createChart(node, options || {});
-    }
-
     destroy() {
         for (const seriesId of Object.keys(this._series)) {
             this.removeSeries(seriesId);
@@ -69,9 +64,15 @@ export class TradingChart {
             this._chart.remove();
     }
 
-    addSeries(seriesDesc) {
-        this._checkChart();
+    bindChart(node, options = null) {
+        if (this._chart)
+            this.destroy();
 
+        this._chart = createChart(node, options || {});
+    }
+
+    addSeries(seriesDesc) {
+        const chart = this._getChart();
         const optId = seriesDesc.id;
         const type = seriesDesc.type;
         const data = seriesDesc.data;
@@ -86,10 +87,10 @@ export class TradingChart {
         }
 
         const id = uuidv4();
-        const series = this._chart[makeSeriesName(type)](options);
+        const series = chart[makeSeriesName(type)](options);
         if (data) {
             series.setData(data);
-            this._chart.timeScale().fitContent();
+            chart.timeScale().fitContent();
         }
 
         this._series[id] = {
@@ -98,12 +99,10 @@ export class TradingChart {
             markers: [],
 
             updateMarkers() {
-                console.log('updateMarkers:', this.markers);
                 this.api.setMarkers(this.markers);
             },
 
             setMarker(markerDesc) {
-                console.log('setMarker:', markerDesc);
                 const { time, text, options } = markerDesc;
                 if (!time) {
                     throw new Error('Marker time is required');
@@ -139,6 +138,7 @@ export class TradingChart {
 
                         default:
                             Object.assign(marker, {_bad: true});
+                            break;
                     }
 
                     if (!marker._bad)
@@ -154,35 +154,32 @@ export class TradingChart {
         if (!this._chart)
             return false;
 
-        const series = this._getSeries[seriesId];
+        const series = this._series[seriesId];
+        if (!series)
+            return false;
 
+        delete this._series[seriesId];
         series.api.setMarkers([]);
         this._chart.removeSeries(series.api);
-        delete this._series[seriesId.id];
 
         return true;
     }
 
-    updateData(seriesDesc) {
-        this._checkChart();
+    updateOptions(seriesId, options) {
+        const series = this._getSeries(seriesId);
 
-        const series = this._getSeries(seriesDesc.id);
-
-        series.api.setData(seriesDesc.data);
-        this._chart.timeScale().fitContent();
+        series.api.applyOptions(options);
     }
 
-    updateOptions(seriesDesc) {
-        this._checkChart();
+    updateData(seriesId, data) {
+        const chart = this._getChart();
+        const series = this._getSeries(seriesId);
 
-        const series = this._getSeries(seriesDesc.id);
-
-        series.api.applyOptions(seriesDesc.options);
+        series.api.setData(data);
+        chart.timeScale().fitContent();
     }
 
     setMarker(seriesId, marker) {
-        this._checkChart();
-
         const series = this._getSeries(seriesId)
 
         series.setMarker(marker);
@@ -190,8 +187,6 @@ export class TradingChart {
     }
 
     setMarkers(seriesId, markers) {
-        this._checkChart();
-
         const series = this._getSeries(seriesId)
 
         series.markers = [];
