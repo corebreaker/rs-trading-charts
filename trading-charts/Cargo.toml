@@ -12,6 +12,8 @@ keywords.workspace = true
 categories.workspace = true
 
 [dependencies]
+num-traits = "0.2"
+
 console_error_panic_hook = { workspace = true }
 console_log = { workspace = true }
 js-sys = { workspace = true }
