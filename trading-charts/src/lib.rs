@@ -1,7 +1,7 @@
 mod bindings;
 mod chart;
 
-pub mod series;
 pub mod data;
+pub mod series;
 
 pub use chart::Chart;

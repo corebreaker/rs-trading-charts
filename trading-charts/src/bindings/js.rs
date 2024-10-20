@@ -12,13 +12,16 @@ extern "C" {
     pub(super) fn destroy(this: &TradingChart);
 
     #[wasm_bindgen(method, catch)]
+    pub(super) fn applyCharOptions(this: &TradingChart, options: JsValue) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
     pub(super) fn bindChart(this: &TradingChart, node: HtmlDivElement, options: JsValue) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
     pub(super) fn addSeries(this: &TradingChart, series: JsValue) -> Result<String, JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn updateOptions(this: &TradingChart, seriesId: String, options: JsValue) -> Result<(), JsValue>;
+    pub(super) fn updateSeriesOptions(this: &TradingChart, seriesId: String, options: JsValue) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
     pub(super) fn updateData(this: &TradingChart, seriesId: String, data: JsValue) -> Result<(), JsValue>;

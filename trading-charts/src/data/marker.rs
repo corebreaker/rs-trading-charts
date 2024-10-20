@@ -3,8 +3,8 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct Marker {
-    time:   String,
-    text:   String,
+    time: String,
+    text: String,
 
     #[serde(rename = "type")]
     r#type: MarkerType,
@@ -15,7 +15,7 @@ impl Marker {
         Self {
             time,
             r#type,
-            text:   String::new(),
+            text: String::new(),
         }
     }
 
@@ -23,7 +23,7 @@ impl Marker {
         Self {
             time,
             r#type: MarkerType::Buy,
-            text:   String::new(),
+            text: String::new(),
         }
     }
 
@@ -31,7 +31,7 @@ impl Marker {
         Self {
             time,
             r#type: MarkerType::Sell,
-            text:   String::new(),
+            text: String::new(),
         }
     }
 
@@ -39,7 +39,7 @@ impl Marker {
         Self {
             time,
             r#type: MarkerType::Remove,
-            text:   String::new(),
+            text: String::new(),
         }
     }
 

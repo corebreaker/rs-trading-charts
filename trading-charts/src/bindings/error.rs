@@ -1,7 +1,10 @@
 use js_sys::Reflect;
 use serde_wasm_bindgen::Error as SerdeError;
 use wasm_bindgen::JsValue;
-use std::{fmt::{Debug, Display, Formatter, Result as FmtResult}, error::Error as StdError};
+use std::{
+    fmt::{Debug, Display, Formatter, Result as FmtResult},
+    error::Error as StdError,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct JsError {
@@ -22,7 +25,8 @@ impl JsError {
         }
     }
 
-    pub(super) fn message(&self) -> &str {
+    #[allow(dead_code)]
+    pub(crate) fn message(&self) -> &str {
         &self.message
     }
 }

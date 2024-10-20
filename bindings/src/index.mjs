@@ -55,6 +55,24 @@ export class TradingChart {
         return series;
     }
 
+    _bindSeries(seriesId) {
+        const chart = this._chart;
+        if (!chart)
+            return;
+
+        const series = this._getSeries(seriesId);
+        const params = series.params;
+        if (!params)
+            return;
+
+        delete series.params;
+        series.api = chart[makeSeriesName(params.type)](params.options);
+        if (params.data) {
+            series.api.setData(params.data);
+            chart.timeScale().fitContent();
+        }
+    }
+
     destroy() {
         for (const seriesId of Object.keys(this._series)) {
             this.removeSeries(seriesId);
@@ -69,10 +87,18 @@ export class TradingChart {
             this.destroy();
 
         this._chart = createChart(node, options || {});
+        for (const seriesId of Object.keys(this._series)) {
+            this._bindSeries(seriesId);
+        }
+    }
+
+    applyCharOptions(options) {
+        const chart = this._getChart();
+
+        chart.applyOptions(options);
     }
 
     addSeries(seriesDesc) {
-        const chart = this._getChart();
         const optId = seriesDesc.id;
         const type = seriesDesc.type;
         const data = seriesDesc.data;
@@ -87,19 +113,26 @@ export class TradingChart {
         }
 
         const id = uuidv4();
-        const series = chart[makeSeriesName(type)](options);
-        if (data) {
-            series.setData(data);
-            chart.timeScale().fitContent();
-        }
-
         this._series[id] = {
             id,
-            api: series,
+            api: null,
             markers: [],
+            params: {
+                type,
+                data,
+                options,
+            },
+
+            getApi() {
+                if (!this.api) {
+                    throw new Error('Series is not bound to chart');
+                }
+
+                return this.api;
+            },
 
             updateMarkers() {
-                this.api.setMarkers(this.markers);
+                this.getApi().setMarkers(this.markers);
             },
 
             setMarker(markerDesc) {
@@ -147,6 +180,8 @@ export class TradingChart {
             }
         };
 
+        this._bindSeries(id);
+
         return id;
     }
 
@@ -159,23 +194,23 @@ export class TradingChart {
             return false;
 
         delete this._series[seriesId];
-        series.api.setMarkers([]);
-        this._chart.removeSeries(series.api);
+
+        const api = series.getApi();
+
+        api.setMarkers([]);
+        this._chart.removeSeries(api);
 
         return true;
     }
 
-    updateOptions(seriesId, options) {
-        const series = this._getSeries(seriesId);
-
-        series.api.applyOptions(options);
+    updateSeriesOptions(seriesId, options) {
+        this._getSeries(seriesId).getApi().applyOptions(options);
     }
 
     updateData(seriesId, data) {
         const chart = this._getChart();
-        const series = this._getSeries(seriesId);
 
-        series.api.setData(data);
+        this._getSeries(seriesId).getApi().setData(data);
         chart.timeScale().fitContent();
     }
 

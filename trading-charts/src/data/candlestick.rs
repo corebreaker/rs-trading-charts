@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
-pub struct Candle {
+#[derive(Serialize, Deserialize, Clone)]
+pub struct Candlestick {
     time:  String,
     open:  f64,
     high:  f64,
@@ -9,7 +9,7 @@ pub struct Candle {
     close: f64,
 }
 
-impl Candle {
+impl Candlestick {
     pub fn new(time: String, open: f64, high: f64, low: f64, close: f64) -> Self {
         Self {
             time,
