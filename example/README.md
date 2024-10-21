@@ -21,7 +21,8 @@ It is a Rust binding of [Lightweight Charts] for [Leptos].
 You can find the source code in the `src` directory.
 
 You should see a simple line chart with some random data, like this:
-[[Screenshot]][Screenshot]
+
+[![Screenshot]][Screenshot]
 
 
 [Crates.io]: https://img.shields.io/crates/v/rs-trading-charts?style=for-the-badge
