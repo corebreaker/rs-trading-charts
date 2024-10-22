@@ -1,0 +1,25 @@
+[package]
+name = "wasmbind-js-file-macro"
+description = "Provide a macro to generate JavaScript bindings from an external JS file"
+documentation = "https://docs.rs/wasmbind-js-file-macro"
+readme = "./README.md"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+repository.workspace = true
+license.workspace = true
+keywords.workspace = true
+
+categories = [
+    "development-tools",
+    "web-programming",
+    "wasm",
+]
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "1.0"
+quote = "1.0"
+syn = { version = "2.0", features = ["full"] }
