@@ -1,7 +1,8 @@
 use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
+use wasmbind_macro::wasmbind_dump_js_file_as_inline;
 use web_sys::HtmlDivElement;
 
-#[wasm_bindgen(module = "/bindings/target/module.mjs")]
+#[wasmbind_dump_js_file_as_inline(path = "${outDir}/bindings/target/module.mjs")]
 extern "C" {
     pub(super) type TradingChart;
 
