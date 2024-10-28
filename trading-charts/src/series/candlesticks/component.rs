@@ -30,7 +30,12 @@ pub fn CandleStickSeries(
                 series.set_options(options.get());
             }
 
-            chart.add_series(&mut series).unwrap();
+            if let Err(err) = chart.add_series(&mut series) {
+                err.log();
+
+                return view! {};
+            }
+
             series
         };
 
@@ -40,9 +45,9 @@ pub fn CandleStickSeries(
                 let chart = chart.clone();
 
                 let _ = Effect::new(move || {
-                    options
-                        .with(|options| chart.update_series_options(id.clone(), options))
-                        .unwrap();
+                    if let Err(err) = options.with(|options| chart.update_series_options(id.clone(), options)) {
+                        err.log();
+                    }
                 });
             }
 
@@ -51,7 +56,9 @@ pub fn CandleStickSeries(
                 let chart = chart.clone();
 
                 move || {
-                    data.with(|data| chart.update_data(id.clone(), data)).unwrap();
+                    if let Err(err) = data.with(|data| chart.update_data(id.clone(), data)) {
+                        err.log();
+                    }
                 }
             });
 
@@ -60,7 +67,9 @@ pub fn CandleStickSeries(
                 let chart = chart.clone();
 
                 move || {
-                    markers.with(|markers| chart.set_markers(id.clone(), markers)).unwrap();
+                    if let Err(err) = markers.with(|markers| chart.set_markers(id.clone(), markers)) {
+                        err.log();
+                    }
                 }
             });
         }

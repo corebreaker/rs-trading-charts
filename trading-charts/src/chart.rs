@@ -1,5 +1,5 @@
 use super::data::options::ChartOptions;
-use crate::bindings::TradingChartBinding;
+use crate::bindings::{JsError, TradingChartBinding};
 use leptos::{
     tachys::{
         html::{
@@ -22,6 +22,28 @@ use leptos::{
     view,
 };
 
+fn make_chart(options: Option<ReadSignal<ChartOptions>>) -> Result<TradingChartBinding, JsError> {
+    Ok(match options {
+        None => TradingChartBinding::new(None)?,
+        Some(options) => {
+            let chart = options.with_untracked(|options| TradingChartBinding::new(Some(options)))?;
+            let _ = Effect::new({
+                let chart = chart.clone();
+
+                move || {
+                    options.with(|options| {
+                        if let Err(err) = chart.apply_chart_options(options) {
+                            err.log();
+                        }
+                    })
+                }
+            });
+
+            chart
+        }
+    })
+}
+
 #[component]
 pub fn Chart<'a, 'b>(
     #[prop(optional)] options: Option<ReadSignal<ChartOptions>>,
@@ -32,27 +54,11 @@ pub fn Chart<'a, 'b>(
 
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
-    let chart = match options {
-        None => TradingChartBinding::new(None).unwrap(),
-        Some(options) => {
-            let chart = {
-                options
-                    .with_untracked(|options| TradingChartBinding::new(Some(options)))
-                    .unwrap()
-            };
-
-            let _ = Effect::new({
-                let chart = chart.clone();
-
-                move || {
-                    options.with(|options| {
-                        // TODO: handle error
-                        chart.apply_chart_options(options).unwrap();
-                    })
-                }
-            });
-
-            chart
+    let chart = match make_chart(options) {
+        Ok(chart) => chart,
+        Err(err) => {
+            err.log();
+            return view!().into_any();
         }
     };
 
@@ -62,7 +68,9 @@ pub fn Chart<'a, 'b>(
 
         move || {
             if let Some(node) = node_ref.get() {
-                chart.bind_chart(node).unwrap();
+                if let Err(err) = chart.bind_chart(node) {
+                    err.log();
+                }
             }
         }
     });
@@ -76,10 +84,12 @@ pub fn Chart<'a, 'b>(
         None => (view! {<></>}).into_any(),
     };
 
-    view! {
+    let res = view! {
         <>
             <div style=style class=class node_ref={node_ref}/>
             {children}
         </>
-    }
+    };
+
+    res.into_any()
 }
