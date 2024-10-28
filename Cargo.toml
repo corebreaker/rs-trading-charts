@@ -22,6 +22,9 @@ categories = [
     "wasm",
 ]
 
+[workspace.metadata.scripts]
+fmt = "cargo +nightly fmt --all"
+
 [workspace.dependencies]
 console_error_panic_hook = "0.1"
 console_log = "1.0"

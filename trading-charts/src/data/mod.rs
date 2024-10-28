@@ -6,9 +6,4 @@ pub mod options;
 
 pub(crate) mod series;
 
-pub use self::{
-    options::{Background, LayoutOptions, ChartOptions},
-    marker::Marker,
-    marker_type::MarkerType,
-    candlestick::Candlestick,
-};
+pub use self::{marker::Marker, marker_type::MarkerType, candlestick::Candlestick};

@@ -1,5 +1,5 @@
 use super::{js::TradingChart as JsChart, JsError};
-use crate::data::{series::Series, ChartOptions, Candlestick, Marker};
+use crate::data::{series::Series, options::ChartOptions, Candlestick, Marker};
 use serde_wasm_bindgen::to_value;
 use serde::Serialize;
 use wasm_bindgen::JsValue;

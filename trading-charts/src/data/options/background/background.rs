@@ -1,13 +1,9 @@
-use super::background_options::{SolidColor, VerticalGradientColor};
+use super::{SolidColor, VerticalGradientColor};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Default, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 #[serde(tag = "type")]
 pub enum Background {
-    #[default]
-    #[serde(rename = "none")]
-    None,
-
     #[serde(rename = "solid")]
     SolidColor(SolidColor),
 
@@ -23,8 +19,10 @@ impl Background {
     pub fn new_vertical_gradient_color(top_color: String, bottom_color: String) -> Self {
         Self::VerticalGradientColor(VerticalGradientColor::new(top_color, bottom_color))
     }
+}
 
-    pub fn is_none(&self) -> bool {
-        matches!(self, Self::None)
+impl Default for Background {
+    fn default() -> Self {
+        Self::SolidColor(SolidColor::default())
     }
 }
