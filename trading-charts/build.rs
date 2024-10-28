@@ -34,7 +34,11 @@ fn main() {
 
     copy_all(&bindings, &dist)
         .map_err(|err| {
-            format!("Cannot copy from `{}` to `{}`, reason: {err}", bindings.display(), dist.display())
+            format!(
+                "Cannot copy from `{}` to `{}`, reason: {err}",
+                bindings.display(),
+                dist.display()
+            )
         })
         .unwrap();
 

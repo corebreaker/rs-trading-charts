@@ -1,4 +1,4 @@
-use super::data::ChartOptions;
+use super::data::options::ChartOptions;
 use crate::bindings::TradingChartBinding;
 use leptos::{
     tachys::{

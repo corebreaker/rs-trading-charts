@@ -43,8 +43,7 @@ impl Parse for PathOption {
 
         const PREFIX: &'static str = "${outDir}/";
         if path_str.starts_with(PREFIX) {
-            let out_dir = env::var("OUT_DIR")
-                .map_err(|_| input.error("OUT_DIR environment variable not found"))?;
+            let out_dir = env::var("OUT_DIR").map_err(|_| input.error("OUT_DIR environment variable not found"))?;
 
             path = PathBuf::from(out_dir);
             path.extend(PathBuf::from(&path_str[PREFIX.len()..]).iter());

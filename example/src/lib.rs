@@ -1,5 +1,9 @@
 use charts::{
-    data::{Candlestick, Marker, Background, ChartOptions, LayoutOptions},
+    data::{
+        options::{background::Background, ChartOptions, LayoutOptions},
+        Candlestick,
+        Marker,
+    },
     series::candlesticks::CandleStickSeries,
     Chart,
 };
