@@ -3,12 +3,18 @@ target = "./index.html"
 
 [watch]
 watch = [
+    ".",
     "../trading-charts/src",
     "../trading-charts/build.rs",
     "../trading-charts/Cargo.toml",
     "../trading-charts/bindings/src",
     "../trading-charts/bindings/build",
     "../trading-charts/bindings/package.json",
+]
+
+ignores = [
+    "./dist",
+    "./README.md",
 ]
 
 [serve]
