@@ -1,3 +1,4 @@
+use crate::console;
 use js_sys::Reflect;
 use serde_wasm_bindgen::Error as SerdeError;
 use wasm_bindgen::JsValue;
@@ -28,6 +29,10 @@ impl JsError {
     #[allow(dead_code)]
     pub(crate) fn message(&self) -> &str {
         &self.message
+    }
+
+    pub(crate) fn log(&self) {
+        console::error(&self.message);
     }
 }
 
