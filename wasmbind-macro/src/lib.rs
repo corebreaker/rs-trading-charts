@@ -20,9 +20,13 @@ struct PathOption {
 
 impl PathOption {
     fn contents(&self) -> LitStr {
-        let contents = read_to_string(&self.path)
-            .map_err(|e| format!("Failed to read file {:?}: {}", self.path, e))
-            .unwrap();
+        let contents = read_to_string(&self.path).unwrap_or_else(|err| {
+            if cfg!(doc) {
+                String::from("(() => {})();")
+            } else {
+                panic!("Failed to read file {:?}: {}", self.path, err);
+            }
+        });
 
         LitStr::new(&contents, self.span.clone())
     }
