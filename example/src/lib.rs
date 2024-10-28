@@ -31,7 +31,11 @@ pub fn App() -> impl IntoView {
         .with_text_color(String::from("black"))
         .with_background(Background::new_solid_color(String::from("white")));
 
-    let options = RwSignal::new(ChartOptions::new().with_layout(layout));
+    let options = RwSignal::new(
+        ChartOptions::new()
+            .with_layout(layout)
+            .with_auto_size(true)
+    );
 
     let buy_marker = Marker::buy(String::from("2024-02-12")).with_text(String::from("Yes, buy here"));
     let sell_marker = Marker::sell(String::from("2024-02-17")).with_text(String::from("Sell here, sure ?"));
@@ -65,7 +69,7 @@ pub fn App() -> impl IntoView {
 
     view! {
         <div style="margin-top:10px;padding:10px">
-            <div style="border:1px dashed black;width:1024px;height:500px">
+            <div style="border:1px dashed black;height:500px">
                 <Chart options=options.read_only() style="width:100%;height:100%">
                     <CandleStickSeries data=data.read_only() markers=markers.read_only() />
                 </Chart>
