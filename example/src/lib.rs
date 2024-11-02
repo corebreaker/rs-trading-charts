@@ -5,6 +5,7 @@ use charts::{
         Marker,
     },
     series::candlesticks::CandleStickSeries,
+    JsError,
     Chart,
 };
 

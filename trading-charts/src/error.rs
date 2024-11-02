@@ -1,5 +1,6 @@
 use crate::console;
 use js_sys::Reflect;
+use chrono::ParseError;
 use serde_wasm_bindgen::Error as SerdeError;
 use wasm_bindgen::JsValue;
 use std::{
@@ -13,7 +14,7 @@ pub struct JsError {
 }
 
 impl JsError {
-    pub(super) fn new(js: JsValue) -> Self {
+    pub fn new(js: JsValue) -> Self {
         let msg_prop_name = JsValue::from_str("message");
         let msg_prop_value = Reflect::get(&js, &msg_prop_name);
         let message = match msg_prop_value.as_ref() {
@@ -27,11 +28,11 @@ impl JsError {
     }
 
     #[allow(dead_code)]
-    pub(crate) fn message(&self) -> &str {
+    pub fn message(&self) -> &str {
         &self.message
     }
 
-    pub(crate) fn log(&self) {
+    pub fn log(&self) {
         console::error(&self.message);
     }
 }
@@ -54,6 +55,14 @@ impl From<SerdeError> for JsError {
     fn from(err: SerdeError) -> Self {
         Self {
             message: format!("JSON error: {err}"),
+        }
+    }
+}
+
+impl From<ParseError> for JsError {
+    fn from(err: ParseError) -> Self {
+        Self {
+            message: format!("Parse error: {err}"),
         }
     }
 }

@@ -33,7 +33,7 @@ pub fn CandleStickSeries(
             if let Err(err) = chart.add_series(&mut series) {
                 err.log();
 
-                return view! {};
+                return view!();
             }
 
             series
@@ -75,5 +75,5 @@ pub fn CandleStickSeries(
         }
     }
 
-    view! {}
+    view!()
 }

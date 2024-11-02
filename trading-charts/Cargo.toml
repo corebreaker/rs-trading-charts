@@ -12,6 +12,7 @@ keywords.workspace = true
 categories.workspace = true
 
 [dependencies]
+chrono = { version = "0.4.38", features = ["alloc", "serde", "wasmbind"] }
 wasmbind-macro = { version = "0.1", path = "../wasmbind-macro", package = "wasmbind-js-file-macro" }
 
 console_error_panic_hook = { workspace = true }

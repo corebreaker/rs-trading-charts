@@ -1,5 +1,5 @@
 use super::data::options::ChartOptions;
-use crate::bindings::{JsError, TradingChartBinding};
+use crate::{bindings::TradingChartBinding, JsError};
 use leptos::{
     tachys::{
         html::{
