@@ -3,7 +3,9 @@ mod handle_scroll;
 mod kinetic_scroll;
 mod layout;
 mod line_style;
+mod line_width;
 mod options;
+mod price_line_source;
 mod time_scale;
 mod tracking_mode;
 
@@ -19,8 +21,10 @@ pub use self::{
     flagable_options::FlagableOptions,
     handle_scroll::HandleScrollOptions,
     options::ChartOptions,
+    price_line_source::PriceLineSource,
     layout::LayoutOptions,
     line_style::LineStyle,
+    line_width::LineWidth,
     time_scale::TimeScaleOptions,
     tracking_mode::TrackingModeOptions,
 };
