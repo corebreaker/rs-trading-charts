@@ -21,7 +21,7 @@ struct PathOption {
 impl PathOption {
     fn contents(&self) -> LitStr {
         let contents = read_to_string(&self.path).unwrap_or_else(|err| {
-            if cfg!(doc) || cfg!(docrs) {
+            if cfg!(any(doc, docsrs)) {
                 String::from("(() => {})();")
             } else {
                 panic!("Failed to read file {:?}: {}", self.path, err);
