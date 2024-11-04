@@ -1,4 +1,4 @@
-use super::{super::LineStyle, LineWidth};
+use super::super::{LineStyle, LineWidth};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]
