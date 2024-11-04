@@ -1,9 +1,9 @@
-use super::MarkerType;
+use super::{MarkerType, UTCTimestamp};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct Marker {
-    time: String,
+    time: UTCTimestamp,
     text: String,
 
     #[serde(rename = "type")]
@@ -11,7 +11,7 @@ pub struct Marker {
 }
 
 impl Marker {
-    pub fn new(time: String, r#type: MarkerType) -> Self {
+    pub fn new(time: UTCTimestamp, r#type: MarkerType) -> Self {
         Self {
             time,
             r#type,
@@ -19,7 +19,7 @@ impl Marker {
         }
     }
 
-    pub fn buy(time: String) -> Self {
+    pub fn buy(time: UTCTimestamp) -> Self {
         Self {
             time,
             r#type: MarkerType::Buy,
@@ -27,7 +27,7 @@ impl Marker {
         }
     }
 
-    pub fn sell(time: String) -> Self {
+    pub fn sell(time: UTCTimestamp) -> Self {
         Self {
             time,
             r#type: MarkerType::Sell,
@@ -35,7 +35,7 @@ impl Marker {
         }
     }
 
-    pub fn remove(time: String) -> Self {
+    pub fn remove(time: UTCTimestamp) -> Self {
         Self {
             time,
             r#type: MarkerType::Remove,
@@ -50,8 +50,8 @@ impl Marker {
         }
     }
 
-    pub fn time(&self) -> &str {
-        &self.time
+    pub fn time(&self) -> UTCTimestamp {
+        self.time
     }
 
     pub fn text(&self) -> &str {

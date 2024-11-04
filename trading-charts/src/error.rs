@@ -27,6 +27,12 @@ impl JsError {
         }
     }
 
+    pub fn new_from_str(message: impl AsRef<str>) -> Self {
+        Self {
+            message: message.as_ref().to_string(),
+        }
+    }
+
     #[allow(dead_code)]
     pub fn message(&self) -> &str {
         &self.message
