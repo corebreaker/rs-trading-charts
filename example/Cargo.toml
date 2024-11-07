@@ -10,6 +10,7 @@ readme.workspace = true
 license.workspace = true
 keywords.workspace = true
 categories.workspace = true
+publish = false
 
 [dependencies]
 charts = { path = "../trading-charts", package = "trading-charts" }
