@@ -33,7 +33,7 @@ fn make_chart(options: Option<ReadSignal<ChartOptions>>) -> Result<TradingChartB
                 move || {
                     options.with(|options| {
                         if let Err(err) = chart.apply_chart_options(options) {
-                            err.log();
+                            err.with_prefix("Failed to apply chart options").log();
                         }
                     })
                 }
@@ -57,7 +57,8 @@ pub fn Chart<'a, 'b>(
     let chart = match make_chart(options) {
         Ok(chart) => chart,
         Err(err) => {
-            err.log();
+            err.with_prefix("Failed to create chart").log();
+
             return view!().into_any();
         }
     };
@@ -69,7 +70,7 @@ pub fn Chart<'a, 'b>(
         move || {
             if let Some(node) = node_ref.get() {
                 if let Err(err) = chart.bind_chart(node) {
-                    err.log();
+                    err.with_prefix("Failed to bind chart").log();
                 }
             }
         }
