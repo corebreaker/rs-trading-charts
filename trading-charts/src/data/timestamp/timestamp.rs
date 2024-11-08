@@ -1,6 +1,6 @@
 use super::parse_str::parse_str;
 use crate::JsError;
-use serde::{de::Error as SerdeError, Deserialize, Deserializer, Serialize, Serializer};
+use serde::{de::{Visitor, Error as SerdeError}, Deserialize, Deserializer, Serialize, Serializer};
 use chrono::{DateTime, Utc, SecondsFormat};
 use std::{
     fmt::{Display, Formatter, Result as FmtResult},
@@ -84,13 +84,84 @@ impl Serialize for UTCTimestamp {
 
 impl<'de> Deserialize<'de> for UTCTimestamp {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let timestamp = i64::deserialize(deserializer)?;
-        if DateTime::<Utc>::from_timestamp(timestamp, 0).is_none() {
-            return Err(SerdeError::custom(format!("invalid timestamp: {timestamp}")));
+        struct TimestampVisitor;
+        impl Visitor<'_> for TimestampVisitor {
+            type Value = UTCTimestamp;
+
+            fn expecting(&self, formatter: &mut Formatter) -> FmtResult {
+                formatter.write_str("a valid timestamp from a number or a string")
+            }
+
+            fn visit_i8<E: SerdeError>(self, value: i8) -> Result<Self::Value, E> {
+                self.visit_i64(value as i64)
+            }
+
+            fn visit_i16<E: SerdeError>(self, value: i16) -> Result<Self::Value, E> {
+                self.visit_i64(value as i64)
+            }
+
+            fn visit_i32<E: SerdeError>(self, value: i32) -> Result<Self::Value, E> {
+                self.visit_i64(value as i64)
+            }
+
+            fn visit_i64<E: SerdeError>(self, value: i64) -> Result<Self::Value, E> {
+                match DateTime::<Utc>::from_timestamp(value, 0) {
+                    Some(ts) => Ok(UTCTimestamp::from_datetime(ts)),
+                    None => Err(SerdeError::custom(format!("invalid timestamp: {value}"))),
+                }
+            }
+
+            fn visit_i128<E: SerdeError>(self, value: i128) -> Result<Self::Value, E> {
+                if value.unsigned_abs().leading_zeros() < 64 {
+                    return Err(SerdeError::custom(format!("timestamp overflow: {value}")))
+                }
+
+                self.visit_i64(value as i64)
+            }
+
+            fn visit_u8<E: SerdeError>(self, value: u8) -> Result<Self::Value, E> {
+                self.visit_i64(value as i64)
+            }
+
+            fn visit_u16<E: SerdeError>(self, value: u16) -> Result<Self::Value, E> {
+                self.visit_i64(value as i64)
+            }
+
+            fn visit_u32<E: SerdeError>(self, value: u32) -> Result<Self::Value, E> {
+                self.visit_i64(value as i64)
+            }
+
+            fn visit_u64<E: SerdeError>(self, value: u64) -> Result<Self::Value, E> {
+                self.visit_i64(value as i64)
+            }
+
+            fn visit_u128<E: SerdeError>(self, value: u128) -> Result<Self::Value, E> {
+                self.visit_i128(value as i128)
+            }
+
+            fn visit_f32<E: SerdeError>(self, value: f32) -> Result<Self::Value, E> {
+                self.visit_f64(value as f64)
+            }
+
+            fn visit_f64<E: SerdeError>(self, value: f64) -> Result<Self::Value, E> {
+                match DateTime::<Utc>::from_timestamp(value as i64, (value.fract() * 1e9) as u32) {
+                    Some(ts) => Ok(UTCTimestamp::from_datetime(ts)),
+                    None => Err(SerdeError::custom(format!("invalid timestamp: {value}"))),
+                }
+            }
+
+            fn visit_str<E: SerdeError>(self, value: &str) -> Result<Self::Value, E> {
+                match parse_str(value) {
+                    Ok(ts) => Ok(UTCTimestamp::from_datetime(ts)),
+                    Err(err) => Err(SerdeError::custom(format!("invalid timestamp: {err}"))),
+                }
+            }
+
+            fn visit_string<E: SerdeError>(self, v: String) -> Result<Self::Value, E> {
+                self.visit_str(&v)
+            }
         }
 
-        Ok(Self {
-            timestamp,
-        })
+        deserializer.deserialize_any(TimestampVisitor)
     }
 }

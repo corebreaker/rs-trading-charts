@@ -31,7 +31,7 @@ pub fn CandleStickSeries(
             }
 
             if let Err(err) = chart.add_series(&mut series) {
-                err.log();
+                err.with_prefix("Failed to add series").log();
 
                 return view!();
             }
@@ -45,8 +45,13 @@ pub fn CandleStickSeries(
                 let chart = chart.clone();
 
                 let _ = Effect::new(move || {
-                    if let Err(err) = options.with(|options| chart.update_series_options(id.clone(), options)) {
-                        err.log();
+                    let res = options.with(|options| {
+                        chart.update_series_options(id.clone(), options)
+                            .map_err(|err| err.with_serializable_data(options))
+                    });
+
+                    if let Err(err) = res {
+                        err.with_prefix("Failed to update series options").log();
                     }
                 });
             }
@@ -56,8 +61,13 @@ pub fn CandleStickSeries(
                 let chart = chart.clone();
 
                 move || {
-                    if let Err(err) = data.with(|data| chart.update_data(id.clone(), data)) {
-                        err.log();
+                    let res = data.with(|data| {
+                        chart.update_data(id.clone(), data)
+                            .map_err(|err| err.with_serializable_data(data))
+                    });
+
+                    if let Err(err) = res {
+                        err.with_prefix("Failed to update data").log();
                     }
                 }
             });
@@ -67,8 +77,13 @@ pub fn CandleStickSeries(
                 let chart = chart.clone();
 
                 move || {
-                    if let Err(err) = markers.with(|markers| chart.set_markers(id.clone(), markers)) {
-                        err.log();
+                    let res = markers.with(|markers| {
+                        chart.set_markers(id.clone(), markers)
+                            .map_err(|err| err.with_serializable_data(markers))
+                    });
+
+                    if let Err(err) = res {
+                        err.with_prefix("Failed to set markers").log();
                     }
                 }
             });

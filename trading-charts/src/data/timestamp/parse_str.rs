@@ -2,6 +2,18 @@ use crate::JsError;
 use chrono::{format::ParseErrorKind, NaiveDate, DateTime, Utc};
 
 pub(super) fn parse_str(s: &str) -> Result<DateTime<Utc>, JsError> {
+    if let Ok(ts) = s.parse::<i64>() {
+        if let Some(dt) = DateTime::<Utc>::from_timestamp(ts, 0) {
+            return Ok(dt);
+        }
+    }
+
+    if let Ok(ts) = s.parse::<f64>() {
+        if let Some(dt) = DateTime::<Utc>::from_timestamp(ts as i64, (ts.fract() * 1e9) as u32) {
+            return Ok(dt);
+        }
+    }
+
     match DateTime::parse_from_rfc3339(s) {
         Ok(dt) => Ok(dt.with_timezone(&Utc)),
         Err(err) => match err.kind() {

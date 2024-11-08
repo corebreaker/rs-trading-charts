@@ -112,11 +112,14 @@ export class TradingChart {
             throw new Error('Series type is required');
         }
 
+        data.sort((a, b) => a.time - b.time);
+
         const id = uuidv4();
         this._series[id] = {
             id,
             api: null,
             markers: [],
+            sorted: false,
             params: {
                 type,
                 data,
@@ -132,6 +135,10 @@ export class TradingChart {
             },
 
             updateMarkers() {
+                if (this.sorted) {
+                    this.markers.sort((a, b) => a.time - b.time);
+                }
+
                 this.getApi().setMarkers(this.markers);
             },
 
@@ -174,8 +181,10 @@ export class TradingChart {
                             break;
                     }
 
-                    if (!marker._bad)
+                    if (!marker._bad) {
                         this.markers.push(Object.assign(marker, makeMarkerProps(options || {})));
+                        this.sorted = false;
+                    }
                 }
             }
         };
@@ -210,6 +219,7 @@ export class TradingChart {
     updateData(seriesId, data) {
         const chart = this._getChart();
 
+        data.sort((a, b) => a.time - b.time);
         this._getSeries(seriesId).getApi().setData(data);
         chart.timeScale().fitContent();
     }
