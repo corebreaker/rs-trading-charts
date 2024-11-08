@@ -1,7 +1,6 @@
 #[doc(hidden)]
 mod bindings;
 mod chart;
-mod console;
 mod error;
 
 pub mod data;

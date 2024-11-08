@@ -1,6 +1,6 @@
-use crate::console;
 use js_sys::Reflect;
 use chrono::ParseError;
+use gloo_console::error;
 use serde_wasm_bindgen::Error as SerdeError;
 use wasm_bindgen::JsValue;
 use std::{
@@ -39,7 +39,7 @@ impl JsError {
     }
 
     pub fn log(&self) {
-        console::error(&self.message);
+        error!(&self.message);
     }
 }
 
