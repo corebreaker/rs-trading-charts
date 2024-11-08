@@ -16,6 +16,9 @@ categories = [
     "wasm",
 ]
 
+[package.metadata.docs.rs]
+rustc-args = ["--cfg", "docsrs"]
+
 [lib]
 proc-macro = true
 
