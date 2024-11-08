@@ -1,3 +1,4 @@
+#[doc(hidden)]
 mod bindings;
 mod chart;
 mod console;

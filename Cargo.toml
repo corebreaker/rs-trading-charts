@@ -4,12 +4,12 @@ members = ["trading-charts", "wasmbind-macro", "example"]
 default-members = ["trading-charts", "wasmbind-macro"]
 
 [workspace.package]
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
 authors = ["Frédéric Meyer <frederic.meyer.77@gmail.com>"]
 description = "Rust binding of Lightweight Charts for Leptos"
 repository = "https://github.com/corebreaker/rs-trading-charts"
-documentation = "https://docs.rs/rs-trading-charts/"
+documentation = "https://docs.rs/trading-charts/"
 readme = "README.md"
 license = "MIT"
 keywords = [
