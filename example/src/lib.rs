@@ -93,8 +93,8 @@ pub fn App() -> impl IntoView {
     view! {
         <div style="margin-top:10px;padding:10px">
             <div style="border:1px dashed black;height:500px">
-                <Chart options=options.read_only() style="width:100%;height:100%">
-                    <CandleStickSeries data=data.read_only() markers=markers.read_only() />
+                <Chart options=options.read_only().into() style="width:100%;height:100%">
+                    <CandleStickSeries data=data.read_only().into() markers=markers.read_only().into() />
                 </Chart>
             </div>
         </div>
