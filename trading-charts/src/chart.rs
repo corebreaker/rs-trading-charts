@@ -12,7 +12,7 @@ use leptos::{
     reactive::{
         effect::Effect,
         traits::{Get, With, WithUntracked},
-        signal::ReadSignal,
+        wrappers::read::Signal,
     },
     context::provide_context,
     children::Children,
@@ -22,7 +22,7 @@ use leptos::{
     view,
 };
 
-fn make_chart(options: Option<ReadSignal<ChartOptions>>) -> Result<TradingChartBinding, JsError> {
+fn make_chart(options: Option<Signal<ChartOptions>>) -> Result<TradingChartBinding, JsError> {
     Ok(match options {
         None => TradingChartBinding::new(None)?,
         Some(options) => {
@@ -46,12 +46,9 @@ fn make_chart(options: Option<ReadSignal<ChartOptions>>) -> Result<TradingChartB
 
 #[component]
 pub fn Chart<'a, 'b>(
-    #[prop(optional)] options: Option<ReadSignal<ChartOptions>>,
-
+    #[prop(optional)] options: Option<Signal<ChartOptions>>,
     #[prop(optional)] style: Option<&'a str>,
-
     #[prop(optional)] class: Option<&'b str>,
-
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let chart = match make_chart(options) {

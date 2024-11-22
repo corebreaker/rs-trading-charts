@@ -6,9 +6,9 @@ use crate::{
 
 use leptos::{
     reactive::{
-        signal::ReadSignal,
-        traits::{Get, With},
         effect::Effect,
+        traits::{Get, With},
+        wrappers::read::Signal,
     },
     context::use_context,
     IntoView,
@@ -18,9 +18,9 @@ use leptos::{
 
 #[component(transparent)]
 pub fn CandleStickSeries(
-    #[prop(optional)] options: Option<ReadSignal<CandlestickOptions>>,
-    data: ReadSignal<Vec<Candlestick>>,
-    markers: ReadSignal<Vec<Marker>>,
+    #[prop(optional)] options: Option<Signal<CandlestickOptions>>,
+    data: Signal<Vec<Candlestick>>,
+    markers: Signal<Vec<Marker>>,
 ) -> impl IntoView {
     let chart: Option<TradingChartBinding> = use_context();
     if let Some(chart) = chart {
