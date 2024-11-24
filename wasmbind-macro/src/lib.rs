@@ -22,9 +22,12 @@ impl PathOption {
     fn contents(&self) -> LitStr {
         let contents = read_to_string(&self.path).unwrap_or_else(|err| {
             if cfg!(any(doc, docsrs)) {
-                String::from("(() => {})();")
-            } else {
-                panic!("Failed to read file {:?}: {}", self.path, err);
+                return String::from("(() => {})();");
+            }
+
+            match env::var_os("DOCS_RS") {
+                Some(v) if v == "1" => String::from("(() => {})();"),
+                _ => panic!("Failed to read file {}: {err}", self.path.display()),
             }
         });
 
