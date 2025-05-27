@@ -1,18 +1,23 @@
 use charts::{
     data::{
-        options::{background::Background, layout::LayoutOptions, ChartOptions},
+        options::{
+            background::Background,
+            layout::{LayoutPanesOptions, LayoutOptions},
+            ChartOptions,
+        },
         UTCTimestamp,
         Candlestick,
         Marker,
     },
     series::candlesticks::CandleStickSeries,
+    chart::Chart,
+    panel::ChartPanel,
     JsError,
-    Chart,
 };
 
 use leptos::{
     tachys::html::attribute::global::StyleAttribute,
-    reactive::signal::RwSignal,
+    reactive::signal::{ReadSignal, RwSignal, signal},
     html::ElementChild,
     IntoView,
     component,
@@ -73,28 +78,41 @@ fn make_markers(data: &Vec<Candlestick>) -> Vec<Marker> {
     markers
 }
 
-#[component]
-pub fn App() -> impl IntoView {
-    let layout = LayoutOptions::new()
-        .with_text_color(String::from("black"))
-        .with_background(Background::new_solid_color(String::from("white")));
-
-    let options = RwSignal::new(ChartOptions::new().with_layout(layout).with_auto_size(true));
-
+fn make_dataset() -> (ReadSignal<Vec<Candlestick>>, ReadSignal<Vec<Marker>>) {
     let data = make_data().unwrap_or_else(|err| {
         err.log();
 
         vec![]
     });
 
-    let markers = RwSignal::new(make_markers(&data));
-    let data = RwSignal::new(data);
+    let (markers, _) = signal(make_markers(&data));
+    let (data, _) = signal(data);
+
+    (data, markers)
+}
+
+#[component]
+pub fn App() -> impl IntoView {
+    let layout = LayoutOptions::new()
+        .with_text_color(String::from("black"))
+        .with_background(Background::new_solid_color(String::from("white")))
+        .with_panes(LayoutPanesOptions::new());
+
+    let options = RwSignal::new(ChartOptions::new().with_layout(layout).with_auto_size(true));
+
+    let (data_up, markers_up) = make_dataset();
+    let (data_down, markers_down) = make_dataset();
 
     view! {
         <div style="margin-top:10px;padding:10px">
-            <div style="border:1px dashed black;height:500px">
-                <Chart options=options.read_only().into() style="width:100%;height:100%">
-                    <CandleStickSeries data=data.read_only().into() markers=markers.read_only().into() />
+            <div style="border:1px dashed black;height:768px">
+                <Chart options=options.read_only() style="width:100%;height:100%">
+                    <ChartPanel>
+                        <CandleStickSeries data=data_up markers=markers_up />
+                    </ChartPanel>
+                    <ChartPanel>
+                        <CandleStickSeries data=data_down markers=markers_down />
+                    </ChartPanel>
                 </Chart>
             </div>
         </div>

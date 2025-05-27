@@ -52,6 +52,8 @@ export class TradingChart {
     constructor() {
         this._chart = null;
         this._series = {};
+        this._panelGenerator = 0;
+        this._currentPanelId = null;
     }
 
     _getChart() {
@@ -82,6 +84,10 @@ export class TradingChart {
 
         delete series.params;
         series.chartApi = chart.addSeries(getSeriesType(params.type), params.options);
+        if (series.panel !== null) {
+            series.chartApi.moveToPane(series.panel);
+        }
+
         if (params.data) {
             series.chartApi.setData(params.data);
             chart.timeScale().fitContent();
@@ -103,6 +109,12 @@ export class TradingChart {
             this._chart.remove();
     }
 
+    applyChartOptions(options) {
+        const chart = this._getChart();
+
+        chart.applyOptions(options);
+    }
+
     bindChart(node, options = null) {
         if (this._chart)
             this.destroy();
@@ -113,10 +125,16 @@ export class TradingChart {
         }
     }
 
-    applyChartOptions(options) {
-        const chart = this._getChart();
+    addPanel() {
+        if (this._currentPanelId !== null) {
+            throw new Error('Panel already exists, panels cannot be nested, remove it before adding a new one');
+        }
 
-        chart.applyOptions(options);
+        this._currentPanelId = this._panelGenerator++;
+    }
+
+    removePanel() {
+        this._currentPanelId = null;
     }
 
     addSeries(seriesDesc) {
@@ -142,6 +160,7 @@ export class TradingChart {
             markerApi: null,
             markerData: [],
             sorted: false,
+            panel: this._currentPanelId,
             params: {
                 type,
                 data,
