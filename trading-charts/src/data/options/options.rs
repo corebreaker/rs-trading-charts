@@ -2,12 +2,12 @@ use super::{
     cross_hair::CrossHairOptions,
     grid::GridOptions,
     handle_scale::HandleScaleOptions,
+    layout::LayoutOptions,
     overlay_price_scale::OverlayPriceScaleOptions,
     price_scale::PriceScaleOptions,
     FlagableOptions,
     HandleScrollOptions,
     KineticScrollOptions,
-    LayoutOptions,
     TimeScaleOptions,
     TrackingModeOptions,
 };
@@ -16,9 +16,6 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Default, Clone)]
 pub struct ChartOptions {
-    #[serde(default)]
-    layout: LayoutOptions,
-
     #[serde(default = "defaults::width")]
     width: usize,
 
@@ -28,6 +25,9 @@ pub struct ChartOptions {
     #[serde(rename = "autoSize", default = "defaults::auto_size")]
     auto_size: bool,
 
+    #[serde(default)]
+    layout: LayoutOptions,
+
     #[serde(rename = "leftPriceScale", default)]
     left_price_scale: PriceScaleOptions,
 
@@ -36,6 +36,9 @@ pub struct ChartOptions {
 
     #[serde(rename = "overlayPriceScale", default)]
     overlay_price_scale_options: OverlayPriceScaleOptions,
+
+    #[serde(rename = "timeScale", default)]
+    time_scale: TimeScaleOptions,
 
     #[serde(rename = "crossHair", default)]
     cross_hair: CrossHairOptions,
@@ -50,25 +53,15 @@ pub struct ChartOptions {
     handle_scale: FlagableOptions<HandleScaleOptions>,
 
     #[serde(rename = "kineticScroll", default)]
-    kinetic_scroll_options: KineticScrollOptions,
+    kinetic_scroll: KineticScrollOptions,
 
     #[serde(rename = "trackingMode", default)]
     tracking_mode: TrackingModeOptions,
-
-    #[serde(rename = "timeScale", default)]
-    time_scale: TimeScaleOptions,
 }
 
 impl ChartOptions {
     pub fn new() -> Self {
         Self::default()
-    }
-
-    pub fn with_layout(self, layout: LayoutOptions) -> Self {
-        Self {
-            layout,
-            ..self
-        }
     }
 
     pub fn with_width(self, width: usize) -> Self {
@@ -92,6 +85,13 @@ impl ChartOptions {
         }
     }
 
+    pub fn with_layout(self, layout: LayoutOptions) -> Self {
+        Self {
+            layout,
+            ..self
+        }
+    }
+
     pub fn with_left_price_scale(self, left_price_scale: PriceScaleOptions) -> Self {
         Self {
             left_price_scale,
@@ -109,6 +109,13 @@ impl ChartOptions {
     pub fn with_overlay_price_scale_options(self, overlay_price_scale_options: OverlayPriceScaleOptions) -> Self {
         Self {
             overlay_price_scale_options,
+            ..self
+        }
+    }
+
+    pub fn with_time_scale(self, time_scale: TimeScaleOptions) -> Self {
+        Self {
+            time_scale,
             ..self
         }
     }
@@ -143,7 +150,7 @@ impl ChartOptions {
 
     pub fn with_kinetic_scroll_options(self, kinetic_scroll_options: KineticScrollOptions) -> Self {
         Self {
-            kinetic_scroll_options,
+            kinetic_scroll: kinetic_scroll_options,
             ..self
         }
     }
@@ -153,25 +160,6 @@ impl ChartOptions {
             tracking_mode,
             ..self
         }
-    }
-
-    pub fn with_time_scale(self, time_scale: TimeScaleOptions) -> Self {
-        Self {
-            time_scale,
-            ..self
-        }
-    }
-
-    pub fn layout(&self) -> &LayoutOptions {
-        &self.layout
-    }
-
-    pub fn layout_mut(&mut self) -> &mut LayoutOptions {
-        &mut self.layout
-    }
-
-    pub fn set_layout(&mut self, layout: LayoutOptions) {
-        self.layout = layout;
     }
 
     pub fn width(&self) -> usize {
@@ -196,6 +184,18 @@ impl ChartOptions {
 
     pub fn set_auto_size(&mut self, auto_size: bool) {
         self.auto_size = auto_size;
+    }
+
+    pub fn layout(&self) -> &LayoutOptions {
+        &self.layout
+    }
+
+    pub fn layout_mut(&mut self) -> &mut LayoutOptions {
+        &mut self.layout
+    }
+
+    pub fn set_layout(&mut self, layout: LayoutOptions) {
+        self.layout = layout;
     }
 
     pub fn left_price_scale(&self) -> &PriceScaleOptions {
@@ -232,6 +232,18 @@ impl ChartOptions {
 
     pub fn set_overlay_price_scale_options(&mut self, overlay_price_scale_options: OverlayPriceScaleOptions) {
         self.overlay_price_scale_options = overlay_price_scale_options;
+    }
+
+    pub fn time_scale(&self) -> &TimeScaleOptions {
+        &self.time_scale
+    }
+
+    pub fn time_scale_mut(&mut self) -> &mut TimeScaleOptions {
+        &mut self.time_scale
+    }
+
+    pub fn set_time_scale(&mut self, time_scale: TimeScaleOptions) {
+        self.time_scale = time_scale;
     }
 
     pub fn cross_hair(&self) -> &CrossHairOptions {
@@ -283,15 +295,15 @@ impl ChartOptions {
     }
 
     pub fn kinetic_scroll_options(&self) -> &KineticScrollOptions {
-        &self.kinetic_scroll_options
+        &self.kinetic_scroll
     }
 
     pub fn kinetic_scroll_options_mut(&mut self) -> &mut KineticScrollOptions {
-        &mut self.kinetic_scroll_options
+        &mut self.kinetic_scroll
     }
 
     pub fn set_kinetic_scroll_options(&mut self, kinetic_scroll_options: KineticScrollOptions) {
-        self.kinetic_scroll_options = kinetic_scroll_options;
+        self.kinetic_scroll = kinetic_scroll_options;
     }
 
     pub fn tracking_mode(&self) -> &TrackingModeOptions {
@@ -304,18 +316,6 @@ impl ChartOptions {
 
     pub fn set_tracking_mode(&mut self, tracking_mode: TrackingModeOptions) {
         self.tracking_mode = tracking_mode;
-    }
-
-    pub fn time_scale(&self) -> &TimeScaleOptions {
-        &self.time_scale
-    }
-
-    pub fn time_scale_mut(&mut self) -> &mut TimeScaleOptions {
-        &mut self.time_scale
-    }
-
-    pub fn set_time_scale(&mut self, time_scale: TimeScaleOptions) {
-        self.time_scale = time_scale;
     }
 }
 

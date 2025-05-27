@@ -1,6 +1,6 @@
 {
   "name": "trading-charts-bindings",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "NodeJS bindings for Trading Charts",
   "main": "src/index.mjs",
   "scripts": {
@@ -20,9 +20,9 @@
   "homepage": "https://github.com/corebreaker/rs-trading-charts#readme",
   "dependencies": {
     "@bundled-es-modules/uuid": "^3.3",
-    "lightweight-charts": "^4.2"
+    "lightweight-charts": "^5.0"
   },
   "devDependencies": {
-    "esbuild": "^0.24"
+    "esbuild": "^0.25"
   }
 }

@@ -46,7 +46,8 @@ pub fn CandleStickSeries(
 
                 let _ = Effect::new(move || {
                     let res = options.with(|options| {
-                        chart.update_series_options(id.clone(), options)
+                        chart
+                            .update_series_options(id.clone(), options)
                             .map_err(|err| err.with_serializable_data(options))
                     });
 
@@ -62,7 +63,8 @@ pub fn CandleStickSeries(
 
                 move || {
                     let res = data.with(|data| {
-                        chart.update_data(id.clone(), data)
+                        chart
+                            .update_data(id.clone(), data)
                             .map_err(|err| err.with_serializable_data(data))
                     });
 
@@ -78,7 +80,8 @@ pub fn CandleStickSeries(
 
                 move || {
                     let res = markers.with(|markers| {
-                        chart.set_markers(id.clone(), markers)
+                        chart
+                            .set_markers(id.clone(), markers)
                             .map_err(|err| err.with_serializable_data(markers))
                     });
 
