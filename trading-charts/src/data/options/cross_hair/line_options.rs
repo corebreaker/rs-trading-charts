@@ -6,14 +6,14 @@ pub struct CrosshairLineOptions {
     #[serde(default = "defaults::color")]
     color: String,
 
-    #[serde(default = "defaults::visible")]
-    visible: bool,
-
     #[serde(default)]
     width: LineWidth,
 
     #[serde(default)]
     style: LineStyle,
+
+    #[serde(default = "defaults::visible")]
+    visible: bool,
 
     #[serde(default = "defaults::label_visible")]
     label_visible: bool,
@@ -34,13 +34,6 @@ impl CrosshairLineOptions {
         }
     }
 
-    pub fn with_visible(self, visible: bool) -> Self {
-        Self {
-            visible,
-            ..self
-        }
-    }
-
     pub fn with_width(self, width: LineWidth) -> Self {
         Self {
             width,
@@ -51,6 +44,13 @@ impl CrosshairLineOptions {
     pub fn with_style(self, style: LineStyle) -> Self {
         Self {
             style,
+            ..self
+        }
+    }
+
+    pub fn with_visible(self, visible: bool) -> Self {
+        Self {
+            visible,
             ..self
         }
     }
@@ -85,6 +85,14 @@ impl CrosshairLineOptions {
         &self.width
     }
 
+    pub fn visible(&self) -> bool {
+        self.visible
+    }
+
+    pub fn set_visible(&mut self, visible: bool) {
+        self.visible = visible;
+    }
+
     pub fn width_mut(&mut self) -> &mut LineWidth {
         &mut self.width
     }
@@ -103,14 +111,6 @@ impl CrosshairLineOptions {
 
     pub fn set_style(&mut self, style: LineStyle) {
         self.style = style;
-    }
-
-    pub fn visible(&self) -> bool {
-        self.visible
-    }
-
-    pub fn set_visible(&mut self, visible: bool) {
-        self.visible = visible;
     }
 
     pub fn label_visible(&self) -> bool {

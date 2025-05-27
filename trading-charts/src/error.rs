@@ -11,8 +11,8 @@ use std::{
 #[derive(Debug, Clone)]
 pub struct JsError {
     message: String,
-    prefix: Option<String>,
-    data: Option<JsValue>,
+    prefix:  Option<String>,
+    data:    Option<JsValue>,
 }
 
 impl JsError {
@@ -54,8 +54,8 @@ impl JsError {
     }
 
     pub fn with_serializable_data(self, data: impl serde::Serialize) -> Self {
-        let data = to_value(&data)
-            .unwrap_or_else(|err| JsValue::from_str(&format!("Serialization error on data: {err}")));
+        let data =
+            to_value(&data).unwrap_or_else(|err| JsValue::from_str(&format!("Serialization error on data: {err}")));
 
         self.with_data(data)
     }
@@ -68,7 +68,7 @@ impl JsError {
     pub fn log(&self) {
         let msg = match &self.prefix {
             None => JsValue::from_str(&self.message),
-            Some(prefix) => JsValue::from_str(&format!("{prefix}: {}", self.message))
+            Some(prefix) => JsValue::from_str(&format!("{prefix}: {}", self.message)),
         };
 
         let mut args = vec![msg];

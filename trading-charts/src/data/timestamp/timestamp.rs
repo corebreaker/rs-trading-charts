@@ -1,6 +1,13 @@
 use super::parse_str::parse_str;
 use crate::JsError;
-use serde::{de::{Visitor, Error as SerdeError}, Deserialize, Deserializer, Serialize, Serializer};
+use serde::{
+    de::{Visitor, Error as SerdeError},
+    Deserialize,
+    Deserializer,
+    Serialize,
+    Serializer,
+};
+
 use chrono::{DateTime, Utc, SecondsFormat};
 use std::{
     fmt::{Display, Formatter, Result as FmtResult},
@@ -113,7 +120,7 @@ impl<'de> Deserialize<'de> for UTCTimestamp {
 
             fn visit_i128<E: SerdeError>(self, value: i128) -> Result<Self::Value, E> {
                 if value.unsigned_abs().leading_zeros() < 64 {
-                    return Err(SerdeError::custom(format!("timestamp overflow: {value}")))
+                    return Err(SerdeError::custom(format!("timestamp overflow: {value}")));
                 }
 
                 self.visit_i64(value as i64)

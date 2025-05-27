@@ -1,4 +1,4 @@
-use super::background::Background;
+use super::{super::background::Background, ColorSpace, LayoutPanesOptions};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -17,6 +17,12 @@ pub struct LayoutOptions {
 
     #[serde(rename = "attributionLogo", default = "defaults::attribution_logo")]
     pub attribution_logo: bool,
+
+    #[serde(rename = "colorSpace", default)]
+    pub color_space: ColorSpace,
+
+    #[serde(default)]
+    pub panes: LayoutPanesOptions,
 }
 
 impl LayoutOptions {
@@ -55,6 +61,20 @@ impl LayoutOptions {
     pub fn with_attribution_logo(self, attribution_logo: bool) -> Self {
         Self {
             attribution_logo,
+            ..self
+        }
+    }
+
+    pub fn with_color_space(self, color_space: ColorSpace) -> Self {
+        Self {
+            color_space,
+            ..self
+        }
+    }
+
+    pub fn with_panes(self, panes: LayoutPanesOptions) -> Self {
+        Self {
+            panes,
             ..self
         }
     }
@@ -106,6 +126,26 @@ impl LayoutOptions {
     pub fn set_attribution_logo(&mut self, attribution_logo: bool) {
         self.attribution_logo = attribution_logo;
     }
+
+    pub fn color_space(&self) -> &ColorSpace {
+        &self.color_space
+    }
+
+    pub fn set_color_space(&mut self, color_space: ColorSpace) {
+        self.color_space = color_space;
+    }
+
+    pub fn panes(&self) -> &LayoutPanesOptions {
+        &self.panes
+    }
+
+    pub fn panes_mut(&mut self) -> &mut LayoutPanesOptions {
+        &mut self.panes
+    }
+
+    pub fn set_panes(&mut self, panes: LayoutPanesOptions) {
+        self.panes = panes;
+    }
 }
 
 impl Default for LayoutOptions {
@@ -115,6 +155,8 @@ impl Default for LayoutOptions {
             text_color:       defaults::text_color(),
             font_size:        defaults::font_size(),
             font_family:      defaults::font_family(),
+            color_space:      ColorSpace::default(),
+            panes:            LayoutPanesOptions::default(),
             attribution_logo: false,
         }
     }

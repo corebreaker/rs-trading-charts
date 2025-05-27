@@ -8,8 +8,11 @@ pub struct TimeScaleOptions {
     #[serde(rename = "barSpacing", default = "defaults::bar_spacing")]
     pub bar_spacing: f64,
 
-    #[serde(rename = "minBarWidth", default = "defaults::min_bar_width")]
-    pub min_bar_width: f64,
+    #[serde(rename = "minBarSpacing", default = "defaults::min_bar_spacing")]
+    pub min_bar_spacing: f64,
+
+    #[serde(rename = "maxBarSpacing", default = "defaults::max_bar_spacing")]
+    pub max_bar_spacing: f64,
 
     #[serde(rename = "fixLeftEdge", default = "defaults::fix_left_edge")]
     pub fix_left_edge: bool,
@@ -71,6 +74,9 @@ pub struct TimeScaleOptions {
 
     #[serde(rename = "allowBoldLabels", default = "defaults::allow_bold_labels")]
     pub allow_bold_labels: bool,
+
+    #[serde(rename = "ignoreWhitespaceIndices", default = "defaults::ignore_whitespace_indices")]
+    pub ignore_whitespace_indices: bool,
 }
 
 impl TimeScaleOptions {
@@ -92,9 +98,16 @@ impl TimeScaleOptions {
         }
     }
 
-    pub fn with_min_bar_width(self, min_bar_width: f64) -> Self {
+    pub fn with_min_bar_spacing(self, min_bar_spacing: f64) -> Self {
         Self {
-            min_bar_width,
+            min_bar_spacing,
+            ..self
+        }
+    }
+
+    pub fn with_max_bar_spacing(self, max_bar_spacing: f64) -> Self {
+        Self {
+            max_bar_spacing,
             ..self
         }
     }
@@ -214,6 +227,13 @@ impl TimeScaleOptions {
         }
     }
 
+    pub fn with_ignore_whitespace_indices(self, ignore_whitespace_indices: bool) -> Self {
+        Self {
+            ignore_whitespace_indices,
+            ..self
+        }
+    }
+
     pub fn right_offset(&self) -> f64 {
         self.right_offset
     }
@@ -230,12 +250,20 @@ impl TimeScaleOptions {
         self.bar_spacing = bar_spacing;
     }
 
-    pub fn min_bar_width(&self) -> f64 {
-        self.min_bar_width
+    pub fn min_bar_spacing(&self) -> f64 {
+        self.min_bar_spacing
     }
 
-    pub fn set_min_bar_width(&mut self, min_bar_width: f64) {
-        self.min_bar_width = min_bar_width;
+    pub fn set_min_bar_spacing(&mut self, min_bar_spacing: f64) {
+        self.min_bar_spacing = min_bar_spacing;
+    }
+
+    pub fn max_bar_spacing(&self) -> f64 {
+        self.max_bar_spacing
+    }
+
+    pub fn set_max_bar_spacing(&mut self, max_bar_spacing: f64) {
+        self.max_bar_spacing = max_bar_spacing;
     }
 
     pub fn fix_left_edge(&self) -> bool {
@@ -377,6 +405,14 @@ impl TimeScaleOptions {
     pub fn set_allow_bold_labels(&mut self, allow_bold_labels: bool) {
         self.allow_bold_labels = allow_bold_labels;
     }
+
+    pub fn ignore_whitespace_indices(&self) -> bool {
+        self.ignore_whitespace_indices
+    }
+
+    pub fn set_ignore_whitespace_indices(&mut self, ignore_whitespace_indices: bool) {
+        self.ignore_whitespace_indices = ignore_whitespace_indices;
+    }
 }
 
 impl Default for TimeScaleOptions {
@@ -384,7 +420,8 @@ impl Default for TimeScaleOptions {
         Self {
             right_offset: defaults::right_offset(),
             bar_spacing: defaults::bar_spacing(),
-            min_bar_width: defaults::min_bar_width(),
+            min_bar_spacing: defaults::min_bar_spacing(),
+            max_bar_spacing: defaults::max_bar_spacing(),
             fix_left_edge: defaults::fix_left_edge(),
             fix_right_edge: defaults::fix_right_edge(),
             lock_visible_time_range_on_resize: defaults::lock_visible_time_range_on_resize(),
@@ -401,6 +438,7 @@ impl Default for TimeScaleOptions {
             uniform_distribution: defaults::uniform_distribution(),
             minimum_height: defaults::minimum_height(),
             allow_bold_labels: defaults::allow_bold_labels(),
+            ignore_whitespace_indices: defaults::ignore_whitespace_indices(),
         }
     }
 }
@@ -414,8 +452,12 @@ mod defaults {
         6.
     }
 
-    pub(super) fn min_bar_width() -> f64 {
+    pub(super) fn min_bar_spacing() -> f64 {
         0.5
+    }
+
+    pub(super) fn max_bar_spacing() -> f64 {
+        0.
     }
 
     pub(super) fn fix_left_edge() -> bool {
@@ -476,5 +518,9 @@ mod defaults {
 
     pub(super) fn allow_bold_labels() -> bool {
         true
+    }
+
+    pub(super) fn ignore_whitespace_indices() -> bool {
+        false
     }
 }

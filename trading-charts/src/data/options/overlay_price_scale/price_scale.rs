@@ -18,6 +18,9 @@ pub struct OverlayPriceScaleOptions {
     #[serde(rename = "borderVisible", default = "defaults::border_visible")]
     border_visible: bool,
 
+    #[serde(rename = "borderColor", default = "defaults::border_color")]
+    border_color: String,
+
     #[serde(
         rename = "textColor",
         default = "defaults::text_color",
@@ -31,8 +34,8 @@ pub struct OverlayPriceScaleOptions {
     #[serde(rename = "ticksVisible", default = "defaults::ticks_visible")]
     ticks_visible: bool,
 
-    #[serde(rename = "minimumSize", default = "defaults::minimum_size")]
-    minimum_size: f64,
+    #[serde(rename = "minimumWidth", default = "defaults::minimum_width")]
+    minimum_width: f64,
 }
 
 impl OverlayPriceScaleOptions {
@@ -75,6 +78,13 @@ impl OverlayPriceScaleOptions {
         }
     }
 
+    pub fn with_border_color(self, border_color: String) -> Self {
+        Self {
+            border_color,
+            ..self
+        }
+    }
+
     pub fn with_text_color(self, text_color: String) -> Self {
         Self {
             text_color,
@@ -98,7 +108,7 @@ impl OverlayPriceScaleOptions {
 
     pub fn with_minimum_size(self, minimum_size: f64) -> Self {
         Self {
-            minimum_size,
+            minimum_width: minimum_size,
             ..self
         }
     }
@@ -151,6 +161,14 @@ impl OverlayPriceScaleOptions {
         self.border_visible = border_visible;
     }
 
+    pub fn border_color(&self) -> &str {
+        &self.border_color
+    }
+
+    pub fn set_border_color(&mut self, border_color: String) {
+        self.border_color = border_color;
+    }
+
     pub fn text_color(&self) -> &str {
         &self.text_color
     }
@@ -179,12 +197,12 @@ impl OverlayPriceScaleOptions {
         self.ticks_visible = ticks_visible;
     }
 
-    pub fn minimum_size(&self) -> f64 {
-        self.minimum_size
+    pub fn minimum_width(&self) -> f64 {
+        self.minimum_width
     }
 
-    pub fn set_minimum_size(&mut self, minimum_size: f64) {
-        self.minimum_size = minimum_size;
+    pub fn set_minimum_width(&mut self, minimum_size: f64) {
+        self.minimum_width = minimum_size;
     }
 }
 
@@ -196,10 +214,11 @@ impl Default for OverlayPriceScaleOptions {
             align_labels:     defaults::align_labels(),
             scale_margins:    OverlayPriceScaleMargins::default(),
             border_visible:   defaults::border_visible(),
+            border_color:     defaults::border_color(),
             text_color:       defaults::text_color(),
             entire_text_only: defaults::entire_text_only(),
             ticks_visible:    defaults::ticks_visible(),
-            minimum_size:     defaults::minimum_size(),
+            minimum_width:    defaults::minimum_width(),
         }
     }
 }
@@ -217,6 +236,10 @@ mod defaults {
         true
     }
 
+    pub(super) fn border_color() -> String {
+        String::from("#2B2B43")
+    }
+
     pub(super) fn text_color() -> String {
         String::new()
     }
@@ -229,7 +252,7 @@ mod defaults {
         false
     }
 
-    pub(super) fn minimum_size() -> f64 {
+    pub(super) fn minimum_width() -> f64 {
         0.
     }
 }

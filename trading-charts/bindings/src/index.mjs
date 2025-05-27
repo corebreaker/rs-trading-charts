@@ -1,7 +1,15 @@
-import {createChart} from 'lightweight-charts';
 import uuidv4 from "@bundled-es-modules/uuid/v4.js";
+import {
+    createChart,
+    createSeriesMarkers,
+    LineSeries,
+    AreaSeries,
+    BarSeries,
+    BaselineSeries,
+    CandlestickSeries,
+    HistogramSeries,
+} from 'lightweight-charts';
 
-const allowedSeriesTypes = ['area', 'baseline', 'bar', 'candlestick', 'histogram', 'line'];
 const markerProps = {
     size: false,
     color: false,
@@ -9,14 +17,21 @@ const markerProps = {
     shape: ['arrowUp', 'arrowDown', 'circle', 'square', 'triangleUp', 'triangleDown']
 };
 
-function makeSeriesName(type) {
-    if (!allowedSeriesTypes.includes(type)) {
+const seriesTypes = {
+    area: AreaSeries,
+    baseline: BaselineSeries,
+    bar: BarSeries,
+    candlestick: CandlestickSeries,
+    histogram: HistogramSeries,
+    line: LineSeries,
+}
+
+function getSeriesType(type) {
+    if (!(type in seriesTypes)) {
         throw new Error(`Series type "${type}" is not supported`);
     }
 
-    const title = type.charAt(0).toUpperCase() + type.slice(1);
-
-    return `add${title}Series`;
+    return seriesTypes[type];
 }
 
 function makeMarkerProps(options) {
@@ -66,10 +81,16 @@ export class TradingChart {
             return;
 
         delete series.params;
-        series.api = chart[makeSeriesName(params.type)](params.options);
+        series.chartApi = chart.addSeries(getSeriesType(params.type), params.options);
         if (params.data) {
-            series.api.setData(params.data);
+            series.chartApi.setData(params.data);
             chart.timeScale().fitContent();
+        }
+
+        if (series.markerApi) {
+            series.updateMarkers();
+        } else {
+            series.markerApi = createSeriesMarkers(series.chartApi, series.markerData || []);
         }
     }
 
@@ -92,7 +113,7 @@ export class TradingChart {
         }
     }
 
-    applyCharOptions(options) {
+    applyChartOptions(options) {
         const chart = this._getChart();
 
         chart.applyOptions(options);
@@ -117,8 +138,9 @@ export class TradingChart {
         const id = uuidv4();
         this._series[id] = {
             id,
-            api: null,
-            markers: [],
+            chartApi: null,
+            markerApi: null,
+            markerData: [],
             sorted: false,
             params: {
                 type,
@@ -127,19 +149,28 @@ export class TradingChart {
             },
 
             getApi() {
-                if (!this.api) {
+                if (!this.chartApi) {
                     throw new Error('Series is not bound to chart');
                 }
 
-                return this.api;
+                return this.chartApi;
+            },
+
+            getMarkers() {
+                if (!this.markerApi) {
+                    throw new Error('Markers is not bound to chart');
+                }
+
+                return this.markerApi;
             },
 
             updateMarkers() {
-                if (this.sorted) {
-                    this.markers.sort((a, b) => a.time - b.time);
+                if (!this.sorted) {
+                    this.sorted = true;
+                    this.markerData.sort((a, b) => a.time - b.time);
                 }
 
-                this.getApi().setMarkers(this.markers);
+                this.getMarkers().setMarkers(this.markerData);
             },
 
             setMarker(markerDesc) {
@@ -148,9 +179,9 @@ export class TradingChart {
                     throw new Error('Marker time is required');
                 }
 
-                const idx = this.markers.findIndex(m => m.time === time);
+                const idx = this.markerData.findIndex(m => m.time === time);
                 if (idx >= 0) {
-                    this.markers.splice(idx, 1);
+                    this.markerData.splice(idx, 1);
                 }
 
                 if (markerDesc.type && markerDesc.type !== 'remove') {
@@ -182,7 +213,7 @@ export class TradingChart {
                     }
 
                     if (!marker._bad) {
-                        this.markers.push(Object.assign(marker, makeMarkerProps(options || {})));
+                        this.markerData.push(Object.assign(marker, makeMarkerProps(options || {})));
                         this.sorted = false;
                     }
                 }
@@ -234,7 +265,7 @@ export class TradingChart {
     setMarkers(seriesId, markers) {
         const series = this._getSeries(seriesId)
 
-        series.markers = [];
+        series.markerData = [];
         for (const marker of markers) {
             series.setMarker(marker);
         }

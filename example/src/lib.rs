@@ -1,6 +1,6 @@
 use charts::{
     data::{
-        options::{background::Background, ChartOptions, LayoutOptions},
+        options::{background::Background, layout::LayoutOptions, ChartOptions},
         UTCTimestamp,
         Candlestick,
         Marker,

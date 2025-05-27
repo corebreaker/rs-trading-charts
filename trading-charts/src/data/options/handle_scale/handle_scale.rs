@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 pub struct HandleScaleOptions {
     mouse_wheel: bool,
 
+    #[serde(default = "defaults::pinch")]
     pinch: bool,
 
     #[serde(

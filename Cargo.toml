@@ -4,7 +4,7 @@ members = ["trading-charts", "wasmbind-macro", "example"]
 default-members = ["trading-charts", "wasmbind-macro"]
 
 [workspace.package]
-version = "0.1.7"
+version = "0.1.8"
 edition = "2021"
 authors = ["Frédéric Meyer <frederic.meyer.77@gmail.com>"]
 description = "Rust binding of Lightweight Charts for Leptos"
@@ -22,8 +22,10 @@ categories = [
     "wasm",
 ]
 
+# Pour exécuter ces commandes avec `cargo run-script`, il faut d'abord l'installer : `cargo install cargo-run-script`
 [workspace.metadata.scripts]
 fmt = "cargo +nightly fmt --all"
+gc = "cargo sweep -r -t 10 ."
 
 [workspace.dependencies]
 console_error_panic_hook = "0.1"
@@ -34,6 +36,4 @@ log = "0.4"
 serde = { version = "1.0", features = ["derive"] }
 serde-wasm-bindgen = "0.6"
 wasm-bindgen = "0.2"
-wasm-bindgen-futures = "0.4"
-wasm-bindgen-test = "0.3"
 web-sys = { version = "0.3", features = ["Document", "Element", "HtmlElement", "Node", "Window"] }
