@@ -18,9 +18,9 @@ use leptos::{
 
 #[component(transparent)]
 pub fn CandleStickSeries(
-    #[prop(optional)] options: Option<Signal<CandlestickOptions>>,
-    data: Signal<Vec<Candlestick>>,
-    markers: Signal<Vec<Marker>>,
+    #[prop(optional, into)] options: Option<Signal<CandlestickOptions>>,
+    #[prop(into)] data: Signal<Vec<Candlestick>>,
+    #[prop(into)] markers: Signal<Vec<Marker>>,
 ) -> impl IntoView {
     let chart: Option<TradingChartBinding> = use_context();
     if let Some(chart) = chart {

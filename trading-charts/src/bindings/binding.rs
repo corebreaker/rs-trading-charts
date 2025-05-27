@@ -56,6 +56,18 @@ impl TradingChartBinding {
         Ok(chart.bindChart(node, options.clone())?)
     }
 
+    pub(crate) fn add_panel(&self) -> Result<(), JsError> {
+        let chart = self.chart.lock().unwrap();
+
+        Ok(chart.addPanel()?)
+    }
+
+    pub(crate) fn remove_panel(&self) {
+        let chart = self.chart.lock().unwrap();
+
+        chart.removePanel();
+    }
+
     pub(crate) fn add_series<Dat, Opt>(&self, series: &mut Series<Dat, Opt>) -> Result<(), JsError>
     where
         Dat: Serialize + Clone,

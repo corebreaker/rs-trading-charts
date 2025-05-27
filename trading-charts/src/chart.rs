@@ -14,8 +14,8 @@ use leptos::{
         traits::{Get, With, WithUntracked},
         wrappers::read::Signal,
     },
-    context::provide_context,
     children::Children,
+    context::provide_context,
     html::Div,
     IntoView,
     component,
@@ -45,10 +45,10 @@ fn make_chart(options: Option<Signal<ChartOptions>>) -> Result<TradingChartBindi
 }
 
 #[component]
-pub fn Chart<'a, 'b>(
-    #[prop(optional)] options: Option<Signal<ChartOptions>>,
-    #[prop(optional)] style: Option<&'a str>,
-    #[prop(optional)] class: Option<&'b str>,
+pub fn Chart(
+    #[prop(optional, into)] options: Option<Signal<ChartOptions>>,
+    #[prop(optional, into)] style: Option<String>,
+    #[prop(optional, into)] class: Option<String>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let chart = match make_chart(options) {
@@ -79,7 +79,7 @@ pub fn Chart<'a, 'b>(
     let class = class.map_or_else(String::new, |s| s.to_string());
     let children = match children {
         Some(children) => children().into_any(),
-        None => (view! {<></>}).into_any(),
+        None => view!(<></>).into_any(),
     };
 
     let res = view! {

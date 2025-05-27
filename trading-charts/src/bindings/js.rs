@@ -19,6 +19,12 @@ extern "C" {
     pub(super) fn bindChart(this: &TradingChart, node: HtmlDivElement, options: JsValue) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
+    pub(super) fn addPanel(this: &TradingChart) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method)]
+    pub(super) fn removePanel(this: &TradingChart);
+
+    #[wasm_bindgen(method, catch)]
     pub(super) fn addSeries(this: &TradingChart, series: JsValue) -> Result<String, JsValue>;
 
     #[wasm_bindgen(method, catch)]

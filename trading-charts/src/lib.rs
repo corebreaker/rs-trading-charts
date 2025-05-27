@@ -1,9 +1,10 @@
 #[doc(hidden)]
 mod bindings;
-mod chart;
 mod error;
 
+pub mod chart;
 pub mod data;
+pub mod panel;
 pub mod series;
 
-pub use self::{error::JsError, chart::Chart};
+pub use error::JsError;

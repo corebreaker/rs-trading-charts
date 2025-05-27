@@ -13,6 +13,10 @@ pub struct LayoutPanesOptions {
 }
 
 impl LayoutPanesOptions {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
     pub fn with_enable_resize(self, enable_resize: bool) -> Self {
         Self {
             enable_resize,
