@@ -3,80 +3,80 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone)]
 pub struct TimeScaleOptions {
     #[serde(rename = "rightOffset", default = "defaults::right_offset")]
-    pub right_offset: f64,
+    right_offset: f64,
 
     #[serde(rename = "barSpacing", default = "defaults::bar_spacing")]
-    pub bar_spacing: f64,
+    bar_spacing: f64,
 
     #[serde(rename = "minBarSpacing", default = "defaults::min_bar_spacing")]
-    pub min_bar_spacing: f64,
+    min_bar_spacing: f64,
 
     #[serde(rename = "maxBarSpacing", default = "defaults::max_bar_spacing")]
-    pub max_bar_spacing: f64,
+    max_bar_spacing: f64,
 
     #[serde(rename = "fixLeftEdge", default = "defaults::fix_left_edge")]
-    pub fix_left_edge: bool,
+    fix_left_edge: bool,
 
     #[serde(rename = "fixRightEdge", default = "defaults::fix_right_edge")]
-    pub fix_right_edge: bool,
+    fix_right_edge: bool,
 
     #[serde(
         rename = "lockVisibleTimeRangeOnResize",
         default = "defaults::lock_visible_time_range_on_resize"
     )]
-    pub lock_visible_time_range_on_resize: bool,
+    lock_visible_time_range_on_resize: bool,
 
     #[serde(rename = "rightBarStaysOnScroll", default = "defaults::right_bar_stays_on_scroll")]
-    pub right_bar_stays_on_scroll: bool,
+    right_bar_stays_on_scroll: bool,
 
     #[serde(rename = "borderVisible", default = "defaults::border_visible")]
-    pub border_visible: bool,
+    border_visible: bool,
 
     #[serde(rename = "borderColor", default = "defaults::border_color")]
-    pub border_color: String,
+    border_color: String,
 
     #[serde(rename = "visible", default = "defaults::visible")]
-    pub visible: bool,
+    visible: bool,
 
     #[serde(rename = "timeVisible", default = "defaults::time_visible")]
-    pub time_visible: bool,
+    time_visible: bool,
 
     #[serde(rename = "secondsVisible", default = "defaults::seconds_visible")]
-    pub seconds_visible: bool,
+    seconds_visible: bool,
 
     #[serde(
         rename = "shiftVisibleRangeOnNewBar",
         default = "defaults::shift_visible_range_on_new_bar"
     )]
-    pub shift_visible_range_on_new_bar: bool,
+    shift_visible_range_on_new_bar: bool,
 
     #[serde(
         rename = "allowShiftVisibleRangeOnWhitespaceReplacement",
         default = "defaults::allow_shift_visible_etc"
     )]
-    pub allow_shift_visible_range_on_whitespace_replacement: bool,
+    allow_shift_visible_range_on_whitespace_replacement: bool,
 
     #[serde(rename = "ticksVisible", default = "defaults::ticks_visible")]
-    pub ticks_visible: bool,
+    ticks_visible: bool,
 
     #[serde(
         rename = "tickMarkMaxCharacterLength",
         skip_serializing_if = "Option::is_none",
         default
     )]
-    pub tick_mark_max_character_length: Option<usize>,
+    tick_mark_max_character_length: Option<usize>,
 
     #[serde(rename = "uniformDistribution", default = "defaults::uniform_distribution")]
-    pub uniform_distribution: bool,
+    uniform_distribution: bool,
 
     #[serde(rename = "minimumHeight", default = "defaults::minimum_height")]
-    pub minimum_height: f64,
+    minimum_height: f64,
 
     #[serde(rename = "allowBoldLabels", default = "defaults::allow_bold_labels")]
-    pub allow_bold_labels: bool,
+    allow_bold_labels: bool,
 
     #[serde(rename = "ignoreWhitespaceIndices", default = "defaults::ignore_whitespace_indices")]
-    pub ignore_whitespace_indices: bool,
+    ignore_whitespace_indices: bool,
 }
 
 impl TimeScaleOptions {

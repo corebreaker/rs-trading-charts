@@ -85,14 +85,6 @@ impl CrosshairLineOptions {
         &self.width
     }
 
-    pub fn visible(&self) -> bool {
-        self.visible
-    }
-
-    pub fn set_visible(&mut self, visible: bool) {
-        self.visible = visible;
-    }
-
     pub fn width_mut(&mut self) -> &mut LineWidth {
         &mut self.width
     }
@@ -111,6 +103,14 @@ impl CrosshairLineOptions {
 
     pub fn set_style(&mut self, style: LineStyle) {
         self.style = style;
+    }
+
+    pub fn visible(&self) -> bool {
+        self.visible
+    }
+
+    pub fn set_visible(&mut self, visible: bool) {
+        self.visible = visible;
     }
 
     pub fn label_visible(&self) -> bool {
