@@ -43,7 +43,7 @@ impl TradingChartBinding {
             return Ok(());
         }
 
-        self.chart.lock().unwrap().applyCharOptions(to_value(options)?)?;
+        self.chart.lock().unwrap().applyChartOptions(to_value(options)?)?;
 
         Ok(())
     }

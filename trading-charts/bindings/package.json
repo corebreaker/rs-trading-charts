@@ -1,6 +1,6 @@
 {
   "name": "trading-charts-bindings",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "NodeJS bindings for Trading Charts",
   "main": "src/index.mjs",
   "scripts": {

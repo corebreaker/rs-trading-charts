@@ -105,8 +105,10 @@ export class TradingChart {
             this.removeSeries(seriesId);
         }
 
-        if (this._chart)
+        if (this._chart) {
             this._chart.remove();
+            this._chart = null;
+        }
     }
 
     applyChartOptions(options) {
@@ -151,7 +153,9 @@ export class TradingChart {
             throw new Error('Series type is required');
         }
 
-        data.sort((a, b) => a.time - b.time);
+        if (data || Array.isArray(data)) {
+            data.sort((a, b) => a.time - b.time);
+        }
 
         const id = uuidv4();
         this._series[id] = {
@@ -189,7 +193,11 @@ export class TradingChart {
                     this.markerData.sort((a, b) => a.time - b.time);
                 }
 
-                this.getMarkers().setMarkers(this.markerData);
+                const markers = this.getMarkers();
+                markers.setMarkers(this.markerData);
+                setTimeout(() => {
+                    markers.setMarkers(this.markerData);
+                }, 1);
             },
 
             setMarker(markerDesc) {
@@ -256,7 +264,8 @@ export class TradingChart {
 
         const api = series.getApi();
 
-        api.setMarkers([]);
+        series.markerData = [];
+        series.updateMarkers();
         this._chart.removeSeries(api);
 
         return true;
