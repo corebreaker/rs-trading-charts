@@ -153,7 +153,7 @@ export class TradingChart {
             throw new Error('Series type is required');
         }
 
-        if (data || Array.isArray(data)) {
+        if (Array.isArray(data)) {
             data.sort((a, b) => a.time - b.time);
         }
 
