@@ -1,11 +1,12 @@
 {
   "name": "trading-charts-bindings",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "NodeJS bindings for Trading Charts",
   "main": "src/index.mjs",
   "scripts": {
-    "build": "node ./build/build.mjs --minify",
-    "build-dev": "node ./build/build.mjs",
+    "build": "node ./builder/build.mjs --minify",
+    "build-dev": "node ./builder/build.mjs",
+    "build-auto": "node ./builder/build.mjs --auto",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
