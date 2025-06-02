@@ -48,7 +48,7 @@ fn main() {
         .with_node_env(&NodeEnv::Development)
         .init_env()
         .install(None)
-        .run("build")
+        .run("build-auto")
         .exec()
         .unwrap();
 
