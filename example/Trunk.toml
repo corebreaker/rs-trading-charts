@@ -8,7 +8,7 @@ watch = [
     "../trading-charts/build.rs",
     "../trading-charts/Cargo.toml",
     "../trading-charts/bindings/src",
-    "../trading-charts/bindings/build",
+    "../trading-charts/bindings/builder",
     "../trading-charts/bindings/package.json",
 ]
 

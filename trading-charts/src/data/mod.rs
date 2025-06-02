@@ -3,6 +3,7 @@ mod marker;
 mod marker_type;
 mod timestamp;
 
+pub mod events;
 pub mod options;
 pub mod series;
 

@@ -43,27 +43,49 @@ impl TradingChartBinding {
             return Ok(());
         }
 
-        self.chart.lock().unwrap().applyChartOptions(to_value(options)?)?;
+        self.chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?
+            .applyChartOptions(to_value(options)?)?;
 
         Ok(())
     }
 
     pub(crate) fn bind_chart(&self, node: HtmlDivElement) -> Result<(), JsError> {
-        let chart = self.chart.lock().unwrap();
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
         let options = self.options.as_ref();
 
         self.bound.store(true, Ordering::SeqCst);
         Ok(chart.bindChart(node, options.clone())?)
     }
 
+    pub(crate) fn refit_content(&self) -> Result<(), JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.refitContent()?)
+    }
+
     pub(crate) fn add_panel(&self) -> Result<(), JsError> {
-        let chart = self.chart.lock().unwrap();
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
 
         Ok(chart.addPanel()?)
     }
 
     pub(crate) fn remove_panel(&self) {
-        let chart = self.chart.lock().unwrap();
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
 
         chart.removePanel();
     }
@@ -72,7 +94,11 @@ impl TradingChartBinding {
     where
         Dat: Serialize + Clone,
         Opt: Serialize + Clone, {
-        let chart = self.chart.lock().unwrap();
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
         let id = chart.addSeries(series.to_value()?)?;
 
         series.set_id(id);
@@ -81,28 +107,40 @@ impl TradingChartBinding {
 
     #[allow(dead_code)]
     pub(crate) fn update_series_options(&self, series_id: String, options: &impl Serialize) -> Result<(), JsError> {
-        let chart = self.chart.lock().unwrap();
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
 
         Ok(chart.updateSeriesOptions(series_id, to_value(options)?)?)
     }
 
     #[allow(dead_code)]
     pub(crate) fn update_data(&self, series_id: String, data: &Vec<Candlestick>) -> Result<(), JsError> {
-        let chart = self.chart.lock().unwrap();
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
 
         Ok(chart.updateData(series_id, to_value(data)?)?)
     }
 
     #[allow(dead_code)]
     pub(crate) fn set_marker(&self, series_id: String, marker: &Marker) -> Result<(), JsError> {
-        let chart = self.chart.lock().unwrap();
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
 
         Ok(chart.setMarker(series_id, to_value(marker)?)?)
     }
 
     #[allow(dead_code)]
     pub(crate) fn set_markers(&self, series_id: String, markers: &Vec<Marker>) -> Result<(), JsError> {
-        let chart = self.chart.lock().unwrap();
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
 
         Ok(chart.setMarkers(series_id, to_value(markers)?)?)
     }
@@ -110,7 +148,15 @@ impl TradingChartBinding {
 
 impl Drop for TradingChartBinding {
     fn drop(&mut self) {
-        self.chart.lock().unwrap().destroy();
+        match self.chart.lock() {
+            Ok(chart) => {
+                chart.destroy();
+            }
+
+            Err(err) => {
+                JsError::new_from_str(&err.to_string()).log();
+            }
+        }
     }
 }
 

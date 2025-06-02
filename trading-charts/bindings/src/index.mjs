@@ -127,6 +127,12 @@ export class TradingChart {
         }
     }
 
+    refitContent() {
+        const chart = this._getChart();
+
+        chart.timeScale().fitContent();
+    }
+
     addPanel() {
         if (this._currentPanelId !== null) {
             throw new Error('Panel already exists, panels cannot be nested, remove it before adding a new one');
@@ -276,11 +282,8 @@ export class TradingChart {
     }
 
     updateData(seriesId, data) {
-        const chart = this._getChart();
-
         data.sort((a, b) => a.time - b.time);
         this._getSeries(seriesId).getApi().setData(data);
-        chart.timeScale().fitContent();
     }
 
     setMarker(seriesId, marker) {
