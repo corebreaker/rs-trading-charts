@@ -22,24 +22,24 @@ pub struct UTCTimestamp {
 impl UTCTimestamp {
     pub fn now() -> Self {
         Self {
-            timestamp: Utc::now().timestamp(),
+            timestamp: Utc::now().timestamp_millis(),
         }
     }
 
     pub fn from_datetime(datetime: DateTime<Utc>) -> Self {
         Self {
-            timestamp: datetime.timestamp(),
+            timestamp: datetime.timestamp_millis(),
         }
     }
 
     pub fn from_value(timestamp: i64) -> Option<Self> {
-        let dt = DateTime::<Utc>::from_timestamp(timestamp, 0)?;
+        let dt = DateTime::<Utc>::from_timestamp(timestamp / 1000, ((timestamp % 1000) as u32) * 1_000_0000)?;
 
         Some(Self::from_datetime(dt))
     }
 
     pub fn into_datetime(self) -> DateTime<Utc> {
-        DateTime::<Utc>::from_timestamp(self.timestamp, 0).unwrap()
+        DateTime::<Utc>::from_timestamp(self.timestamp / 1000, ((self.timestamp % 1000) as u32) * 1_000_0000).unwrap()
     }
 
     pub fn timestamp(&self) -> i64 {
@@ -59,7 +59,7 @@ impl FromStr for UTCTimestamp {
 
 impl Display for UTCTimestamp {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        let dt = self.into_datetime().to_rfc3339_opts(SecondsFormat::Secs, true);
+        let dt = self.into_datetime().to_rfc3339_opts(SecondsFormat::Millis, true);
 
         <String as Display>::fmt(&dt, f)
     }
@@ -85,7 +85,7 @@ impl Default for UTCTimestamp {
 
 impl Serialize for UTCTimestamp {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        serializer.serialize_i64(self.timestamp)
+        serializer.serialize_f64(self.timestamp as f64 / 1000.0)
     }
 }
 
@@ -112,7 +112,7 @@ impl<'de> Deserialize<'de> for UTCTimestamp {
             }
 
             fn visit_i64<E: SerdeError>(self, value: i64) -> Result<Self::Value, E> {
-                match DateTime::<Utc>::from_timestamp(value, 0) {
+                match DateTime::<Utc>::from_timestamp(value / 1000, ((value % 1000) as u32) * 1_000_000) {
                     Some(ts) => Ok(UTCTimestamp::from_datetime(ts)),
                     None => Err(SerdeError::custom(format!("invalid timestamp: {value}"))),
                 }
