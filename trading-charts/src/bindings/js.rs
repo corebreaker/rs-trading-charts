@@ -19,6 +19,9 @@ extern "C" {
     pub(super) fn bindChart(this: &TradingChart, node: HtmlDivElement, options: JsValue) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
+    pub(super) fn refitContent(this: &TradingChart) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
     pub(super) fn addPanel(this: &TradingChart) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method)]
@@ -29,6 +32,9 @@ extern "C" {
 
     #[wasm_bindgen(method, catch)]
     pub(super) fn updateSeriesOptions(this: &TradingChart, seriesId: String, options: JsValue) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(super) fn removeSeries(this: &TradingChart, seriesId: String) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
     pub(super) fn updateData(this: &TradingChart, seriesId: String, data: JsValue) -> Result<(), JsValue>;

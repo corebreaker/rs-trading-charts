@@ -1,4 +1,4 @@
-use super::data::options::ChartOptions;
+use super::data::{options::ChartOptions, events::EventManager};
 use crate::{bindings::TradingChartBinding, JsError};
 use leptos::{
     tachys::{
@@ -49,6 +49,7 @@ pub fn Chart(
     #[prop(optional, into)] options: Option<Signal<ChartOptions>>,
     #[prop(optional, into)] style: Option<String>,
     #[prop(optional, into)] class: Option<String>,
+    #[prop(optional)] refit: Option<EventManager<()>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let chart = match make_chart(options) {
@@ -59,6 +60,20 @@ pub fn Chart(
             return view!().into_any();
         }
     };
+
+    if let Some(refit) = refit.as_ref() {
+        let chart = chart.clone();
+
+        let res = refit.add_listener(move |_| {
+            if let Err(err) = chart.refit_content() {
+                err.with_prefix("Failed to refit chart content").log();
+            }
+        });
+
+        if let Err(err) = res {
+            err.with_prefix("Failed to add refresh listener").log();
+        }
+    }
 
     let node_ref = NodeRef::<Div>::new();
     let _ = Effect::new({

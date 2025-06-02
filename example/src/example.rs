@@ -1,10 +1,13 @@
 use super::dataset::Dataset;
 use charts::{
-    data::options::{
-        background::Background,
-        layout::{LayoutOptions, LayoutPanesOptions},
-        TimeScaleOptions,
-        ChartOptions,
+    data::{
+        events::EventManager,
+        options::{
+            background::Background,
+            layout::{LayoutOptions, LayoutPanesOptions},
+            TimeScaleOptions,
+            ChartOptions,
+        },
     },
     series::candlesticks::CandleStickSeries,
     panel::ChartPanel,
@@ -28,6 +31,7 @@ use log::error;
 
 #[component]
 pub fn App() -> impl IntoView {
+    let refit_event = EventManager::<()>::new();
     let (chart_options, _) = signal(
         ChartOptions::new()
             .with_time_scale(TimeScaleOptions::new().with_time_visible(true))
@@ -45,7 +49,7 @@ pub fn App() -> impl IntoView {
     view! {
         <div style="margin-top:10px;padding:10px">
             <div style="border:1px dashed black;height:768px">
-                <Chart options=chart_options style="width:100%;height:100%">
+                <Chart options=chart_options style="width:100%;height:100%" refit=refit_event.clone()>
                     <ChartPanel>
                         <CandleStickSeries
                             data=Signal::derive(move || data.with(|d| d.data_up().clone()))
@@ -111,6 +115,17 @@ pub fn App() -> impl IntoView {
                         }
                     >
                         "Load dataset 2"
+                    </button>
+                </div>
+                <div>
+                    <button
+                        on:click=move |_| {
+                            if let Err(err) = refit_event.emit(()) {
+                                error!("Failed to refit chart content: {err}");
+                            }
+                        }
+                    >
+                        "Refit Content"
                     </button>
                 </div>
             </div>
