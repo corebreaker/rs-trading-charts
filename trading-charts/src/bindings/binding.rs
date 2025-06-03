@@ -81,13 +81,14 @@ impl TradingChartBinding {
         Ok(chart.addPanel()?)
     }
 
-    pub(crate) fn remove_panel(&self) {
+    pub(crate) fn remove_panel(&self) -> Result<(), JsError> {
         let chart = self
             .chart
             .lock()
             .map_err(|err| JsError::new_from_str(&err.to_string()))?;
 
         chart.removePanel();
+        Ok(())
     }
 
     pub(crate) fn add_series<Dat, Opt>(&self, series: &mut Series<Dat, Opt>) -> Result<(), JsError>

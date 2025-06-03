@@ -15,7 +15,9 @@ pub fn ChartPanel(#[prop(optional)] children: Option<Children>) -> impl IntoView
 
             let res = children().into_any();
             if let Some(chart) = chart {
-                chart.remove_panel();
+                if let Err(err) = chart.remove_panel() {
+                    err.with_prefix("Failed to remove panel").log();
+                }
             };
 
             res
