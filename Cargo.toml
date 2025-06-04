@@ -4,7 +4,7 @@ members = ["trading-charts", "wasmbind-macro", "example"]
 default-members = ["trading-charts", "wasmbind-macro"]
 
 [workspace.package]
-version = "0.1.12"
+version = "0.1.13"
 edition = "2021"
 authors = ["Frédéric Meyer <frederic.meyer.77@gmail.com>"]
 description = "Rust binding of Lightweight Charts for Leptos"
