@@ -16,6 +16,7 @@ gloo-console = "0.3"
 chrono = { version = "0.4.38", features = ["alloc", "serde", "wasmbind"] }
 wasmbind-macro = { version = "0.1", path = "../wasmbind-macro", package = "wasmbind-js-file-macro" }
 
+emitix = { workspace = true }
 js-sys = { workspace = true }
 leptos = { workspace = true }
 log = { workspace = true }

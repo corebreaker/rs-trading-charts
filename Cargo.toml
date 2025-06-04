@@ -4,7 +4,7 @@ members = ["trading-charts", "wasmbind-macro", "example"]
 default-members = ["trading-charts", "wasmbind-macro"]
 
 [workspace.package]
-version = "0.1.12"
+version = "0.1.13"
 edition = "2021"
 authors = ["Frédéric Meyer <frederic.meyer.77@gmail.com>"]
 description = "Rust binding of Lightweight Charts for Leptos"
@@ -30,6 +30,7 @@ gc = "cargo sweep -r -t 10 ."
 [workspace.dependencies]
 console_error_panic_hook = "0.1"
 console_log = "1.0"
+emitix = "1.0"
 js-sys = "0.3"
 leptos = { version = "0.8", features = ["csr"] }
 log = "0.4"

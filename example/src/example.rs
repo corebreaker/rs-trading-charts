@@ -1,19 +1,18 @@
 use super::dataset::Dataset;
 use charts::{
-    data::{
-        events::EventManager,
-        options::{
-            background::Background,
-            layout::{LayoutOptions, LayoutPanesOptions},
-            TimeScaleOptions,
-            ChartOptions,
-        },
+    data::options::{
+        background::Background,
+        layout::{LayoutOptions, LayoutPanesOptions},
+        TimeScaleOptions,
+        ChartOptions,
     },
     series::candlesticks::CandleStickSeries,
     panel::ChartPanel,
     chart::Chart,
+    REFIT_EVENT_KIND,
 };
 
+use emitix::EventManager;
 use leptos::{
     tachys::html::attribute::global::{StyleAttribute, OnAttribute},
     reactive::{
@@ -120,7 +119,7 @@ pub fn App() -> impl IntoView {
                 <div>
                     <button
                         on:click=move |_| {
-                            if let Err(err) = refit_event.emit(()) {
+                            if let Err(err) = refit_event.emit(REFIT_EVENT_KIND, ()) {
                                 error!("Failed to refit chart content: {err}");
                             }
                         }
