@@ -20,6 +20,7 @@ charts = { path = "../trading-charts", package = "trading-charts" }
 
 console_error_panic_hook = { workspace = true }
 console_log = { workspace = true }
+emitix = { workspace = true }
 leptos = { workspace = true }
 log = { workspace = true }
 wasm-bindgen = { workspace = true }

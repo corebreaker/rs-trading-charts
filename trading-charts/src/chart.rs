@@ -1,5 +1,6 @@
-use super::data::{options::ChartOptions, events::EventManager};
-use crate::{bindings::TradingChartBinding, JsError};
+use super::data::{options::ChartOptions};
+use crate::{bindings::TradingChartBinding, JsError, REFIT_EVENT_KIND};
+use emitix::EventManager;
 use leptos::{
     tachys::{
         html::{
@@ -64,14 +65,16 @@ pub fn Chart(
     if let Some(refit) = refit.as_ref() {
         let chart = chart.clone();
 
-        let res = refit.add_listener(move |_| {
+        let res = refit.add_listener(REFIT_EVENT_KIND, move |_| {
             if let Err(err) = chart.refit_content() {
                 err.with_prefix("Failed to refit chart content").log();
             }
         });
 
         if let Err(err) = res {
-            err.with_prefix("Failed to add refresh listener").log();
+            JsError::from_displayable(err)
+                .with_prefix("Failed to add refit listener")
+                .log();
         }
     }
 

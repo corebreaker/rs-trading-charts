@@ -31,6 +31,14 @@ impl JsError {
         }
     }
 
+    pub fn from_displayable<E: Display>(err: E) -> Self {
+        Self {
+            message: err.to_string(),
+            prefix:  None,
+            data:    None,
+        }
+    }
+
     pub fn new_from_str(message: impl AsRef<str>) -> Self {
         Self {
             message: message.as_ref().to_string(),
