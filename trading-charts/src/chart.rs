@@ -1,6 +1,6 @@
 use super::data::{options::ChartOptions};
 use crate::{bindings::TradingChartBinding, JsError, REFIT_EVENT_KIND};
-use emitix::EventManager;
+use emitix::{leptos::LeptosEventChannels, EventManager};
 use leptos::{
     tachys::{
         html::{
@@ -50,7 +50,7 @@ pub fn Chart(
     #[prop(optional, into)] options: Option<Signal<ChartOptions>>,
     #[prop(optional, into)] style: Option<String>,
     #[prop(optional, into)] class: Option<String>,
-    #[prop(optional)] refit: Option<EventManager<()>>,
+    #[prop(optional)] refit: Option<LeptosEventChannels>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let chart = match make_chart(options) {
