@@ -12,7 +12,7 @@ use charts::{
     REFIT_EVENT_KIND,
 };
 
-use emitix::EventManager;
+use emitix::{leptos::LeptosEventChannels, EventManager};
 use leptos::{
     tachys::html::attribute::global::{StyleAttribute, OnAttribute},
     reactive::{
@@ -30,7 +30,8 @@ use log::error;
 
 #[component]
 pub fn App() -> impl IntoView {
-    let refit_event = EventManager::<()>::new();
+    let refit_event = LeptosEventChannels::default();
+    let refit_emitter = refit_event.new_emitter(REFIT_EVENT_KIND);
     let (chart_options, _) = signal(
         ChartOptions::new()
             .with_time_scale(TimeScaleOptions::new().with_time_visible(true))
@@ -119,7 +120,7 @@ pub fn App() -> impl IntoView {
                 <div>
                     <button
                         on:click=move |_| {
-                            if let Err(err) = refit_event.emit(REFIT_EVENT_KIND, ()) {
+                            if let Err(err) = refit_emitter.emit(()) {
                                 error!("Failed to refit chart content: {err}");
                             }
                         }
