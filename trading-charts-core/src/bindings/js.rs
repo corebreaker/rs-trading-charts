@@ -37,6 +37,9 @@ extern "C" {
     pub(super) fn resize(this: &TradingChart, width: f64, height: f64) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
+    pub(super) fn takeScreenshot(this: &TradingChart) -> Result<String, JsValue>;
+
+    #[wasm_bindgen(method, catch)]
     pub(super) fn addSeries(this: &TradingChart, series: JsValue) -> Result<String, JsValue>;
 
     #[wasm_bindgen(method, catch)]

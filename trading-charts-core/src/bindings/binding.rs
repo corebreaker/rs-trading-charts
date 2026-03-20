@@ -130,6 +130,15 @@ impl ChartHandle {
         Ok(chart.resize(width, height)?)
     }
 
+    pub fn take_screenshot_data_url(&self) -> Result<String, JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.takeScreenshot()?)
+    }
+
     pub fn allocate_panel(&self) -> PanelId {
         self.next_panel.fetch_add(1, Ordering::SeqCst)
     }

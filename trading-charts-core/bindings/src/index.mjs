@@ -175,6 +175,12 @@ export class TradingChart {
         chart.resize(width, height);
     }
 
+    takeScreenshot() {
+        const chart = this._getChart();
+
+        return chart.takeScreenshot().toDataURL();
+    }
+
     addSeries(seriesDesc) {
         const optId = seriesDesc.id;
         const type = seriesDesc.type;

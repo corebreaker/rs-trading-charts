@@ -26,6 +26,8 @@ use web_sys::window;
 
 pub fn app() -> Element {
     let range_text = use_signal(|| String::from("Visible range: pending"));
+    let screenshot_status = use_signal(|| String::from("Screenshot: idle"));
+    let screenshot_data_url = use_signal(|| None::<String>);
     let chart_options = use_signal(|| {
         ChartOptions::new()
             .with_time_scale(TimeScaleOptions::new().with_time_visible(true))
@@ -122,32 +124,43 @@ pub fn app() -> Element {
                         recent_range: data.read().recent_range(),
                         range_text,
                     }
+                    ScreenshotCapture {
+                        screenshot_status,
+                        screenshot_data_url,
+                    }
                 }
             }
 
             div {
                 style: "margin-top:10px;display:flex;flex-direction:column;row-gap:10px;",
                 span { "{range_text()}" }
+                span { "{screenshot_status()}" }
                 div {
                     style: "display:flex;flex-direction:row;column-gap:10px;",
-                button {
-                    onclick: move |_| data.write().inc(),
-                    "Change markers"
+                    button {
+                        onclick: move |_| data.write().inc(),
+                        "Change markers"
+                    }
+                    button {
+                        onclick: move |_| match Dataset::load("data1") {
+                            Ok(new_data) => data.set(new_data),
+                            Err(err) => error!("Failed to load dataset 1: {err}"),
+                        },
+                        "Load dataset 1"
+                    }
+                    button {
+                        onclick: move |_| match Dataset::load("data2") {
+                            Ok(new_data) => data.set(new_data),
+                            Err(err) => error!("Failed to load dataset 2: {err}"),
+                        },
+                        "Load dataset 2"
+                    }
                 }
-                button {
-                    onclick: move |_| match Dataset::load("data1") {
-                        Ok(new_data) => data.set(new_data),
-                        Err(err) => error!("Failed to load dataset 1: {err}"),
-                    },
-                    "Load dataset 1"
-                }
-                button {
-                    onclick: move |_| match Dataset::load("data2") {
-                        Ok(new_data) => data.set(new_data),
-                        Err(err) => error!("Failed to load dataset 2: {err}"),
-                    },
-                    "Load dataset 2"
-                }
+                if let Some(data_url) = screenshot_data_url() {
+                    img {
+                        src: data_url,
+                        style: "max-width:280px;border:1px solid #94a3b8;",
+                    }
                 }
             }
         }
@@ -250,4 +263,71 @@ fn schedule_visible_range_probe(
     }
 
     callback.forget();
+}
+
+#[derive(Clone, Props)]
+struct ScreenshotCaptureProps {
+    screenshot_status: Signal<String>,
+    screenshot_data_url: Signal<Option<String>>,
+}
+
+impl PartialEq for ScreenshotCaptureProps {
+    fn eq(&self, _other: &Self) -> bool {
+        false
+    }
+}
+
+#[allow(non_snake_case)]
+fn ScreenshotCapture(props: ScreenshotCaptureProps) -> Element {
+    let chart = use_chart();
+    let mut captured = use_signal(|| false);
+
+    {
+        let chart = chart.clone();
+        let mut screenshot_status = props.screenshot_status;
+        let mut screenshot_data_url = props.screenshot_data_url;
+        use_effect(move || {
+            if captured() {
+                return;
+            }
+
+            captured.set(true);
+
+            let delayed_chart = chart.clone();
+            let callback = Closure::<dyn FnMut()>::new(move || match delayed_chart.take_screenshot_data_url() {
+                Ok(data_url) => {
+                    screenshot_status.set(format!("Screenshot: captured {} chars", data_url.len()));
+                    screenshot_data_url.set(Some(data_url));
+                }
+                Err(err) => {
+                    err.with_prefix("Failed to capture screenshot").log();
+                    screenshot_status.set(String::from("Screenshot: capture failed"));
+                }
+            });
+
+            match window() {
+                Some(window) => {
+                    if let Err(err) = window
+                        .set_timeout_with_callback_and_timeout_and_arguments_0(callback.as_ref().unchecked_ref(), 800)
+                    {
+                        charts::JsError::from(err)
+                            .with_prefix("Failed to schedule screenshot capture")
+                            .log();
+                        screenshot_status.set(String::from("Screenshot: scheduling failed"));
+                    }
+                }
+
+                None => {
+                    charts::JsError::new_from_str("window is not available")
+                        .with_prefix("Failed to schedule screenshot capture")
+                        .log();
+                    screenshot_status.set(String::from("Screenshot: window unavailable"));
+                }
+            }
+
+            callback.forget();
+        });
+    }
+
+    rsx! {}
 }
