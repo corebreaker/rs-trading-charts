@@ -1,4 +1,4 @@
-use crate::data::options::{LineWidth, LineStyle, PriceLineSource};
+use crate::data::options::{LineWidth, LineStyle, PriceFormatOptions, PriceLineSource};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -29,6 +29,9 @@ pub struct CandlestickOptions {
 
     #[serde(rename = "priceLineStyle", default)]
     price_line_style: LineStyle,
+
+    #[serde(rename = "priceFormat", skip_serializing_if = "Option::is_none", default)]
+    price_format: Option<PriceFormatOptions>,
 
     #[serde(rename = "baseLineVisible", default = "defaults::base_line_visible")]
     base_line_visible: bool,
@@ -138,6 +141,13 @@ impl CandlestickOptions {
     pub fn with_price_line_style(self, price_line_style: LineStyle) -> Self {
         Self {
             price_line_style,
+            ..self
+        }
+    }
+
+    pub fn with_price_format(self, price_format: PriceFormatOptions) -> Self {
+        Self {
+            price_format: Some(price_format),
             ..self
         }
     }
@@ -301,6 +311,18 @@ impl CandlestickOptions {
 
     pub fn set_price_line_style(&mut self, price_line_style: LineStyle) {
         self.price_line_style = price_line_style;
+    }
+
+    pub fn price_format(&self) -> Option<&PriceFormatOptions> {
+        self.price_format.as_ref()
+    }
+
+    pub fn price_format_mut(&mut self) -> &mut Option<PriceFormatOptions> {
+        &mut self.price_format
+    }
+
+    pub fn set_price_format(&mut self, price_format: Option<PriceFormatOptions>) {
+        self.price_format = price_format;
     }
 
     pub fn base_line_visible(&self) -> bool {
@@ -476,6 +498,7 @@ impl Default for CandlestickOptions {
             price_line_width: LineWidth::default(),
             price_line_color: defaults::price_line_color(),
             price_line_style: LineStyle::default(),
+            price_format: None,
             base_line_visible: defaults::base_line_visible(),
             base_line_color: defaults::base_line_color(),
             base_line_width: LineWidth::default(),

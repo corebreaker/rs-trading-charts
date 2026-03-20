@@ -7,7 +7,7 @@ use charts::{
             background::Background,
             cross_hair::{CrossHairOptions, CrosshairLineOptions},
             layout::{LayoutOptions, LayoutPanesOptions},
-            ChartOptions, PriceScaleOptions, TimeScaleOptions,
+            ChartOptions, LastPriceAnimationMode, LineType, PriceFormatOptions, PriceScaleOptions, TimeScaleOptions,
         },
     },
     panel::ChartPanel,
@@ -53,12 +53,19 @@ pub fn app() -> Element {
     let line_options = LineSeriesOptions::new()
         .with_title(String::from("Close"))
         .with_color(String::from("#1d4ed8"))
+        .with_line_type(LineType::Curved)
+        .with_point_markers_visible(true)
+        .with_point_markers_radius(3.0)
+        .with_last_price_animation(LastPriceAnimationMode::Continuous)
+        .with_price_format(PriceFormatOptions::price().with_precision(3).with_min_move(0.001))
         .with_price_line_visible(false);
     let area_options = AreaSeriesOptions::new()
         .with_title(String::from("Mid"))
         .with_top_color(String::from("rgba(14, 165, 233, 0.28)"))
         .with_bottom_color(String::from("rgba(14, 165, 233, 0.02)"))
         .with_line_color(String::from("rgba(2, 132, 199, 0.95)"))
+        .with_relative_gradient(true)
+        .with_line_type(LineType::Curved)
         .with_price_line_visible(false);
     let bar_options = BarSeriesOptions::new()
         .with_title(String::from("Bar"))
@@ -77,6 +84,7 @@ pub fn app() -> Element {
     let histogram_options = HistogramSeriesOptions::new()
         .with_title(String::from("Delta"))
         .with_base(0.0)
+        .with_price_format(PriceFormatOptions::volume())
         .with_price_line_visible(false);
     let line_price_lines = vec![PriceLineOptions::new(10.5)
         .with_color(String::from("#1d4ed8"))
