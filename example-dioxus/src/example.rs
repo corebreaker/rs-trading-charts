@@ -5,8 +5,9 @@ use charts::{
         PriceLineOptions,
         options::{
             background::Background,
+            cross_hair::{CrossHairOptions, CrosshairLineOptions},
             layout::{LayoutOptions, LayoutPanesOptions},
-            ChartOptions, TimeScaleOptions,
+            ChartOptions, PriceScaleOptions, TimeScaleOptions,
         },
     },
     panel::ChartPanel,
@@ -26,11 +27,21 @@ use web_sys::window;
 
 pub fn app() -> Element {
     let range_text = use_signal(|| String::from("Visible range: pending"));
+    let price_scale_text = use_signal(|| String::from("Price scale: pending"));
     let screenshot_status = use_signal(|| String::from("Screenshot: idle"));
     let screenshot_data_url = use_signal(|| None::<String>);
+    let mut price_scale_zoom_request = use_signal(|| 0_u64);
+    let mut price_scale_auto_request = use_signal(|| 0_u64);
     let chart_options = use_signal(|| {
         ChartOptions::new()
             .with_time_scale(TimeScaleOptions::new().with_time_visible(true))
+            .with_cross_hair(
+                CrossHairOptions::new().with_vert_line(
+                    CrosshairLineOptions::new()
+                        .with_color(String::from("#0f172a"))
+                        .with_label_background_color(String::from("#0f172a")),
+                ),
+            )
             .with_layout(
                 LayoutOptions::new()
                     .with_background(Background::new_solid_color(String::from("white")))
@@ -124,6 +135,11 @@ pub fn app() -> Element {
                         recent_range: data.read().recent_range(),
                         range_text,
                     }
+                    PriceScaleProbe {
+                        price_scale_text,
+                        zoom_request: price_scale_zoom_request,
+                        auto_request: price_scale_auto_request,
+                    }
                     ScreenshotCapture {
                         screenshot_status,
                         screenshot_data_url,
@@ -134,6 +150,7 @@ pub fn app() -> Element {
             div {
                 style: "margin-top:10px;display:flex;flex-direction:column;row-gap:10px;",
                 span { "{range_text()}" }
+                span { "{price_scale_text()}" }
                 span { "{screenshot_status()}" }
                 div {
                     style: "display:flex;flex-direction:row;column-gap:10px;",
@@ -154,6 +171,14 @@ pub fn app() -> Element {
                             Err(err) => error!("Failed to load dataset 2: {err}"),
                         },
                         "Load dataset 2"
+                    }
+                    button {
+                        onclick: move |_| price_scale_zoom_request.set(price_scale_zoom_request() + 1),
+                        "Zoom price scale"
+                    }
+                    button {
+                        onclick: move |_| price_scale_auto_request.set(price_scale_auto_request() + 1),
+                        "Auto price scale"
                     }
                 }
                 if let Some(data_url) = screenshot_data_url() {
@@ -200,6 +225,70 @@ fn VisibleRangeProbe(props: VisibleRangeProbeProps) -> Element {
 
             last_applied_range.set(Some(range));
             schedule_visible_range_probe(chart.clone(), range, range_text, 6);
+        });
+    }
+
+    rsx! {}
+}
+
+#[derive(Clone, Props)]
+struct PriceScaleProbeProps {
+    price_scale_text: Signal<String>,
+    zoom_request: Signal<u64>,
+    auto_request: Signal<u64>,
+}
+
+impl PartialEq for PriceScaleProbeProps {
+    fn eq(&self, _other: &Self) -> bool {
+        false
+    }
+}
+
+#[allow(non_snake_case)]
+fn PriceScaleProbe(props: PriceScaleProbeProps) -> Element {
+    let chart = use_chart();
+    let mut initial_reported = use_signal(|| false);
+    let mut last_zoom_request = use_signal(|| 0_u64);
+    let mut last_auto_request = use_signal(|| 0_u64);
+
+    {
+        let chart = chart.clone();
+        let price_scale_text = props.price_scale_text;
+        use_effect(move || {
+            if initial_reported() {
+                return;
+            }
+
+            initial_reported.set(true);
+            schedule_price_scale_report(chart.clone(), price_scale_text, String::from("Price scale"), 150);
+        });
+    }
+
+    {
+        let chart = chart.clone();
+        let price_scale_text = props.price_scale_text;
+        use_effect(move || {
+            let zoom_request = (props.zoom_request)();
+            if zoom_request == 0 || zoom_request == last_zoom_request() {
+                return;
+            }
+
+            last_zoom_request.set(zoom_request);
+            schedule_price_scale_zoom(chart.clone(), price_scale_text, 150);
+        });
+    }
+
+    {
+        let chart = chart.clone();
+        let price_scale_text = props.price_scale_text;
+        use_effect(move || {
+            let auto_request = (props.auto_request)();
+            if auto_request == 0 || auto_request == last_auto_request() {
+                return;
+            }
+
+            last_auto_request.set(auto_request);
+            schedule_price_scale_auto(chart.clone(), price_scale_text, 150);
         });
     }
 
@@ -259,6 +348,109 @@ fn schedule_visible_range_probe(
                 .with_prefix("Failed to schedule visible range probe")
                 .log();
             range_text.set(String::from("Visible range: window unavailable"));
+        }
+    }
+
+    callback.forget();
+}
+
+fn schedule_price_scale_zoom(chart: charts::ChartHandle, mut price_scale_text: Signal<String>, delay_ms: i32) {
+    let callback = Closure::<dyn FnMut()>::new(move || {
+        let options = PriceScaleOptions::new()
+            .with_auto_scale(false)
+            .with_minimum_width(96.0)
+            .with_ensure_edge_tick_marks_visible(true);
+        let range = charts::data::PriceRange::new(8.5, 12.5);
+
+        if let Err(err) = chart.apply_price_scale_options("right", Some(0), &options) {
+            err.with_prefix("Failed to apply price scale options").log();
+            price_scale_text.set(String::from("Price scale: options failed"));
+            return;
+        }
+
+        if let Err(err) = chart.set_price_scale_visible_range("right", Some(0), &range) {
+            err.with_prefix("Failed to set price scale visible range").log();
+            price_scale_text.set(String::from("Price scale: range set failed"));
+            return;
+        }
+
+        update_price_scale_text(&chart, &mut price_scale_text, "Price scale: zoomed");
+    });
+
+    schedule_timeout(callback, delay_ms, &mut price_scale_text, "price scale zoom");
+}
+
+fn schedule_price_scale_auto(chart: charts::ChartHandle, mut price_scale_text: Signal<String>, delay_ms: i32) {
+    let callback = Closure::<dyn FnMut()>::new(move || {
+        if let Err(err) = chart.set_price_scale_auto_scale("right", Some(0), true) {
+            err.with_prefix("Failed to enable price scale autoscale").log();
+            price_scale_text.set(String::from("Price scale: autoscale failed"));
+            return;
+        }
+
+        update_price_scale_text(&chart, &mut price_scale_text, "Price scale: auto");
+    });
+
+    schedule_timeout(callback, delay_ms, &mut price_scale_text, "price scale autoscale");
+}
+
+fn schedule_price_scale_report(
+    chart: charts::ChartHandle,
+    mut price_scale_text: Signal<String>,
+    label: String,
+    delay_ms: i32,
+) {
+    let callback = Closure::<dyn FnMut()>::new(move || {
+        update_price_scale_text(&chart, &mut price_scale_text, &label);
+    });
+
+    schedule_timeout(callback, delay_ms, &mut price_scale_text, "price scale probe");
+}
+
+fn update_price_scale_text(chart: &charts::ChartHandle, price_scale_text: &mut Signal<String>, prefix: &str) {
+    match (
+        chart.get_price_scale_visible_range("right", Some(0)),
+        chart.get_price_scale_width("right", Some(0)),
+    ) {
+        (Ok(Some(range)), Ok(width)) => {
+            price_scale_text.set(format!(
+                "{prefix}: {} -> {} (width {:.1})",
+                range.from(),
+                range.to(),
+                width,
+            ));
+        }
+        (Ok(None), Ok(width)) => {
+            price_scale_text.set(format!("{prefix}: none (width {:.1})", width));
+        }
+        (Err(err), _) => {
+            err.with_prefix("Failed to read price scale visible range").log();
+            price_scale_text.set(String::from("Price scale: range read failed"));
+        }
+        (_, Err(err)) => {
+            err.with_prefix("Failed to read price scale width").log();
+            price_scale_text.set(String::from("Price scale: width read failed"));
+        }
+    }
+}
+
+fn schedule_timeout(callback: Closure<dyn FnMut()>, delay_ms: i32, status_text: &mut Signal<String>, context: &str) {
+    match window() {
+        Some(window) => {
+            if let Err(err) = window
+                .set_timeout_with_callback_and_timeout_and_arguments_0(callback.as_ref().unchecked_ref(), delay_ms)
+            {
+                charts::JsError::from(err)
+                    .with_prefix(&format!("Failed to schedule {context}"))
+                    .log();
+                status_text.set(format!("Price scale: scheduling failed ({context})"));
+            }
+        }
+        None => {
+            charts::JsError::new_from_str("window is not available")
+                .with_prefix(&format!("Failed to schedule {context}"))
+                .log();
+            status_text.set(format!("Price scale: window unavailable ({context})"));
         }
     }
 

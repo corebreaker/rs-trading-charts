@@ -9,6 +9,9 @@ pub struct CandlestickOptions {
     #[serde(rename = "lastValueVisible", default = "defaults::last_value_visible")]
     last_value_visible: bool,
 
+    #[serde(rename = "crosshairMarkerVisible", default = "defaults::crosshair_marker_visible")]
+    crosshair_marker_visible: bool,
+
     #[serde(default = "defaults::visible")]
     visible: bool,
 
@@ -68,6 +71,13 @@ pub struct CandlestickOptions {
 
     #[serde(rename = "wickDownColor", default = "defaults::wick_down_color")]
     wick_down_color: String,
+
+    #[serde(
+        rename = "priceScaleId",
+        default = "defaults::price_scale_id",
+        skip_serializing_if = "String::is_empty"
+    )]
+    price_scale_id: String,
 }
 
 impl CandlestickOptions {
@@ -82,6 +92,13 @@ impl CandlestickOptions {
     pub fn with_last_value_visible(self, last_value_visible: bool) -> Self {
         Self {
             last_value_visible,
+            ..self
+        }
+    }
+
+    pub fn with_crosshair_marker_visible(self, crosshair_marker_visible: bool) -> Self {
+        Self {
+            crosshair_marker_visible,
             ..self
         }
     }
@@ -202,6 +219,10 @@ impl CandlestickOptions {
         }
     }
 
+    pub fn with_price_scale_id(self, price_scale_id: String) -> Self {
+        Self { price_scale_id, ..self }
+    }
+
     pub fn title(&self) -> &str {
         &self.title
     }
@@ -220,6 +241,14 @@ impl CandlestickOptions {
 
     pub fn set_last_value_visible(&mut self, last_value_visible: bool) {
         self.last_value_visible = last_value_visible;
+    }
+
+    pub fn crosshair_marker_visible(&self) -> bool {
+        self.crosshair_marker_visible
+    }
+
+    pub fn set_crosshair_marker_visible(&mut self, crosshair_marker_visible: bool) {
+        self.crosshair_marker_visible = crosshair_marker_visible;
     }
 
     pub fn visible(&self) -> bool {
@@ -421,6 +450,18 @@ impl CandlestickOptions {
     pub fn set_wick_down_color(&mut self, wick_down_color: String) {
         self.wick_down_color = wick_down_color;
     }
+
+    pub fn price_scale_id(&self) -> &str {
+        &self.price_scale_id
+    }
+
+    pub fn price_scale_id_mut(&mut self) -> &mut String {
+        &mut self.price_scale_id
+    }
+
+    pub fn set_price_scale_id(&mut self, price_scale_id: String) {
+        self.price_scale_id = price_scale_id;
+    }
 }
 
 impl Default for CandlestickOptions {
@@ -428,6 +469,7 @@ impl Default for CandlestickOptions {
         Self {
             title: String::new(),
             last_value_visible: defaults::last_value_visible(),
+            crosshair_marker_visible: defaults::crosshair_marker_visible(),
             visible: defaults::visible(),
             price_line_visible: defaults::price_line_visible(),
             price_line_source: PriceLineSource::default(),
@@ -448,12 +490,17 @@ impl Default for CandlestickOptions {
             wick_color: defaults::wick_color(),
             wick_up_color: defaults::wick_up_color(),
             wick_down_color: defaults::wick_down_color(),
+            price_scale_id: defaults::price_scale_id(),
         }
     }
 }
 
 mod defaults {
     pub(super) fn last_value_visible() -> bool {
+        true
+    }
+
+    pub(super) fn crosshair_marker_visible() -> bool {
         true
     }
 
@@ -515,5 +562,9 @@ mod defaults {
 
     pub(super) fn wick_down_color() -> String {
         String::from("#ef5350")
+    }
+
+    pub(super) fn price_scale_id() -> String {
+        String::new()
     }
 }

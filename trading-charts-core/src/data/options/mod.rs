@@ -17,7 +17,15 @@ pub mod overlay_price_scale;
 pub mod price_scale;
 
 pub use self::{
-    kinetic_scroll::KineticScrollOptions, flagable_options::FlagableOptions, handle_scroll::HandleScrollOptions,
-    options::ChartOptions, price_line_source::PriceLineSource, line_style::LineStyle, line_width::LineWidth,
-    time_scale::TimeScaleOptions, tracking_mode::TrackingModeOptions,
+    flagable_options::FlagableOptions,
+    handle_scroll::HandleScrollOptions,
+    kinetic_scroll::KineticScrollOptions,
+    line_style::LineStyle,
+    line_width::LineWidth,
+    options::ChartOptions,
+    overlay_price_scale::{OverlayPriceScaleMargins, OverlayPriceScaleMode, OverlayPriceScaleOptions},
+    price_line_source::PriceLineSource,
+    price_scale::{PriceScaleMargins, PriceScaleMode, PriceScaleOptions},
+    time_scale::TimeScaleOptions,
+    tracking_mode::TrackingModeOptions,
 };

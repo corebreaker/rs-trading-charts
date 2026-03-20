@@ -4,6 +4,7 @@ mod logical_range;
 mod marker;
 mod marker_type;
 mod price_line;
+mod price_range;
 mod time_range;
 mod timestamp;
 mod value_data;
@@ -13,6 +14,6 @@ pub mod series;
 
 pub use self::{
     candlestick::Candlestick, histogram_data::HistogramData, marker::Marker, marker_type::MarkerType,
-    logical_range::LogicalRange, price_line::PriceLineOptions, time_range::TimeRange, timestamp::UTCTimestamp,
-    value_data::ValueData,
+    logical_range::LogicalRange, price_line::PriceLineOptions, price_range::PriceRange, time_range::TimeRange,
+    timestamp::UTCTimestamp, value_data::ValueData,
 };

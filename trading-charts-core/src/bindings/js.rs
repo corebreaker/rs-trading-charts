@@ -16,6 +16,17 @@ extern "C" {
     pub(super) fn applyChartOptions(this: &TradingChart, options: JsValue) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
+    pub(super) fn applyTimeScaleOptions(this: &TradingChart, options: JsValue) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(super) fn applyPriceScaleOptions(
+        this: &TradingChart,
+        priceScaleId: String,
+        paneIndex: JsValue,
+        options: JsValue,
+    ) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
     pub(super) fn bindChart(this: &TradingChart, node: HtmlDivElement, options: JsValue) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
@@ -34,6 +45,36 @@ extern "C" {
     pub(super) fn setVisibleLogicalRange(this: &TradingChart, range: JsValue) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
+    pub(super) fn getPriceScaleVisibleRange(
+        this: &TradingChart,
+        priceScaleId: String,
+        paneIndex: JsValue,
+    ) -> Result<JsValue, JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(super) fn setPriceScaleVisibleRange(
+        this: &TradingChart,
+        priceScaleId: String,
+        paneIndex: JsValue,
+        range: JsValue,
+    ) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(super) fn setPriceScaleAutoScale(
+        this: &TradingChart,
+        priceScaleId: String,
+        paneIndex: JsValue,
+        on: bool,
+    ) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(super) fn getPriceScaleWidth(
+        this: &TradingChart,
+        priceScaleId: String,
+        paneIndex: JsValue,
+    ) -> Result<f64, JsValue>;
+
+    #[wasm_bindgen(method, catch)]
     pub(super) fn resize(this: &TradingChart, width: f64, height: f64) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
@@ -44,6 +85,29 @@ extern "C" {
 
     #[wasm_bindgen(method, catch)]
     pub(super) fn updateSeriesOptions(this: &TradingChart, seriesId: String, options: JsValue) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(super) fn applySeriesPriceScaleOptions(
+        this: &TradingChart,
+        seriesId: String,
+        options: JsValue,
+    ) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(super) fn getSeriesPriceScaleVisibleRange(this: &TradingChart, seriesId: String) -> Result<JsValue, JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(super) fn setSeriesPriceScaleVisibleRange(
+        this: &TradingChart,
+        seriesId: String,
+        range: JsValue,
+    ) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(super) fn setSeriesPriceScaleAutoScale(this: &TradingChart, seriesId: String, on: bool) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(super) fn getSeriesPriceScaleWidth(this: &TradingChart, seriesId: String) -> Result<f64, JsValue>;
 
     #[wasm_bindgen(method, catch)]
     pub(super) fn removeSeries(this: &TradingChart, seriesId: String) -> Result<(), JsValue>;

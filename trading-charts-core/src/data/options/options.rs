@@ -26,13 +26,13 @@ pub struct ChartOptions {
     #[serde(rename = "rightPriceScale", default)]
     right_price_scale: PriceScaleOptions,
 
-    #[serde(rename = "overlayPriceScale", default)]
+    #[serde(rename = "overlayPriceScales", default)]
     overlay_price_scale_options: OverlayPriceScaleOptions,
 
     #[serde(rename = "timeScale", default)]
     time_scale: TimeScaleOptions,
 
-    #[serde(rename = "crossHair", default)]
+    #[serde(rename = "crosshair", default)]
     cross_hair: CrossHairOptions,
 
     #[serde(default)]

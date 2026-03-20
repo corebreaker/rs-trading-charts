@@ -37,8 +37,14 @@ pub struct PriceScaleOptions {
     #[serde(rename = "ticksVisible", default = "defaults::ticks_visible")]
     ticks_visible: bool,
 
-    #[serde(rename = "minimumSize", default = "defaults::minimum_size")]
-    minimum_size: f64,
+    #[serde(rename = "minimumWidth", default = "defaults::minimum_width")]
+    minimum_width: f64,
+
+    #[serde(
+        rename = "ensureEdgeTickMarksVisible",
+        default = "defaults::ensure_edge_tick_marks_visible"
+    )]
+    ensure_edge_tick_marks_visible: bool,
 }
 
 impl PriceScaleOptions {
@@ -89,8 +95,19 @@ impl PriceScaleOptions {
         Self { ticks_visible, ..self }
     }
 
+    pub fn with_minimum_width(self, minimum_width: f64) -> Self {
+        Self { minimum_width, ..self }
+    }
+
     pub fn with_minimum_size(self, minimum_size: f64) -> Self {
-        Self { minimum_size, ..self }
+        self.with_minimum_width(minimum_size)
+    }
+
+    pub fn with_ensure_edge_tick_marks_visible(self, ensure_edge_tick_marks_visible: bool) -> Self {
+        Self {
+            ensure_edge_tick_marks_visible,
+            ..self
+        }
     }
 
     pub fn auto_scale(&self) -> bool {
@@ -185,12 +202,28 @@ impl PriceScaleOptions {
         self.ticks_visible = ticks_visible;
     }
 
+    pub fn minimum_width(&self) -> f64 {
+        self.minimum_width
+    }
+
     pub fn minimum_size(&self) -> f64 {
-        self.minimum_size
+        self.minimum_width()
+    }
+
+    pub fn set_minimum_width(&mut self, minimum_width: f64) {
+        self.minimum_width = minimum_width;
     }
 
     pub fn set_minimum_size(&mut self, minimum_size: f64) {
-        self.minimum_size = minimum_size;
+        self.set_minimum_width(minimum_size);
+    }
+
+    pub fn ensure_edge_tick_marks_visible(&self) -> bool {
+        self.ensure_edge_tick_marks_visible
+    }
+
+    pub fn set_ensure_edge_tick_marks_visible(&mut self, ensure_edge_tick_marks_visible: bool) {
+        self.ensure_edge_tick_marks_visible = ensure_edge_tick_marks_visible;
     }
 }
 
@@ -207,7 +240,8 @@ impl Default for PriceScaleOptions {
             entire_text_only: defaults::entire_text_only(),
             visible: defaults::visible(),
             ticks_visible: defaults::ticks_visible(),
-            minimum_size: defaults::minimum_size(),
+            minimum_width: defaults::minimum_width(),
+            ensure_edge_tick_marks_visible: defaults::ensure_edge_tick_marks_visible(),
         }
     }
 }
@@ -245,7 +279,11 @@ mod defaults {
         false
     }
 
-    pub(super) fn minimum_size() -> f64 {
+    pub(super) fn minimum_width() -> f64 {
         0.
+    }
+
+    pub(super) fn ensure_edge_tick_marks_visible() -> bool {
+        false
     }
 }

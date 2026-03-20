@@ -58,6 +58,12 @@ export class TradingChart {
         this._series = {};
     }
 
+    _getChartPriceScale(priceScaleId, paneIndex = undefined) {
+        const chart = this._getChart();
+
+        return chart.priceScale(priceScaleId, paneIndex);
+    }
+
     _getChart() {
         if (!this._chart)
             throw new Error('Chart is not bound to DOM');
@@ -123,6 +129,16 @@ export class TradingChart {
         chart.applyOptions(options);
     }
 
+    applyTimeScaleOptions(options) {
+        const chart = this._getChart();
+
+        chart.timeScale().applyOptions(options);
+    }
+
+    applyPriceScaleOptions(priceScaleId, paneIndex, options) {
+        this._getChartPriceScale(priceScaleId, paneIndex).applyOptions(options);
+    }
+
     bindChart(node, options = null) {
         if (this._chart) {
             this._chart.remove();
@@ -167,6 +183,22 @@ export class TradingChart {
         const chart = this._getChart();
 
         chart.timeScale().setVisibleLogicalRange(range);
+    }
+
+    getPriceScaleVisibleRange(priceScaleId, paneIndex) {
+        return this._getChartPriceScale(priceScaleId, paneIndex).getVisibleRange();
+    }
+
+    setPriceScaleVisibleRange(priceScaleId, paneIndex, range) {
+        this._getChartPriceScale(priceScaleId, paneIndex).setVisibleRange(range);
+    }
+
+    setPriceScaleAutoScale(priceScaleId, paneIndex, on) {
+        this._getChartPriceScale(priceScaleId, paneIndex).setAutoScale(on);
+    }
+
+    getPriceScaleWidth(priceScaleId, paneIndex) {
+        return this._getChartPriceScale(priceScaleId, paneIndex).width();
     }
 
     resize(width, height) {
@@ -335,6 +367,36 @@ export class TradingChart {
         if (series.chartApi) {
             series.getApi().applyOptions(options);
         }
+    }
+
+    applySeriesPriceScaleOptions(seriesId, options) {
+        const series = this._getSeries(seriesId);
+
+        series.getApi().priceScale().applyOptions(options);
+    }
+
+    getSeriesPriceScaleVisibleRange(seriesId) {
+        const series = this._getSeries(seriesId);
+
+        return series.getApi().priceScale().getVisibleRange();
+    }
+
+    setSeriesPriceScaleVisibleRange(seriesId, range) {
+        const series = this._getSeries(seriesId);
+
+        series.getApi().priceScale().setVisibleRange(range);
+    }
+
+    setSeriesPriceScaleAutoScale(seriesId, on) {
+        const series = this._getSeries(seriesId);
+
+        series.getApi().priceScale().setAutoScale(on);
+    }
+
+    getSeriesPriceScaleWidth(seriesId) {
+        const series = this._getSeries(seriesId);
+
+        return series.getApi().priceScale().width();
     }
 
     updateData(seriesId, data) {

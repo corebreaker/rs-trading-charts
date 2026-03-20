@@ -1,6 +1,10 @@
 use super::js::TradingChart as JsChart;
 use crate::{
-    data::{series::Series, options::ChartOptions, LogicalRange, Marker, PriceLineOptions, TimeRange},
+    data::{
+        series::Series,
+        options::{ChartOptions, PriceScaleOptions, TimeScaleOptions},
+        LogicalRange, Marker, PriceLineOptions, PriceRange, TimeRange,
+    },
     JsError,
 };
 
@@ -50,6 +54,19 @@ impl ChartHandle {
             .lock()
             .map_err(|err| JsError::new_from_str(&err.to_string()))?
             .applyChartOptions(to_value(options)?)?;
+
+        Ok(())
+    }
+
+    pub fn apply_time_scale_options(&self, options: &TimeScaleOptions) -> Result<(), JsError> {
+        if !self.bound.load(Ordering::SeqCst) {
+            return Ok(());
+        }
+
+        self.chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?
+            .applyTimeScaleOptions(to_value(options)?)?;
 
         Ok(())
     }
@@ -121,6 +138,107 @@ impl ChartHandle {
         Ok(chart.setVisibleLogicalRange(to_value(range)?)?)
     }
 
+    pub fn apply_price_scale_options(
+        &self,
+        price_scale_id: impl Into<String>,
+        panel: Option<PanelId>,
+        options: &PriceScaleOptions,
+    ) -> Result<(), JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.applyPriceScaleOptions(
+            price_scale_id.into(),
+            panel
+                .map(|panel| JsValue::from_f64(panel as f64))
+                .unwrap_or(JsValue::UNDEFINED),
+            to_value(options)?,
+        )?)
+    }
+
+    pub fn get_price_scale_visible_range(
+        &self,
+        price_scale_id: impl Into<String>,
+        panel: Option<PanelId>,
+    ) -> Result<Option<PriceRange>, JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        let value = chart.getPriceScaleVisibleRange(
+            price_scale_id.into(),
+            panel
+                .map(|panel| JsValue::from_f64(panel as f64))
+                .unwrap_or(JsValue::UNDEFINED),
+        )?;
+        if value.is_null() || value.is_undefined() {
+            return Ok(None);
+        }
+
+        Ok(Some(from_value(value)?))
+    }
+
+    pub fn set_price_scale_visible_range(
+        &self,
+        price_scale_id: impl Into<String>,
+        panel: Option<PanelId>,
+        range: &PriceRange,
+    ) -> Result<(), JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.setPriceScaleVisibleRange(
+            price_scale_id.into(),
+            panel
+                .map(|panel| JsValue::from_f64(panel as f64))
+                .unwrap_or(JsValue::UNDEFINED),
+            to_value(range)?,
+        )?)
+    }
+
+    pub fn set_price_scale_auto_scale(
+        &self,
+        price_scale_id: impl Into<String>,
+        panel: Option<PanelId>,
+        on: bool,
+    ) -> Result<(), JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.setPriceScaleAutoScale(
+            price_scale_id.into(),
+            panel
+                .map(|panel| JsValue::from_f64(panel as f64))
+                .unwrap_or(JsValue::UNDEFINED),
+            on,
+        )?)
+    }
+
+    pub fn get_price_scale_width(
+        &self,
+        price_scale_id: impl Into<String>,
+        panel: Option<PanelId>,
+    ) -> Result<f64, JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.getPriceScaleWidth(
+            price_scale_id.into(),
+            panel
+                .map(|panel| JsValue::from_f64(panel as f64))
+                .unwrap_or(JsValue::UNDEFINED),
+        )?)
+    }
+
     pub fn resize(&self, width: f64, height: f64) -> Result<(), JsError> {
         let chart = self
             .chart
@@ -166,6 +284,60 @@ impl ChartHandle {
             .map_err(|err| JsError::new_from_str(&err.to_string()))?;
 
         Ok(chart.updateSeriesOptions(series_id, to_value(options)?)?)
+    }
+
+    pub fn apply_series_price_scale_options(
+        &self,
+        series_id: String,
+        options: &PriceScaleOptions,
+    ) -> Result<(), JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.applySeriesPriceScaleOptions(series_id, to_value(options)?)?)
+    }
+
+    pub fn get_series_price_scale_visible_range(&self, series_id: String) -> Result<Option<PriceRange>, JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        let value = chart.getSeriesPriceScaleVisibleRange(series_id)?;
+        if value.is_null() || value.is_undefined() {
+            return Ok(None);
+        }
+
+        Ok(Some(from_value(value)?))
+    }
+
+    pub fn set_series_price_scale_visible_range(&self, series_id: String, range: &PriceRange) -> Result<(), JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.setSeriesPriceScaleVisibleRange(series_id, to_value(range)?)?)
+    }
+
+    pub fn set_series_price_scale_auto_scale(&self, series_id: String, on: bool) -> Result<(), JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.setSeriesPriceScaleAutoScale(series_id, on)?)
+    }
+
+    pub fn get_series_price_scale_width(&self, series_id: String) -> Result<f64, JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.getSeriesPriceScaleWidth(series_id)?)
     }
 
     pub fn update_data<Dat>(&self, series_id: String, data: &Vec<Dat>) -> Result<(), JsError>
