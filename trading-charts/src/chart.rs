@@ -110,17 +110,19 @@ pub fn Chart(
 
     let style = style.map_or_else(String::new, |s| s.to_string());
     let class = class.map_or_else(String::new, |s| s.to_string());
-    let children = match children {
-        Some(children) => children().into_any(),
-        None => view!(<></>).into_any(),
-    };
-
-    let res = view! {
-        <Provider value=chart>
-            <div style=style class=class node_ref={node_ref}/>
-            {children}
-        </Provider>
-    };
-
-    res.into_any()
+    match children {
+        Some(children) => view! {
+            <Provider value=chart>
+                <div style=style class=class node_ref={node_ref}/>
+                {children()}
+            </Provider>
+        }
+        .into_any(),
+        None => view! {
+            <Provider value=chart>
+                <div style=style class=class node_ref={node_ref}/>
+            </Provider>
+        }
+        .into_any(),
+    }
 }

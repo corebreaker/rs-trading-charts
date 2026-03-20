@@ -1,5 +1,5 @@
 use charts::{
-    data::{Candlestick, HistogramData, Marker, UTCTimestamp, ValueData},
+    data::{Candlestick, HistogramData, Marker, TimeRange, UTCTimestamp, ValueData},
     JsError,
 };
 
@@ -90,6 +90,13 @@ impl Dataset {
 
     pub(super) fn histogram_down(&self) -> Vec<HistogramData> {
         make_histogram_data(&self.data_down)
+    }
+
+    pub(super) fn recent_range(&self) -> Option<TimeRange> {
+        let to = self.data_up.last()?.time();
+        let from = self.data_up[self.data_up.len().saturating_sub(12)].time();
+
+        Some(TimeRange::new(from, to))
     }
 
     pub(super) fn markers(&self) -> &Vec<Marker> {
