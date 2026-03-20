@@ -21,7 +21,7 @@
   "homepage": "https://github.com/corebreaker/rs-trading-charts#readme",
   "dependencies": {
     "@bundled-es-modules/uuid": "^3.3",
-    "lightweight-charts": "^5.0"
+    "lightweight-charts": "5.1.0"
   },
   "devDependencies": {
     "esbuild": "^0.25"
