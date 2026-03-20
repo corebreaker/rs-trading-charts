@@ -22,6 +22,21 @@ extern "C" {
     pub(super) fn refitContent(this: &TradingChart) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
+    pub(super) fn getVisibleRange(this: &TradingChart) -> Result<JsValue, JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(super) fn setVisibleRange(this: &TradingChart, range: JsValue) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(super) fn getVisibleLogicalRange(this: &TradingChart) -> Result<JsValue, JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(super) fn setVisibleLogicalRange(this: &TradingChart, range: JsValue) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(super) fn resize(this: &TradingChart, width: f64, height: f64) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
     pub(super) fn addSeries(this: &TradingChart, series: JsValue) -> Result<String, JsValue>;
 
     #[wasm_bindgen(method, catch)]
@@ -41,4 +56,7 @@ extern "C" {
 
     #[wasm_bindgen(method, catch)]
     pub(super) fn setMarkers(this: &TradingChart, seriesId: String, markers: JsValue) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(super) fn setPriceLines(this: &TradingChart, seriesId: String, priceLines: JsValue) -> Result<(), JsValue>;
 }

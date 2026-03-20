@@ -1,7 +1,7 @@
 use super::HistogramSeriesOptions;
 use crate::{
     ChartHandle, PanelId,
-    data::{HistogramData, Marker, series::Series},
+    data::{HistogramData, Marker, PriceLineOptions, series::Series},
 };
 
 use leptos::{
@@ -19,6 +19,7 @@ pub fn HistogramSeries(
     #[prop(optional, into)] options: Option<Signal<HistogramSeriesOptions>>,
     #[prop(into)] data: Signal<Vec<HistogramData>>,
     #[prop(into)] markers: Signal<Vec<Marker>>,
+    #[prop(optional, into)] price_lines: Signal<Vec<PriceLineOptions>>,
 ) -> impl IntoView {
     let chart: Option<ChartHandle> = use_context();
     if let Some(chart) = chart {
@@ -88,6 +89,23 @@ pub fn HistogramSeries(
 
                     if let Err(err) = res {
                         err.with_prefix("Failed to set markers").log();
+                    }
+                }
+            });
+
+            let _ = Effect::new({
+                let id = id.clone();
+                let chart = chart.clone();
+
+                move || {
+                    let res = price_lines.with(|price_lines| {
+                        chart
+                            .set_price_lines(id.clone(), price_lines)
+                            .map_err(|err| err.with_serializable_data(price_lines))
+                    });
+
+                    if let Err(err) = res {
+                        err.with_prefix("Failed to set price lines").log();
                     }
                 }
             });

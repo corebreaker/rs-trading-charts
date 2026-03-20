@@ -99,6 +99,8 @@ export class TradingChart {
         } else {
             series.markerApi = createSeriesMarkers(series.chartApi, series.markerData || []);
         }
+
+        series.rebuildPriceLines();
     }
 
     destroy() {
@@ -143,6 +145,36 @@ export class TradingChart {
         chart.timeScale().fitContent();
     }
 
+    getVisibleRange() {
+        const chart = this._getChart();
+
+        return chart.timeScale().getVisibleRange();
+    }
+
+    setVisibleRange(range) {
+        const chart = this._getChart();
+
+        chart.timeScale().setVisibleRange(range);
+    }
+
+    getVisibleLogicalRange() {
+        const chart = this._getChart();
+
+        return chart.timeScale().getVisibleLogicalRange();
+    }
+
+    setVisibleLogicalRange(range) {
+        const chart = this._getChart();
+
+        chart.timeScale().setVisibleLogicalRange(range);
+    }
+
+    resize(width, height) {
+        const chart = this._getChart();
+
+        chart.resize(width, height);
+    }
+
     addSeries(seriesDesc) {
         const optId = seriesDesc.id;
         const type = seriesDesc.type;
@@ -168,6 +200,8 @@ export class TradingChart {
             chartApi: null,
             markerApi: null,
             markerData: [],
+            priceLines: [],
+            priceLineApis: [],
             sorted: false,
             panel: panel ?? null,
             params: {
@@ -203,6 +237,19 @@ export class TradingChart {
                 setTimeout(() => {
                     markers.setMarkers(this.markerData);
                 }, 1);
+            },
+
+            rebuildPriceLines() {
+                if (!this.chartApi) {
+                    this.priceLineApis = [];
+                    return;
+                }
+
+                for (const priceLine of this.priceLineApis) {
+                    this.chartApi.removePriceLine(priceLine);
+                }
+
+                this.priceLineApis = this.priceLines.map(priceLine => this.chartApi.createPriceLine(priceLine));
             },
 
             setMarker(markerDesc) {
@@ -267,6 +314,9 @@ export class TradingChart {
         if (this._chart && series.chartApi) {
             series.markerData = [];
             series.updateMarkers();
+            for (const priceLine of series.priceLineApis) {
+                series.chartApi.removePriceLine(priceLine);
+            }
             this._chart.removeSeries(series.chartApi);
         }
 
@@ -334,5 +384,12 @@ export class TradingChart {
         }
 
         series.updateMarkers();
+    }
+
+    setPriceLines(seriesId, priceLines) {
+        const series = this._getSeries(seriesId);
+
+        series.priceLines = Array.isArray(priceLines) ? priceLines.slice() : [];
+        series.rebuildPriceLines();
     }
 }

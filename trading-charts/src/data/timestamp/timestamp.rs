@@ -33,13 +33,13 @@ impl UTCTimestamp {
     }
 
     pub fn from_value(timestamp: i64) -> Option<Self> {
-        let dt = DateTime::<Utc>::from_timestamp(timestamp / 1000, ((timestamp % 1000) as u32) * 1_000_0000)?;
+        let dt = timestamp_from_int(timestamp)?;
 
         Some(Self::from_datetime(dt))
     }
 
     pub fn into_datetime(self) -> DateTime<Utc> {
-        DateTime::<Utc>::from_timestamp(self.timestamp / 1000, ((self.timestamp % 1000) as u32) * 1_000_0000).unwrap()
+        DateTime::<Utc>::from_timestamp(self.timestamp / 1000, ((self.timestamp % 1000) as u32) * 1_000_000).unwrap()
     }
 
     pub fn timestamp(&self) -> i64 {
@@ -112,7 +112,7 @@ impl<'de> Deserialize<'de> for UTCTimestamp {
             }
 
             fn visit_i64<E: SerdeError>(self, value: i64) -> Result<Self::Value, E> {
-                match DateTime::<Utc>::from_timestamp(value / 1000, ((value % 1000) as u32) * 1_000_000) {
+                match timestamp_from_int(value) {
                     Some(ts) => Ok(UTCTimestamp::from_datetime(ts)),
                     None => Err(SerdeError::custom(format!("invalid timestamp: {value}"))),
                 }
@@ -170,5 +170,16 @@ impl<'de> Deserialize<'de> for UTCTimestamp {
         }
 
         deserializer.deserialize_any(TimestampVisitor)
+    }
+}
+
+fn timestamp_from_int(value: i64) -> Option<DateTime<Utc>> {
+    if value.unsigned_abs() >= 100_000_000_000 {
+        let seconds = value.div_euclid(1000);
+        let nanos = value.rem_euclid(1000) as u32 * 1_000_000;
+
+        DateTime::<Utc>::from_timestamp(seconds, nanos)
+    } else {
+        DateTime::<Utc>::from_timestamp(value, 0)
     }
 }

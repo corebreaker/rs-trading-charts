@@ -2,7 +2,7 @@ use super::AreaSeriesOptions;
 use crate::{
     PanelId,
     chart::use_chart,
-    data::{Marker, ValueData, series::Series},
+    data::{Marker, PriceLineOptions, ValueData, series::Series},
 };
 use dioxus::prelude::*;
 
@@ -10,6 +10,8 @@ use dioxus::prelude::*;
 pub struct AreaSeriesProps {
     data: Vec<ValueData>,
     markers: Vec<Marker>,
+    #[props(default)]
+    price_lines: Vec<PriceLineOptions>,
     #[props(default)]
     options: Option<AreaSeriesOptions>,
 }
@@ -83,6 +85,21 @@ pub fn AreaSeries(props: AreaSeriesProps) -> Element {
                 if let Err(err) = chart.set_markers(series_id, &markers) {
                     err.with_prefix("Failed to set markers")
                         .with_serializable_data(&markers)
+                        .log();
+                }
+            }
+        });
+    }
+
+    {
+        let chart = chart.clone();
+        let series_id = series_id.clone();
+        let price_lines = props.price_lines.clone();
+        use_effect(move || {
+            if let Some(series_id) = series_id.clone() {
+                if let Err(err) = chart.set_price_lines(series_id, &price_lines) {
+                    err.with_prefix("Failed to set price lines")
+                        .with_serializable_data(&price_lines)
                         .log();
                 }
             }

@@ -1,11 +1,11 @@
 use super::js::TradingChart as JsChart;
 use crate::{
-    data::{series::Series, options::ChartOptions, Marker},
+    data::{series::Series, options::ChartOptions, LogicalRange, Marker, PriceLineOptions, TimeRange},
     JsError,
 };
 
 use serde::Serialize;
-use serde_wasm_bindgen::to_value;
+use serde_wasm_bindgen::{from_value, to_value};
 use wasm_bindgen::JsValue;
 use web_sys::HtmlDivElement;
 use std::sync::{
@@ -73,6 +73,61 @@ impl ChartHandle {
             .map_err(|err| JsError::new_from_str(&err.to_string()))?;
 
         Ok(chart.refitContent()?)
+    }
+
+    pub fn get_visible_range(&self) -> Result<Option<TimeRange>, JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        let value = chart.getVisibleRange()?;
+        if value.is_null() || value.is_undefined() {
+            return Ok(None);
+        }
+
+        Ok(Some(from_value(value)?))
+    }
+
+    pub fn set_visible_range(&self, range: &TimeRange) -> Result<(), JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.setVisibleRange(to_value(range)?)?)
+    }
+
+    pub fn get_visible_logical_range(&self) -> Result<Option<LogicalRange>, JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        let value = chart.getVisibleLogicalRange()?;
+        if value.is_null() || value.is_undefined() {
+            return Ok(None);
+        }
+
+        Ok(Some(from_value(value)?))
+    }
+
+    pub fn set_visible_logical_range(&self, range: &LogicalRange) -> Result<(), JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.setVisibleLogicalRange(to_value(range)?)?)
+    }
+
+    pub fn resize(&self, width: f64, height: f64) -> Result<(), JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.resize(width, height)?)
     }
 
     pub fn allocate_panel(&self) -> PanelId {
@@ -144,6 +199,15 @@ impl ChartHandle {
             .map_err(|err| JsError::new_from_str(&err.to_string()))?;
 
         Ok(chart.setMarkers(series_id, to_value(markers)?)?)
+    }
+
+    pub fn set_price_lines(&self, series_id: String, price_lines: &Vec<PriceLineOptions>) -> Result<(), JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.setPriceLines(series_id, to_value(price_lines)?)?)
     }
 
     pub fn remove_series(&self, series_id: String) -> Result<(), JsError> {
