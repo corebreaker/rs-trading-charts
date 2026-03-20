@@ -117,6 +117,12 @@ extern "C" {
     pub(super) fn takeScreenshot(this: &TradingChart) -> Result<String, JsValue>;
 
     #[wasm_bindgen(method, catch)]
+    pub(super) fn setLegendOptions(this: &TradingChart, options: JsValue) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(super) fn removeLegend(this: &TradingChart) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
     pub(super) fn addTextWatermark(this: &TradingChart, paneIndex: u32, options: JsValue) -> Result<String, JsValue>;
 
     #[wasm_bindgen(method, catch)]

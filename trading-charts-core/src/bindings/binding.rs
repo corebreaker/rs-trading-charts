@@ -3,8 +3,12 @@ use crate::{
     data::{
         series::Series,
         options::{ChartOptions, PriceScaleOptions, TimeScaleOptions},
-        ImageWatermarkOptions, LogicalRange, Marker, PaneSize, PriceLineOptions, PriceRange, TextWatermarkOptions,
-        TimeRange, UTCTimestamp,
+        Candlestick, HistogramData, ImageWatermarkOptions, LegendOptions, LogicalRange, Marker, PaneSize,
+        PriceLineOptions, PriceRange, TextWatermarkOptions, TimeRange, UTCTimestamp, ValueData,
+    },
+    series::{
+        areas::AreaSeriesOptions, bars::BarSeriesOptions, baselines::BaselineSeriesOptions,
+        candlesticks::CandlestickOptions, histograms::HistogramSeriesOptions, lines::LineSeriesOptions,
     },
     JsError,
 };
@@ -386,6 +390,24 @@ impl ChartHandle {
         Ok(chart.takeScreenshot()?)
     }
 
+    pub fn apply_legend_options(&self, options: &LegendOptions) -> Result<(), JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.setLegendOptions(to_value(options)?)?)
+    }
+
+    pub fn remove_legend(&self) -> Result<(), JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.removeLegend()?)
+    }
+
     pub fn add_text_watermark(&self, panel: PanelId, options: &TextWatermarkOptions) -> Result<String, JsError> {
         let chart = self
             .chart
@@ -454,6 +476,60 @@ impl ChartHandle {
 
         series.set_id(id);
         Ok(())
+    }
+
+    pub fn add_line_series(
+        &self,
+        data: Vec<ValueData>,
+        options: Option<LineSeriesOptions>,
+        panel: Option<PanelId>,
+    ) -> Result<String, JsError> {
+        self.add_typed_series("line", data, options, panel)
+    }
+
+    pub fn add_area_series(
+        &self,
+        data: Vec<ValueData>,
+        options: Option<AreaSeriesOptions>,
+        panel: Option<PanelId>,
+    ) -> Result<String, JsError> {
+        self.add_typed_series("area", data, options, panel)
+    }
+
+    pub fn add_baseline_series(
+        &self,
+        data: Vec<ValueData>,
+        options: Option<BaselineSeriesOptions>,
+        panel: Option<PanelId>,
+    ) -> Result<String, JsError> {
+        self.add_typed_series("baseline", data, options, panel)
+    }
+
+    pub fn add_histogram_series(
+        &self,
+        data: Vec<HistogramData>,
+        options: Option<HistogramSeriesOptions>,
+        panel: Option<PanelId>,
+    ) -> Result<String, JsError> {
+        self.add_typed_series("histogram", data, options, panel)
+    }
+
+    pub fn add_candlestick_series(
+        &self,
+        data: Vec<Candlestick>,
+        options: Option<CandlestickOptions>,
+        panel: Option<PanelId>,
+    ) -> Result<String, JsError> {
+        self.add_typed_series("candlestick", data, options, panel)
+    }
+
+    pub fn add_bar_series(
+        &self,
+        data: Vec<Candlestick>,
+        options: Option<BarSeriesOptions>,
+        panel: Option<PanelId>,
+    ) -> Result<String, JsError> {
+        self.add_typed_series("bar", data, options, panel)
     }
 
     pub fn update_series_options(&self, series_id: String, options: &impl Serialize) -> Result<(), JsError> {
@@ -682,6 +758,35 @@ impl Drop for ChartHandle {
                 JsError::new_from_str(&err.to_string()).log();
             }
         }
+    }
+}
+
+impl ChartHandle {
+    fn add_typed_series<Dat, Opt>(
+        &self,
+        series_type: &str,
+        data: Vec<Dat>,
+        options: Option<Opt>,
+        panel: Option<PanelId>,
+    ) -> Result<String, JsError>
+    where
+        Dat: Serialize + Clone,
+        Opt: Serialize + Clone,
+    {
+        let mut series: Series<Dat, Opt> = Series::new(series_type);
+        if let Some(panel) = panel {
+            series.set_panel(panel);
+        }
+        if let Some(options) = options {
+            series.set_options(options);
+        }
+        series.set_data(data);
+        self.add_series(&mut series)?;
+
+        series
+            .id()
+            .cloned()
+            .ok_or_else(|| JsError::new_from_str("Series was added without an id"))
     }
 }
 

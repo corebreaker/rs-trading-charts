@@ -1,6 +1,9 @@
 use dioxus::prelude::*;
 use dioxus_web::WebEventExt;
-use trading_charts_core::{ChartHandle, JsError, data::options::ChartOptions};
+use trading_charts_core::{
+    ChartHandle, JsError,
+    data::{LegendOptions, options::ChartOptions},
+};
 use wasm_bindgen::JsCast;
 use web_sys::HtmlDivElement;
 
@@ -8,6 +11,8 @@ use web_sys::HtmlDivElement;
 pub struct ChartProps {
     #[props(default)]
     options: Option<ChartOptions>,
+    #[props(default)]
+    legend: Option<LegendOptions>,
     #[props(default, into)]
     style: Option<String>,
     #[props(default, into)]
@@ -58,6 +63,23 @@ pub fn Chart(props: ChartProps) -> Element {
             if let Some(options) = options.as_ref() {
                 if let Err(err) = chart.apply_chart_options(options) {
                     err.with_prefix("Failed to apply chart options").log();
+                }
+            }
+        });
+    }
+
+    {
+        let chart = chart.clone();
+        let legend = props.legend.clone();
+        use_effect(move || match legend.as_ref() {
+            Some(legend) => {
+                if let Err(err) = chart.apply_legend_options(legend) {
+                    err.with_prefix("Failed to apply legend options").log();
+                }
+            }
+            None => {
+                if let Err(err) = chart.remove_legend() {
+                    err.with_prefix("Failed to remove legend").log();
                 }
             }
         });

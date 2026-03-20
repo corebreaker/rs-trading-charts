@@ -57,8 +57,18 @@ function sortByTime(data) {
 export class TradingChart {
     constructor() {
         this._chart = null;
+        this._node = null;
         this._series = {};
         this._watermarks = {};
+        this._legend = {
+            options: null,
+            root: null,
+            ohlcNode: null,
+            volumeNode: null,
+            rowsNode: null,
+            rows: {},
+            crosshairHandler: null,
+        };
     }
 
     _getChartPriceScale(priceScaleId, paneIndex = undefined) {
@@ -119,6 +129,368 @@ export class TradingChart {
         }
 
         return watermark;
+    }
+
+    _normalizeLegendOptions(options) {
+        return Object.assign({
+            visible: true,
+            showOhlc: true,
+            showPercent: true,
+            showSeries: true,
+            showVolume: true,
+            toggleSeriesVisibility: true,
+            textColor: '#0f172a',
+            backgroundColor: 'rgba(255, 255, 255, 0.78)',
+            fontSize: 12,
+            fontFamily: "-apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif",
+            top: 12,
+            left: 12,
+        }, options || {});
+    }
+
+    _getSeriesTitle(series) {
+        const title = series.params?.options?.title;
+        if (title && `${title}`.trim().length > 0) {
+            return title;
+        }
+
+        const type = `${series.params?.type || 'series'}`;
+        return `${type.slice(0, 1).toUpperCase()}${type.slice(1)}`;
+    }
+
+    _getSeriesVisible(series) {
+        return series.params?.options?.visible !== false;
+    }
+
+    _extractSeriesPrice(dataPoint) {
+        if (!dataPoint) {
+            return null;
+        }
+        if (typeof dataPoint.value === 'number') {
+            return dataPoint.value;
+        }
+        if (typeof dataPoint.close === 'number') {
+            return dataPoint.close;
+        }
+        if (typeof dataPoint.price === 'number') {
+            return dataPoint.price;
+        }
+
+        return null;
+    }
+
+    _formatSeriesPrice(series, price) {
+        if (!Number.isFinite(price)) {
+            return '';
+        }
+
+        if (series.chartApi) {
+            try {
+                return series.getApi().priceFormatter().format(price);
+            } catch (_error) {
+            }
+        }
+
+        const precision = series.params?.options?.priceFormat?.precision;
+        if (typeof precision === 'number') {
+            return price.toFixed(precision);
+        }
+
+        if (Math.abs(price) >= 1000) {
+            return price.toFixed(2);
+        }
+
+        return `${price}`;
+    }
+
+    _getSeriesColor(series, dataPoint = undefined) {
+        const options = series.params?.options || {};
+
+        if (
+            dataPoint &&
+            typeof dataPoint.open === 'number' &&
+            typeof dataPoint.close === 'number' &&
+            options.upColor &&
+            options.downColor
+        ) {
+            return dataPoint.close >= dataPoint.open ? options.upColor : options.downColor;
+        }
+
+        if (series.chartApi) {
+            try {
+                const lastValue = series.getApi().lastValueData(true);
+                if (lastValue && lastValue.color) {
+                    return lastValue.color;
+                }
+            } catch (_error) {
+            }
+        }
+
+        return options.color
+            || options.lineColor
+            || options.topLineColor
+            || options.bottomLineColor
+            || options.upColor
+            || options.borderUpColor
+            || options.priceLineColor
+            || '#334155';
+    }
+
+    _getSeriesLegendData(series, param = null) {
+        if (param && param.seriesData && series.chartApi) {
+            const hovered = param.seriesData.get(series.chartApi);
+            if (hovered) {
+                return hovered;
+            }
+        }
+
+        const data = series.params?.data;
+        if (!Array.isArray(data) || data.length === 0) {
+            return null;
+        }
+
+        return data[data.length - 1];
+    }
+
+    _getOhlcSeries() {
+        return Object.values(this._series).find(series => ['candlestick', 'bar'].includes(series.params?.type));
+    }
+
+    _getVolumeSeries() {
+        return Object.values(this._series).find(series => (
+            series.params?.type === 'histogram'
+            && series.params?.options?.priceFormat?.type === 'volume'
+        ));
+    }
+
+    _setSeriesVisible(seriesId, visible) {
+        const series = this._getSeries(seriesId);
+        series.params.options = Object.assign({}, series.params.options || {}, { visible });
+        if (series.chartApi) {
+            series.getApi().applyOptions({ visible });
+        }
+        this._refreshLegend();
+    }
+
+    _clearLegend() {
+        if (this._chart && this._legend.crosshairHandler) {
+            this._chart.unsubscribeCrosshairMove(this._legend.crosshairHandler);
+        }
+
+        if (this._legend.root && this._legend.root.parentNode) {
+            this._legend.root.parentNode.removeChild(this._legend.root);
+        }
+
+        this._legend.root = null;
+        this._legend.ohlcNode = null;
+        this._legend.volumeNode = null;
+        this._legend.rowsNode = null;
+        this._legend.rows = {};
+        this._legend.crosshairHandler = null;
+    }
+
+    _rebuildLegendRows() {
+        const options = this._legend.options;
+        const rowsNode = this._legend.rowsNode;
+        if (!options || !rowsNode) {
+            return;
+        }
+
+        rowsNode.replaceChildren();
+        this._legend.rows = {};
+
+        if (!options.showSeries) {
+            return;
+        }
+
+        for (const [seriesId, series] of Object.entries(this._series)) {
+            const row = document.createElement('div');
+            row.style.display = 'flex';
+            row.style.alignItems = 'center';
+            row.style.gap = '8px';
+            row.style.pointerEvents = 'none';
+
+            const swatch = document.createElement('span');
+            swatch.style.display = 'inline-block';
+            swatch.style.width = '10px';
+            swatch.style.height = '10px';
+            swatch.style.borderRadius = '999px';
+            swatch.style.flex = '0 0 10px';
+
+            const label = document.createElement('span');
+            label.textContent = this._getSeriesTitle(series);
+            label.style.minWidth = '64px';
+
+            const value = document.createElement('span');
+            value.style.fontVariantNumeric = 'tabular-nums';
+            value.style.opacity = '0.92';
+
+            row.appendChild(swatch);
+            row.appendChild(label);
+            row.appendChild(value);
+
+            let toggle = null;
+            if (options.toggleSeriesVisibility) {
+                toggle = document.createElement('button');
+                toggle.type = 'button';
+                toggle.style.pointerEvents = 'auto';
+                toggle.style.border = '1px solid rgba(15, 23, 42, 0.16)';
+                toggle.style.background = 'rgba(255, 255, 255, 0.65)';
+                toggle.style.borderRadius = '999px';
+                toggle.style.padding = '2px 8px';
+                toggle.style.fontSize = '11px';
+                toggle.style.lineHeight = '1.2';
+                toggle.style.cursor = 'pointer';
+                toggle.addEventListener('click', event => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    this._setSeriesVisible(seriesId, !this._getSeriesVisible(series));
+                });
+                row.appendChild(toggle);
+            }
+
+            rowsNode.appendChild(row);
+            this._legend.rows[seriesId] = { row, swatch, label, value, toggle };
+        }
+    }
+
+    _refreshLegend(param = null) {
+        const options = this._legend.options;
+        if (!options || !this._legend.root) {
+            return;
+        }
+
+        if (this._legend.ohlcNode) {
+            const series = this._getOhlcSeries();
+            if (series && options.showOhlc) {
+                const dataPoint = this._getSeriesLegendData(series, param);
+                if (
+                    dataPoint &&
+                    typeof dataPoint.open === 'number' &&
+                    typeof dataPoint.high === 'number' &&
+                    typeof dataPoint.low === 'number' &&
+                    typeof dataPoint.close === 'number'
+                ) {
+                    const parts = [
+                        `O ${this._formatSeriesPrice(series, dataPoint.open)}`,
+                        `H ${this._formatSeriesPrice(series, dataPoint.high)}`,
+                        `L ${this._formatSeriesPrice(series, dataPoint.low)}`,
+                        `C ${this._formatSeriesPrice(series, dataPoint.close)}`,
+                    ];
+
+                    if (options.showPercent && dataPoint.open !== 0) {
+                        const percent = ((dataPoint.close - dataPoint.open) / dataPoint.open) * 100;
+                        const prefix = percent >= 0 ? '+' : '';
+                        parts.push(`${prefix}${percent.toFixed(2)}%`);
+                    }
+
+                    this._legend.ohlcNode.textContent = `${this._getSeriesTitle(series)}  ${parts.join('  ')}`;
+                    this._legend.ohlcNode.style.display = '';
+                } else {
+                    this._legend.ohlcNode.style.display = 'none';
+                }
+            } else {
+                this._legend.ohlcNode.style.display = 'none';
+            }
+        }
+
+        if (this._legend.volumeNode) {
+            const volumeSeries = this._getVolumeSeries();
+            if (volumeSeries && options.showVolume) {
+                const dataPoint = this._getSeriesLegendData(volumeSeries, param);
+                const price = this._extractSeriesPrice(dataPoint);
+                if (Number.isFinite(price)) {
+                    this._legend.volumeNode.textContent = `${this._getSeriesTitle(volumeSeries)}  ${this._formatSeriesPrice(volumeSeries, price)}`;
+                    this._legend.volumeNode.style.display = '';
+                } else {
+                    this._legend.volumeNode.style.display = 'none';
+                }
+            } else {
+                this._legend.volumeNode.style.display = 'none';
+            }
+        }
+
+        for (const [seriesId, row] of Object.entries(this._legend.rows)) {
+            const series = this._series[seriesId];
+            if (!series) {
+                continue;
+            }
+
+            const dataPoint = this._getSeriesLegendData(series, param);
+            const price = this._extractSeriesPrice(dataPoint);
+            const visible = this._getSeriesVisible(series);
+
+            row.label.textContent = this._getSeriesTitle(series);
+            row.swatch.style.background = this._getSeriesColor(series, dataPoint);
+            row.value.textContent = Number.isFinite(price) ? this._formatSeriesPrice(series, price) : '';
+            row.row.style.opacity = visible ? '1' : '0.52';
+            if (row.toggle) {
+                row.toggle.textContent = visible ? 'hide' : 'show';
+            }
+        }
+    }
+
+    _mountLegend() {
+        this._clearLegend();
+
+        const options = this._legend.options;
+        if (!options || !options.visible || !this._node) {
+            return;
+        }
+
+        if (window.getComputedStyle(this._node).position === 'static') {
+            this._node.style.position = 'relative';
+        }
+
+        const root = document.createElement('div');
+        root.style.position = 'absolute';
+        root.style.left = `${options.left}px`;
+        root.style.top = `${options.top}px`;
+        root.style.zIndex = '20';
+        root.style.display = 'flex';
+        root.style.flexDirection = 'column';
+        root.style.gap = '6px';
+        root.style.maxWidth = 'calc(100% - 24px)';
+        root.style.padding = '8px 10px';
+        root.style.borderRadius = '10px';
+        root.style.background = options.backgroundColor;
+        root.style.color = options.textColor;
+        root.style.fontSize = `${options.fontSize}px`;
+        root.style.fontFamily = options.fontFamily;
+        root.style.lineHeight = '1.35';
+        root.style.boxShadow = '0 6px 24px rgba(15, 23, 42, 0.08)';
+        root.style.pointerEvents = 'none';
+
+        const ohlcNode = document.createElement('div');
+        ohlcNode.style.fontVariantNumeric = 'tabular-nums';
+        ohlcNode.style.fontWeight = '600';
+        root.appendChild(ohlcNode);
+
+        const volumeNode = document.createElement('div');
+        volumeNode.style.fontVariantNumeric = 'tabular-nums';
+        volumeNode.style.opacity = '0.9';
+        root.appendChild(volumeNode);
+
+        const rowsNode = document.createElement('div');
+        rowsNode.style.display = 'flex';
+        rowsNode.style.flexDirection = 'column';
+        rowsNode.style.gap = '4px';
+        root.appendChild(rowsNode);
+
+        this._node.appendChild(root);
+        this._legend.root = root;
+        this._legend.ohlcNode = ohlcNode;
+        this._legend.volumeNode = volumeNode;
+        this._legend.rowsNode = rowsNode;
+        this._rebuildLegendRows();
+        this._refreshLegend();
+
+        if (this._chart) {
+            this._legend.crosshairHandler = param => {
+                this._refreshLegend(param && param.time !== undefined ? param : null);
+            };
+            this._chart.subscribeCrosshairMove(this._legend.crosshairHandler);
+        }
     }
 
     _bindWatermark(watermarkId) {
@@ -200,9 +572,13 @@ export class TradingChart {
         }
 
         series.rebuildPriceLines();
+        this._rebuildLegendRows();
+        this._refreshLegend();
     }
 
     destroy() {
+        this._clearLegend();
+
         if (this._chart) {
             this._chart.remove();
             this._chart = null;
@@ -222,6 +598,7 @@ export class TradingChart {
 
         this._series = {};
         this._watermarks = {};
+        this._node = null;
     }
 
     applyChartOptions(options) {
@@ -241,6 +618,8 @@ export class TradingChart {
     }
 
     bindChart(node, options = null) {
+        this._clearLegend();
+
         if (this._chart) {
             this._chart.remove();
             this._chart = null;
@@ -250,6 +629,7 @@ export class TradingChart {
             }
         }
 
+        this._node = node;
         this._chart = createChart(node, options || {});
         for (const seriesId of Object.keys(this._series)) {
             this._bindSeries(seriesId);
@@ -258,6 +638,8 @@ export class TradingChart {
         for (const watermarkId of Object.keys(this._watermarks)) {
             this._bindWatermark(watermarkId);
         }
+
+        this._mountLegend();
     }
 
     refitContent() {
@@ -386,6 +768,16 @@ export class TradingChart {
         const chart = this._getChart();
 
         return chart.takeScreenshot().toDataURL();
+    }
+
+    setLegendOptions(options) {
+        this._legend.options = this._normalizeLegendOptions(options);
+        this._mountLegend();
+    }
+
+    removeLegend() {
+        this._legend.options = null;
+        this._clearLegend();
     }
 
     addTextWatermark(paneIndex, options) {
@@ -580,6 +972,8 @@ export class TradingChart {
         };
 
         this._bindSeries(id);
+        this._rebuildLegendRows();
+        this._refreshLegend();
 
         return id;
     }
@@ -600,6 +994,9 @@ export class TradingChart {
             this._chart.removeSeries(series.chartApi);
         }
 
+        this._rebuildLegendRows();
+        this._refreshLegend();
+
         return true;
     }
 
@@ -609,6 +1006,8 @@ export class TradingChart {
         if (series.chartApi) {
             series.getApi().applyOptions(options);
         }
+        this._rebuildLegendRows();
+        this._refreshLegend();
     }
 
     applySeriesPriceScaleOptions(seriesId, options) {
@@ -703,6 +1102,7 @@ export class TradingChart {
         if (series.chartApi) {
             series.getApi().setData(data);
         }
+        this._refreshLegend();
     }
 
     updateDataPoint(seriesId, dataPoint) {
@@ -731,6 +1131,7 @@ export class TradingChart {
                 series.getApi().setData(data);
             }
         }
+        this._refreshLegend();
     }
 
     setMarker(seriesId, marker) {

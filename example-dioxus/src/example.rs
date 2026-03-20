@@ -2,12 +2,13 @@ use super::dataset::Dataset;
 use charts::{
     chart::{Chart, use_chart},
     data::{
-        PriceLineOptions,
+        LegendOptions, PriceLineOptions,
         options::{
             background::Background,
             cross_hair::{CrossHairOptions, CrosshairLineOptions},
             layout::{LayoutOptions, LayoutPanesOptions},
-            ChartOptions, LastPriceAnimationMode, LineType, PriceFormatOptions, PriceScaleOptions, TimeScaleOptions,
+            ChartOptions, LastPriceAnimationMode, LineType, LineWidth, PriceFormatOptions, PriceScaleOptions,
+            TimeScaleOptions,
         },
     },
     panel::ChartPanel,
@@ -31,6 +32,7 @@ pub fn app() -> Element {
     let pane_text = use_signal(|| String::from("Panes: pending"));
     let coordinate_text = use_signal(|| String::from("Coordinates: pending"));
     let watermark_text = use_signal(|| String::from("Watermarks: pending"));
+    let direct_series_text = use_signal(|| String::from("Direct series: idle"));
     let screenshot_status = use_signal(|| String::from("Screenshot: idle"));
     let screenshot_data_url = use_signal(|| None::<String>);
     let mut price_scale_zoom_request = use_signal(|| 0_u64);
@@ -39,6 +41,8 @@ pub fn app() -> Element {
     let mut pane_swap_request = use_signal(|| 0_u64);
     let mut coordinate_probe_request = use_signal(|| 0_u64);
     let mut watermark_update_request = use_signal(|| 0_u64);
+    let mut direct_series_add_request = use_signal(|| 0_u64);
+    let mut direct_series_remove_request = use_signal(|| 0_u64);
     let chart_options = use_signal(|| {
         ChartOptions::new()
             .with_time_scale(TimeScaleOptions::new().with_time_visible(true))
@@ -57,6 +61,12 @@ pub fn app() -> Element {
             )
             .with_auto_size(true)
     });
+    let legend_options = LegendOptions::new()
+        .with_text_color("#0f172a")
+        .with_background_color("rgba(255, 255, 255, 0.82)")
+        .with_font_size(12.0)
+        .with_top(10.0)
+        .with_left(10.0);
     let line_options = LineSeriesOptions::new()
         .with_title(String::from("Close"))
         .with_color(String::from("#1d4ed8"))
@@ -109,6 +119,7 @@ pub fn app() -> Element {
                 style: "border:1px dashed black;height:768px",
                 Chart {
                     options: Some(chart_options()),
+                    legend: Some(legend_options.clone()),
                     style: Some(String::from("width:100%;height:100%")),
                     ChartPanel {
                         CandleStickSeries {
@@ -169,6 +180,12 @@ pub fn app() -> Element {
                         watermark_text,
                         update_request: watermark_update_request,
                     }
+                    DirectSeriesProbe {
+                        direct_series_text,
+                        add_request: direct_series_add_request,
+                        remove_request: direct_series_remove_request,
+                        data: data.read().line_up(),
+                    }
                     ScreenshotCapture {
                         screenshot_status,
                         screenshot_data_url,
@@ -183,6 +200,7 @@ pub fn app() -> Element {
                 span { "{pane_text()}" }
                 span { "{coordinate_text()}" }
                 span { "{watermark_text()}" }
+                span { "{direct_series_text()}" }
                 span { "{screenshot_status()}" }
                 div {
                     style: "display:flex;flex-direction:row;column-gap:10px;",
@@ -227,6 +245,14 @@ pub fn app() -> Element {
                     button {
                         onclick: move |_| watermark_update_request.set(watermark_update_request() + 1),
                         "Update watermarks"
+                    }
+                    button {
+                        onclick: move |_| direct_series_add_request.set(direct_series_add_request() + 1),
+                        "Add direct line"
+                    }
+                    button {
+                        onclick: move |_| direct_series_remove_request.set(direct_series_remove_request() + 1),
+                        "Remove direct line"
                     }
                 }
                 if let Some(data_url) = screenshot_data_url() {
@@ -514,6 +540,122 @@ fn WatermarkProbe(props: WatermarkProbeProps) -> Element {
                 image_watermark_id(),
                 150,
             );
+        });
+    }
+
+    rsx! {}
+}
+
+#[derive(Clone, Props)]
+struct DirectSeriesProbeProps {
+    direct_series_text: Signal<String>,
+    add_request: Signal<u64>,
+    remove_request: Signal<u64>,
+    data: Vec<charts::data::ValueData>,
+}
+
+impl PartialEq for DirectSeriesProbeProps {
+    fn eq(&self, _other: &Self) -> bool {
+        false
+    }
+}
+
+#[allow(non_snake_case)]
+fn DirectSeriesProbe(props: DirectSeriesProbeProps) -> Element {
+    let chart = use_chart();
+    let mut series_id = use_signal(|| None::<String>);
+    let mut last_add_request = use_signal(|| 0_u64);
+    let mut last_remove_request = use_signal(|| 0_u64);
+
+    {
+        let chart = chart.clone();
+        let mut direct_series_text = props.direct_series_text;
+        let data = props.data.clone();
+        use_effect(move || {
+            let add_request = (props.add_request)();
+            if add_request == 0 || add_request == last_add_request() {
+                return;
+            }
+
+            last_add_request.set(add_request);
+
+            if let Some(series_id) = series_id() {
+                if let Err(err) = chart.update_data(series_id.clone(), &data) {
+                    err.with_prefix("Failed to refresh direct line series").log();
+                    direct_series_text.set(String::from("Direct series: refresh failed"));
+                    return;
+                }
+
+                direct_series_text.set(format!("Direct series: refreshed {}", series_id));
+                return;
+            }
+
+            let options = LineSeriesOptions::new()
+                .with_title(String::from("Direct MA"))
+                .with_color(String::from("#f97316"))
+                .with_line_width(LineWidth::W2)
+                .with_line_type(LineType::Curved)
+                .with_point_markers_visible(false)
+                .with_price_line_visible(false);
+
+            match chart.add_line_series(data.clone(), Some(options), Some(0)) {
+                Ok(new_series_id) => {
+                    series_id.set(Some(new_series_id.clone()));
+                    direct_series_text.set(format!("Direct series: added {}", new_series_id));
+                }
+                Err(err) => {
+                    err.with_prefix("Failed to add direct line series").log();
+                    direct_series_text.set(String::from("Direct series: add failed"));
+                }
+            }
+        });
+    }
+
+    {
+        let chart = chart.clone();
+        let mut direct_series_text = props.direct_series_text;
+        use_effect(move || {
+            let remove_request = (props.remove_request)();
+            if remove_request == 0 || remove_request == last_remove_request() {
+                return;
+            }
+
+            last_remove_request.set(remove_request);
+
+            let Some(current_series_id) = series_id() else {
+                direct_series_text.set(String::from("Direct series: nothing to remove"));
+                return;
+            };
+
+            match chart.remove_series(current_series_id.clone()) {
+                Ok(()) => {
+                    series_id.set(None);
+                    direct_series_text.set(format!("Direct series: removed {}", current_series_id));
+                }
+                Err(err) => {
+                    err.with_prefix("Failed to remove direct line series").log();
+                    direct_series_text.set(String::from("Direct series: remove failed"));
+                }
+            }
+        });
+    }
+
+    {
+        let chart = chart.clone();
+        let mut direct_series_text = props.direct_series_text;
+        let data = props.data.clone();
+        use_effect(move || {
+            let Some(current_series_id) = series_id() else {
+                return;
+            };
+
+            if let Err(err) = chart.update_data(current_series_id.clone(), &data) {
+                err.with_prefix("Failed to update direct line series data").log();
+                direct_series_text.set(String::from("Direct series: data sync failed"));
+                return;
+            }
+
+            direct_series_text.set(format!("Direct series: synced {}", current_series_id));
         });
     }
 

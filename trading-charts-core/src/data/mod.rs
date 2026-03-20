@@ -1,6 +1,7 @@
 mod candlestick;
 mod histogram_data;
 mod image_watermark;
+mod legend;
 mod logical_range;
 mod marker;
 mod marker_type;
@@ -19,6 +20,7 @@ pub use self::{
     candlestick::Candlestick,
     histogram_data::HistogramData,
     image_watermark::ImageWatermarkOptions,
+    legend::LegendOptions,
     logical_range::LogicalRange,
     marker::Marker,
     marker_type::MarkerType,

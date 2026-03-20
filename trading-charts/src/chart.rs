@@ -1,4 +1,4 @@
-use super::data::{options::ChartOptions};
+use super::data::{LegendOptions, options::ChartOptions};
 use crate::{ChartHandle, JsError, REFIT_EVENT_KIND};
 use emitix::{leptos::LeptosEventChannels, EventManager};
 use leptos::{
@@ -46,6 +46,7 @@ fn make_chart(options: Option<Signal<ChartOptions>>) -> Result<ChartHandle, JsEr
 #[component]
 pub fn Chart(
     #[prop(optional, into)] options: Option<Signal<ChartOptions>>,
+    #[prop(optional, into)] legend: Option<Signal<Option<LegendOptions>>>,
     #[prop(optional, into)] style: Option<String>,
     #[prop(optional, into)] class: Option<String>,
     #[prop(optional)] refit: Option<LeptosEventChannels>,
@@ -88,6 +89,24 @@ pub fn Chart(
             }
         }
     });
+
+    if let Some(legend) = legend {
+        let chart = chart.clone();
+        let _ = Effect::new(move || {
+            legend.with(|legend| match legend {
+                Some(legend) => {
+                    if let Err(err) = chart.apply_legend_options(legend) {
+                        err.with_prefix("Failed to apply legend options").log();
+                    }
+                }
+                None => {
+                    if let Err(err) = chart.remove_legend() {
+                        err.with_prefix("Failed to remove legend").log();
+                    }
+                }
+            })
+        });
+    }
 
     let style = style.map_or_else(String::new, |s| s.to_string());
     let class = class.map_or_else(String::new, |s| s.to_string());
