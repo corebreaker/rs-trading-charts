@@ -12,6 +12,7 @@ use charts::{
     panel::ChartPanel,
     series::{
         areas::{AreaSeries, AreaSeriesOptions},
+        baselines::{BaselineBaseValue, BaselineSeries, BaselineSeriesOptions},
         bars::{BarSeries, BarSeriesOptions},
         candlesticks::CandleStickSeries,
         histograms::{HistogramSeries, HistogramSeriesOptions},
@@ -50,6 +51,16 @@ pub fn app() -> Element {
         .with_title(String::from("Bar"))
         .with_open_visible(true)
         .with_price_line_visible(false);
+    let baseline_options = BaselineSeriesOptions::new()
+        .with_title(String::from("Spread"))
+        .with_base_value(BaselineBaseValue::price(10.0))
+        .with_top_fill_color1(String::from("rgba(16, 185, 129, 0.22)"))
+        .with_top_fill_color2(String::from("rgba(16, 185, 129, 0.04)"))
+        .with_top_line_color(String::from("rgba(5, 150, 105, 0.95)"))
+        .with_bottom_fill_color1(String::from("rgba(239, 68, 68, 0.04)"))
+        .with_bottom_fill_color2(String::from("rgba(239, 68, 68, 0.22)"))
+        .with_bottom_line_color(String::from("rgba(220, 38, 38, 0.95)"))
+        .with_price_line_visible(false);
     let histogram_options = HistogramSeriesOptions::new()
         .with_title(String::from("Delta"))
         .with_base(0.0)
@@ -86,6 +97,12 @@ pub fn app() -> Element {
                             options: Some(area_options.clone()),
                             data: data.read().area_up(),
                             markers: Vec::new(),
+                        }
+                        BaselineSeries {
+                            options: Some(baseline_options.clone()),
+                            data: data.read().line_up(),
+                            markers: Vec::new(),
+                            price_lines: Vec::new(),
                         }
                     }
                     ChartPanel {
