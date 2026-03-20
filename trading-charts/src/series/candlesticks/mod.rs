@@ -1,4 +1,5 @@
 mod component;
 mod options;
 
-pub use self::{options::CandlestickOptions, component::*};
+pub use self::component::*;
+pub use options::CandlestickOptions;

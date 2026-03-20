@@ -4,12 +4,14 @@ target = "./index.html"
 [watch]
 watch = [
     ".",
+    "../trading-charts-core/src",
+    "../trading-charts-core/build.rs",
+    "../trading-charts-core/Cargo.toml",
+    "../trading-charts-core/bindings/src",
+    "../trading-charts-core/bindings/builder",
+    "../trading-charts-core/bindings/package.json",
     "../trading-charts/src",
-    "../trading-charts/build.rs",
     "../trading-charts/Cargo.toml",
-    "../trading-charts/bindings/src",
-    "../trading-charts/bindings/builder",
-    "../trading-charts/bindings/package.json",
 ]
 
 ignores = [

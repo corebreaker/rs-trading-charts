@@ -1,7 +1,7 @@
 use super::CandlestickOptions;
 use crate::{
-    bindings::TradingChartBinding,
-    data::{series::Series, Candlestick, Marker},
+    ChartHandle, PanelId,
+    data::{Candlestick, Marker, series::Series},
 };
 
 use leptos::{
@@ -11,9 +11,7 @@ use leptos::{
         wrappers::read::Signal,
     },
     context::use_context,
-    IntoView,
-    component,
-    view,
+    IntoView, component, view,
 };
 
 #[component(transparent)]
@@ -22,10 +20,13 @@ pub fn CandleStickSeries(
     #[prop(into)] data: Signal<Vec<Candlestick>>,
     #[prop(into)] markers: Signal<Vec<Marker>>,
 ) -> impl IntoView {
-    let chart: Option<TradingChartBinding> = use_context();
+    let chart: Option<ChartHandle> = use_context();
     if let Some(chart) = chart {
         let series = {
             let mut series: Series<Candlestick, CandlestickOptions> = Series::new("candlestick");
+            if let Some(panel_id) = use_context::<PanelId>() {
+                series.set_panel(panel_id);
+            }
             if let Some(options) = &options {
                 series.set_options(options.get());
             }

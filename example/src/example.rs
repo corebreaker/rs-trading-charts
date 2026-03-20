@@ -3,8 +3,7 @@ use charts::{
     data::options::{
         background::Background,
         layout::{LayoutOptions, LayoutPanesOptions},
-        TimeScaleOptions,
-        ChartOptions,
+        TimeScaleOptions, ChartOptions,
     },
     series::candlesticks::CandleStickSeries,
     panel::ChartPanel,
@@ -21,9 +20,7 @@ use leptos::{
         wrappers::read::Signal,
     },
     html::ElementChild,
-    IntoView,
-    component,
-    view,
+    IntoView, component, view,
 };
 
 use log::error;

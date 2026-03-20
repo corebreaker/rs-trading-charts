@@ -1,5 +1,5 @@
 use super::data::{options::ChartOptions};
-use crate::{bindings::TradingChartBinding, JsError, REFIT_EVENT_KIND};
+use crate::{ChartHandle, JsError, REFIT_EVENT_KIND};
 use emitix::{leptos::LeptosEventChannels, EventManager};
 use leptos::{
     tachys::{
@@ -16,18 +16,16 @@ use leptos::{
         wrappers::read::Signal,
     },
     children::Children,
-    context::provide_context,
+    context::Provider,
     html::Div,
-    IntoView,
-    component,
-    view,
+    IntoView, component, view,
 };
 
-fn make_chart(options: Option<Signal<ChartOptions>>) -> Result<TradingChartBinding, JsError> {
+fn make_chart(options: Option<Signal<ChartOptions>>) -> Result<ChartHandle, JsError> {
     Ok(match options {
-        None => TradingChartBinding::new(None)?,
+        None => ChartHandle::new(None)?,
         Some(options) => {
-            let chart = options.with_untracked(|options| TradingChartBinding::new(Some(options)))?;
+            let chart = options.with_untracked(|options| ChartHandle::new(Some(options)))?;
             let _ = Effect::new({
                 let chart = chart.clone();
 
@@ -84,14 +82,12 @@ pub fn Chart(
 
         move || {
             if let Some(node) = node_ref.get() {
-                if let Err(err) = chart.bind_chart(node) {
+                if let Err(err) = chart.bind(node) {
                     err.with_prefix("Failed to bind chart").log();
                 }
             }
         }
     });
-
-    provide_context(chart);
 
     let style = style.map_or_else(String::new, |s| s.to_string());
     let class = class.map_or_else(String::new, |s| s.to_string());
@@ -101,10 +97,10 @@ pub fn Chart(
     };
 
     let res = view! {
-        <>
+        <Provider value=chart>
             <div style=style class=class node_ref={node_ref}/>
             {children}
-        </>
+        </Provider>
     };
 
     res.into_any()

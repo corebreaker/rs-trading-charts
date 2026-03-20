@@ -1,0 +1,19 @@
+[package]
+name = "trading-charts-dioxus"
+readme = "../README.md"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+description.workspace = true
+repository.workspace = true
+documentation.workspace = true
+license.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+dioxus = { workspace = true, features = ["lib", "web"] }
+dioxus-web = { workspace = true, features = ["mounted"] }
+trading-charts-core = { path = "../trading-charts-core", version = "0.1.14" }
+wasm-bindgen = { workspace = true }
+web-sys = { workspace = true }

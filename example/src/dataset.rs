@@ -18,9 +18,9 @@ extern "C" {
 
 #[derive(Deserialize, Clone)]
 pub(super) struct Dataset {
-    data_up:   Vec<Candlestick>,
+    data_up: Vec<Candlestick>,
     data_down: Vec<Candlestick>,
-    markers:   Vec<Marker>,
+    markers: Vec<Marker>,
 
     #[serde(default)]
     counter: usize,
