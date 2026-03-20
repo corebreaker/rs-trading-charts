@@ -28,10 +28,15 @@ use web_sys::window;
 pub fn app() -> Element {
     let range_text = use_signal(|| String::from("Visible range: pending"));
     let price_scale_text = use_signal(|| String::from("Price scale: pending"));
+    let pane_text = use_signal(|| String::from("Panes: pending"));
+    let coordinate_text = use_signal(|| String::from("Coordinates: pending"));
     let screenshot_status = use_signal(|| String::from("Screenshot: idle"));
     let screenshot_data_url = use_signal(|| None::<String>);
     let mut price_scale_zoom_request = use_signal(|| 0_u64);
     let mut price_scale_auto_request = use_signal(|| 0_u64);
+    let mut pane_resize_request = use_signal(|| 0_u64);
+    let mut pane_swap_request = use_signal(|| 0_u64);
+    let mut coordinate_probe_request = use_signal(|| 0_u64);
     let chart_options = use_signal(|| {
         ChartOptions::new()
             .with_time_scale(TimeScaleOptions::new().with_time_visible(true))
@@ -148,6 +153,16 @@ pub fn app() -> Element {
                         zoom_request: price_scale_zoom_request,
                         auto_request: price_scale_auto_request,
                     }
+                    PaneProbe {
+                        pane_text,
+                        resize_request: pane_resize_request,
+                        swap_request: pane_swap_request,
+                    }
+                    CoordinateProbe {
+                        coordinate_text,
+                        recent_range: data.read().recent_range(),
+                        probe_request: coordinate_probe_request,
+                    }
                     ScreenshotCapture {
                         screenshot_status,
                         screenshot_data_url,
@@ -159,6 +174,8 @@ pub fn app() -> Element {
                 style: "margin-top:10px;display:flex;flex-direction:column;row-gap:10px;",
                 span { "{range_text()}" }
                 span { "{price_scale_text()}" }
+                span { "{pane_text()}" }
+                span { "{coordinate_text()}" }
                 span { "{screenshot_status()}" }
                 div {
                     style: "display:flex;flex-direction:row;column-gap:10px;",
@@ -187,6 +204,18 @@ pub fn app() -> Element {
                     button {
                         onclick: move |_| price_scale_auto_request.set(price_scale_auto_request() + 1),
                         "Auto price scale"
+                    }
+                    button {
+                        onclick: move |_| pane_resize_request.set(pane_resize_request() + 1),
+                        "Resize lower pane"
+                    }
+                    button {
+                        onclick: move |_| pane_swap_request.set(pane_swap_request() + 1),
+                        "Swap panes"
+                    }
+                    button {
+                        onclick: move |_| coordinate_probe_request.set(coordinate_probe_request() + 1),
+                        "Probe coordinates"
                     }
                 }
                 if let Some(data_url) = screenshot_data_url() {
@@ -297,6 +326,121 @@ fn PriceScaleProbe(props: PriceScaleProbeProps) -> Element {
 
             last_auto_request.set(auto_request);
             schedule_price_scale_auto(chart.clone(), price_scale_text, 150);
+        });
+    }
+
+    rsx! {}
+}
+
+#[derive(Clone, Props)]
+struct PaneProbeProps {
+    pane_text: Signal<String>,
+    resize_request: Signal<u64>,
+    swap_request: Signal<u64>,
+}
+
+impl PartialEq for PaneProbeProps {
+    fn eq(&self, _other: &Self) -> bool {
+        false
+    }
+}
+
+#[allow(non_snake_case)]
+fn PaneProbe(props: PaneProbeProps) -> Element {
+    let chart = use_chart();
+    let mut initial_reported = use_signal(|| false);
+    let mut last_resize_request = use_signal(|| 0_u64);
+    let mut last_swap_request = use_signal(|| 0_u64);
+
+    {
+        let chart = chart.clone();
+        let pane_text = props.pane_text;
+        use_effect(move || {
+            if initial_reported() {
+                return;
+            }
+
+            initial_reported.set(true);
+            schedule_pane_report(chart.clone(), pane_text, 150);
+        });
+    }
+
+    {
+        let chart = chart.clone();
+        let pane_text = props.pane_text;
+        use_effect(move || {
+            let resize_request = (props.resize_request)();
+            if resize_request == 0 || resize_request == last_resize_request() {
+                return;
+            }
+
+            last_resize_request.set(resize_request);
+            schedule_pane_resize(chart.clone(), pane_text, 150);
+        });
+    }
+
+    {
+        let chart = chart.clone();
+        let pane_text = props.pane_text;
+        use_effect(move || {
+            let swap_request = (props.swap_request)();
+            if swap_request == 0 || swap_request == last_swap_request() {
+                return;
+            }
+
+            last_swap_request.set(swap_request);
+            schedule_pane_swap(chart.clone(), pane_text, 150);
+        });
+    }
+
+    rsx! {}
+}
+
+#[derive(Clone, Props)]
+struct CoordinateProbeProps {
+    coordinate_text: Signal<String>,
+    recent_range: Option<charts::data::TimeRange>,
+    probe_request: Signal<u64>,
+}
+
+impl PartialEq for CoordinateProbeProps {
+    fn eq(&self, _other: &Self) -> bool {
+        false
+    }
+}
+
+#[allow(non_snake_case)]
+fn CoordinateProbe(props: CoordinateProbeProps) -> Element {
+    let chart = use_chart();
+    let mut initial_reported = use_signal(|| false);
+    let mut last_probe_request = use_signal(|| 0_u64);
+
+    {
+        let chart = chart.clone();
+        let coordinate_text = props.coordinate_text;
+        let recent_range = props.recent_range;
+        use_effect(move || {
+            if initial_reported() {
+                return;
+            }
+
+            initial_reported.set(true);
+            schedule_coordinate_probe(chart.clone(), recent_range, coordinate_text, 150);
+        });
+    }
+
+    {
+        let chart = chart.clone();
+        let coordinate_text = props.coordinate_text;
+        let recent_range = props.recent_range;
+        use_effect(move || {
+            let probe_request = (props.probe_request)();
+            if probe_request == 0 || probe_request == last_probe_request() {
+                return;
+            }
+
+            last_probe_request.set(probe_request);
+            schedule_coordinate_probe(chart.clone(), recent_range, coordinate_text, 150);
         });
     }
 
@@ -415,6 +559,157 @@ fn schedule_price_scale_report(
     schedule_timeout(callback, delay_ms, &mut price_scale_text, "price scale probe");
 }
 
+fn schedule_pane_resize(chart: charts::ChartHandle, mut pane_text: Signal<String>, delay_ms: i32) {
+    let callback = Closure::<dyn FnMut()>::new(move || {
+        let count = match chart.get_pane_count() {
+            Ok(count) => count,
+            Err(err) => {
+                err.with_prefix("Failed to read pane count").log();
+                pane_text.set(String::from("Panes: count read failed"));
+                return;
+            }
+        };
+
+        if count < 2 {
+            pane_text.set(format!("Panes: resize skipped ({count} pane)"));
+            return;
+        }
+
+        if let Err(err) = chart.set_pane_stretch_factor(1, 2.0) {
+            err.with_prefix("Failed to set pane stretch factor").log();
+            pane_text.set(String::from("Panes: resize failed"));
+            return;
+        }
+
+        update_pane_text(&chart, &mut pane_text, "Panes: resized");
+    });
+
+    schedule_timeout(callback, delay_ms, &mut pane_text, "pane resize");
+}
+
+fn schedule_pane_swap(chart: charts::ChartHandle, mut pane_text: Signal<String>, delay_ms: i32) {
+    let callback = Closure::<dyn FnMut()>::new(move || {
+        let count = match chart.get_pane_count() {
+            Ok(count) => count,
+            Err(err) => {
+                err.with_prefix("Failed to read pane count").log();
+                pane_text.set(String::from("Panes: count read failed"));
+                return;
+            }
+        };
+
+        if count < 2 {
+            pane_text.set(format!("Panes: swap skipped ({count} pane)"));
+            return;
+        }
+
+        if let Err(err) = chart.swap_panes(0, 1) {
+            err.with_prefix("Failed to swap panes").log();
+            pane_text.set(String::from("Panes: swap failed"));
+            return;
+        }
+
+        update_pane_text(&chart, &mut pane_text, "Panes: swapped");
+    });
+
+    schedule_timeout(callback, delay_ms, &mut pane_text, "pane swap");
+}
+
+fn schedule_pane_report(chart: charts::ChartHandle, mut pane_text: Signal<String>, delay_ms: i32) {
+    let callback = Closure::<dyn FnMut()>::new(move || {
+        update_pane_text(&chart, &mut pane_text, "Panes");
+    });
+
+    schedule_timeout(callback, delay_ms, &mut pane_text, "pane probe");
+}
+
+fn schedule_coordinate_probe(
+    chart: charts::ChartHandle,
+    recent_range: Option<charts::data::TimeRange>,
+    mut coordinate_text: Signal<String>,
+    delay_ms: i32,
+) {
+    let callback = Closure::<dyn FnMut()>::new(move || {
+        let Some(range) = recent_range else {
+            coordinate_text.set(String::from("Coordinates: no visible range"));
+            return;
+        };
+
+        let time_x = match chart.time_to_coordinate(range.from()) {
+            Ok(Some(coordinate)) => coordinate,
+            Ok(None) => {
+                coordinate_text.set(String::from("Coordinates: time not mapped"));
+                return;
+            }
+            Err(err) => {
+                err.with_prefix("Failed to convert time to coordinate").log();
+                coordinate_text.set(String::from("Coordinates: time probe failed"));
+                return;
+            }
+        };
+
+        let time_roundtrip = match chart.coordinate_to_time(time_x) {
+            Ok(Some(time)) => time,
+            Ok(None) => {
+                coordinate_text.set(String::from("Coordinates: time roundtrip missing"));
+                return;
+            }
+            Err(err) => {
+                err.with_prefix("Failed to convert coordinate to time").log();
+                coordinate_text.set(String::from("Coordinates: time roundtrip failed"));
+                return;
+            }
+        };
+
+        let logical_range = match chart.get_visible_logical_range() {
+            Ok(Some(range)) => range,
+            Ok(None) => {
+                coordinate_text.set(String::from("Coordinates: logical range unavailable"));
+                return;
+            }
+            Err(err) => {
+                err.with_prefix("Failed to read visible logical range").log();
+                coordinate_text.set(String::from("Coordinates: logical range failed"));
+                return;
+            }
+        };
+
+        let logical_mid = (logical_range.from() + logical_range.to()) / 2.0;
+        let logical_x = match chart.logical_to_coordinate(logical_mid) {
+            Ok(Some(coordinate)) => coordinate,
+            Ok(None) => {
+                coordinate_text.set(String::from("Coordinates: logical not mapped"));
+                return;
+            }
+            Err(err) => {
+                err.with_prefix("Failed to convert logical to coordinate").log();
+                coordinate_text.set(String::from("Coordinates: logical probe failed"));
+                return;
+            }
+        };
+
+        let logical_roundtrip = match chart.coordinate_to_logical(logical_x) {
+            Ok(Some(logical)) => logical,
+            Ok(None) => {
+                coordinate_text.set(String::from("Coordinates: logical roundtrip missing"));
+                return;
+            }
+            Err(err) => {
+                err.with_prefix("Failed to convert coordinate to logical").log();
+                coordinate_text.set(String::from("Coordinates: logical roundtrip failed"));
+                return;
+            }
+        };
+
+        coordinate_text.set(format!(
+            "Coordinates: time {:.1} -> {} | logical {:.2} -> {:.1} -> {:.2}",
+            time_x, time_roundtrip, logical_mid, logical_x, logical_roundtrip,
+        ));
+    });
+
+    schedule_timeout(callback, delay_ms, &mut coordinate_text, "coordinate probe");
+}
+
 fn update_price_scale_text(chart: &charts::ChartHandle, price_scale_text: &mut Signal<String>, prefix: &str) {
     match (
         chart.get_price_scale_visible_range("right", Some(0)),
@@ -442,6 +737,41 @@ fn update_price_scale_text(chart: &charts::ChartHandle, price_scale_text: &mut S
     }
 }
 
+fn update_pane_text(chart: &charts::ChartHandle, pane_text: &mut Signal<String>, prefix: &str) {
+    let count = match chart.get_pane_count() {
+        Ok(count) => count,
+        Err(err) => {
+            err.with_prefix("Failed to read pane count").log();
+            pane_text.set(String::from("Panes: count read failed"));
+            return;
+        }
+    };
+
+    let panes = (0..count)
+        .map(|panel| {
+            let size = chart.get_pane_size(panel);
+            let stretch = chart.get_pane_stretch_factor(panel);
+
+            match (size, stretch) {
+                (Ok(size), Ok(stretch)) => {
+                    format!("#{panel}: {:.0}x{:.0} sf {:.2}", size.width(), size.height(), stretch,)
+                }
+                (Err(err), _) => {
+                    err.with_prefix(&format!("Failed to read pane {panel} size")).log();
+                    format!("#{panel}: size error")
+                }
+                (_, Err(err)) => {
+                    err.with_prefix(&format!("Failed to read pane {panel} stretch")).log();
+                    format!("#{panel}: stretch error")
+                }
+            }
+        })
+        .collect::<Vec<_>>()
+        .join(" | ");
+
+    pane_text.set(format!("{prefix}: {count} pane(s) [{panes}]"));
+}
+
 fn schedule_timeout(callback: Closure<dyn FnMut()>, delay_ms: i32, status_text: &mut Signal<String>, context: &str) {
     match window() {
         Some(window) => {
@@ -451,14 +781,14 @@ fn schedule_timeout(callback: Closure<dyn FnMut()>, delay_ms: i32, status_text: 
                 charts::JsError::from(err)
                     .with_prefix(&format!("Failed to schedule {context}"))
                     .log();
-                status_text.set(format!("Price scale: scheduling failed ({context})"));
+                status_text.set(format!("Scheduling failed ({context})"));
             }
         }
         None => {
             charts::JsError::new_from_str("window is not available")
                 .with_prefix(&format!("Failed to schedule {context}"))
                 .log();
-            status_text.set(format!("Price scale: window unavailable ({context})"));
+            status_text.set(format!("Window unavailable ({context})"));
         }
     }
 

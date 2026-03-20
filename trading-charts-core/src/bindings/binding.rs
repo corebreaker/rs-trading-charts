@@ -3,7 +3,7 @@ use crate::{
     data::{
         series::Series,
         options::{ChartOptions, PriceScaleOptions, TimeScaleOptions},
-        LogicalRange, Marker, PriceLineOptions, PriceRange, TimeRange,
+        LogicalRange, Marker, PaneSize, PriceLineOptions, PriceRange, TimeRange, UTCTimestamp,
     },
     JsError,
 };
@@ -138,6 +138,62 @@ impl ChartHandle {
         Ok(chart.setVisibleLogicalRange(to_value(range)?)?)
     }
 
+    pub fn logical_to_coordinate(&self, logical: f64) -> Result<Option<f64>, JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        let value = chart.logicalToCoordinate(logical)?;
+        if value.is_null() || value.is_undefined() {
+            return Ok(None);
+        }
+
+        Ok(Some(from_value(value)?))
+    }
+
+    pub fn coordinate_to_logical(&self, coordinate: f64) -> Result<Option<f64>, JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        let value = chart.coordinateToLogical(coordinate)?;
+        if value.is_null() || value.is_undefined() {
+            return Ok(None);
+        }
+
+        Ok(Some(from_value(value)?))
+    }
+
+    pub fn time_to_coordinate(&self, time: UTCTimestamp) -> Result<Option<f64>, JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        let value = chart.timeToCoordinate(to_value(&time)?)?;
+        if value.is_null() || value.is_undefined() {
+            return Ok(None);
+        }
+
+        Ok(Some(from_value(value)?))
+    }
+
+    pub fn coordinate_to_time(&self, coordinate: f64) -> Result<Option<UTCTimestamp>, JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        let value = chart.coordinateToTime(coordinate)?;
+        if value.is_null() || value.is_undefined() {
+            return Ok(None);
+        }
+
+        Ok(Some(from_value(value)?))
+    }
+
     pub fn apply_price_scale_options(
         &self,
         price_scale_id: impl Into<String>,
@@ -239,6 +295,78 @@ impl ChartHandle {
         )?)
     }
 
+    pub fn get_pane_count(&self) -> Result<u32, JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.getPaneCount()?)
+    }
+
+    pub fn get_pane_size(&self, panel: PanelId) -> Result<PaneSize, JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(from_value(chart.getPaneSize(panel)?)?)
+    }
+
+    pub fn set_pane_height(&self, panel: PanelId, height: f64) -> Result<(), JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.setPaneHeight(panel, height)?)
+    }
+
+    pub fn get_pane_stretch_factor(&self, panel: PanelId) -> Result<f64, JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.getPaneStretchFactor(panel)?)
+    }
+
+    pub fn set_pane_stretch_factor(&self, panel: PanelId, stretch_factor: f64) -> Result<(), JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.setPaneStretchFactor(panel, stretch_factor)?)
+    }
+
+    pub fn move_pane(&self, panel: PanelId, target: PanelId) -> Result<(), JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.movePane(panel, target)?)
+    }
+
+    pub fn remove_pane(&self, panel: PanelId) -> Result<(), JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.removePane(panel)?)
+    }
+
+    pub fn swap_panes(&self, first: PanelId, second: PanelId) -> Result<(), JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.swapPanes(first, second)?)
+    }
+
     pub fn resize(&self, width: f64, height: f64) -> Result<(), JsError> {
         let chart = self
             .chart
@@ -338,6 +466,93 @@ impl ChartHandle {
             .map_err(|err| JsError::new_from_str(&err.to_string()))?;
 
         Ok(chart.getSeriesPriceScaleWidth(series_id)?)
+    }
+
+    pub fn move_series_to_panel(&self, series_id: String, panel: PanelId) -> Result<(), JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.moveSeriesToPane(series_id, panel)?)
+    }
+
+    pub fn get_series_panel(&self, series_id: String) -> Result<PanelId, JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.getSeriesPaneIndex(series_id)?)
+    }
+
+    pub fn get_series_order(&self, series_id: String) -> Result<u32, JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.getSeriesOrder(series_id)?)
+    }
+
+    pub fn set_series_order(&self, series_id: String, order: u32) -> Result<(), JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.setSeriesOrder(series_id, order)?)
+    }
+
+    pub fn price_to_coordinate(&self, series_id: String, price: f64) -> Result<Option<f64>, JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        let value = chart.priceToCoordinate(series_id, price)?;
+        if value.is_null() || value.is_undefined() {
+            return Ok(None);
+        }
+
+        Ok(Some(from_value(value)?))
+    }
+
+    pub fn coordinate_to_price(&self, series_id: String, coordinate: f64) -> Result<Option<f64>, JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        let value = chart.coordinateToPrice(series_id, coordinate)?;
+        if value.is_null() || value.is_undefined() {
+            return Ok(None);
+        }
+
+        Ok(Some(from_value(value)?))
+    }
+
+    pub fn set_crosshair_position(
+        &self,
+        series_id: String,
+        price: f64,
+        horizontal_position: UTCTimestamp,
+    ) -> Result<(), JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.setCrosshairPosition(series_id, price, to_value(&horizontal_position)?)?)
+    }
+
+    pub fn clear_crosshair_position(&self) -> Result<(), JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.clearCrosshairPosition()?)
     }
 
     pub fn update_data<Dat>(&self, series_id: String, data: &Vec<Dat>) -> Result<(), JsError>

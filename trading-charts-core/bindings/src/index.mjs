@@ -71,6 +71,18 @@ export class TradingChart {
         return this._chart;
     }
 
+    _getPane(paneIndex) {
+        const chart = this._getChart();
+        const panes = chart.panes();
+        const pane = panes[paneIndex];
+
+        if (!pane) {
+            throw new Error(`Pane with index '${paneIndex}' not found`);
+        }
+
+        return pane;
+    }
+
     _getSeries(seriesId) {
         const series = this._series[seriesId];
         if (!series) {
@@ -78,6 +90,14 @@ export class TradingChart {
         }
 
         return series;
+    }
+
+    _syncSeriesPanels() {
+        for (const series of Object.values(this._series)) {
+            if (series.chartApi) {
+                series.panel = series.chartApi.getPane().paneIndex();
+            }
+        }
     }
 
     _bindSeries(seriesId) {
@@ -185,6 +205,30 @@ export class TradingChart {
         chart.timeScale().setVisibleLogicalRange(range);
     }
 
+    logicalToCoordinate(logical) {
+        const chart = this._getChart();
+
+        return chart.timeScale().logicalToCoordinate(logical);
+    }
+
+    coordinateToLogical(coordinate) {
+        const chart = this._getChart();
+
+        return chart.timeScale().coordinateToLogical(coordinate);
+    }
+
+    timeToCoordinate(time) {
+        const chart = this._getChart();
+
+        return chart.timeScale().timeToCoordinate(time);
+    }
+
+    coordinateToTime(coordinate) {
+        const chart = this._getChart();
+
+        return chart.timeScale().coordinateToTime(coordinate);
+    }
+
     getPriceScaleVisibleRange(priceScaleId, paneIndex) {
         return this._getChartPriceScale(priceScaleId, paneIndex).getVisibleRange();
     }
@@ -199,6 +243,49 @@ export class TradingChart {
 
     getPriceScaleWidth(priceScaleId, paneIndex) {
         return this._getChartPriceScale(priceScaleId, paneIndex).width();
+    }
+
+    getPaneCount() {
+        const chart = this._getChart();
+
+        return chart.panes().length;
+    }
+
+    getPaneSize(paneIndex) {
+        const chart = this._getChart();
+
+        return chart.paneSize(paneIndex);
+    }
+
+    setPaneHeight(paneIndex, height) {
+        this._getPane(paneIndex).setHeight(height);
+    }
+
+    getPaneStretchFactor(paneIndex) {
+        return this._getPane(paneIndex).getStretchFactor();
+    }
+
+    setPaneStretchFactor(paneIndex, stretchFactor) {
+        this._getPane(paneIndex).setStretchFactor(stretchFactor);
+    }
+
+    movePane(paneIndex, targetIndex) {
+        this._getPane(paneIndex).moveTo(targetIndex);
+        this._syncSeriesPanels();
+    }
+
+    removePane(paneIndex) {
+        const chart = this._getChart();
+
+        chart.removePane(paneIndex);
+        this._syncSeriesPanels();
+    }
+
+    swapPanes(first, second) {
+        const chart = this._getChart();
+
+        chart.swapPanes(first, second);
+        this._syncSeriesPanels();
     }
 
     resize(width, height) {
@@ -397,6 +484,61 @@ export class TradingChart {
         const series = this._getSeries(seriesId);
 
         return series.getApi().priceScale().width();
+    }
+
+    moveSeriesToPane(seriesId, paneIndex) {
+        const series = this._getSeries(seriesId);
+
+        series.panel = paneIndex;
+        series.getApi().moveToPane(paneIndex);
+        this._syncSeriesPanels();
+    }
+
+    getSeriesPaneIndex(seriesId) {
+        const series = this._getSeries(seriesId);
+
+        if (!series.chartApi) {
+            return series.panel ?? 0;
+        }
+
+        return series.getApi().getPane().paneIndex();
+    }
+
+    getSeriesOrder(seriesId) {
+        const series = this._getSeries(seriesId);
+
+        return series.getApi().seriesOrder();
+    }
+
+    setSeriesOrder(seriesId, order) {
+        const series = this._getSeries(seriesId);
+
+        series.getApi().setSeriesOrder(order);
+    }
+
+    priceToCoordinate(seriesId, price) {
+        const series = this._getSeries(seriesId);
+
+        return series.getApi().priceToCoordinate(price);
+    }
+
+    coordinateToPrice(seriesId, coordinate) {
+        const series = this._getSeries(seriesId);
+
+        return series.getApi().coordinateToPrice(coordinate);
+    }
+
+    setCrosshairPosition(seriesId, price, horizontalPosition) {
+        const chart = this._getChart();
+        const series = this._getSeries(seriesId);
+
+        chart.setCrosshairPosition(price, horizontalPosition, series.getApi());
+    }
+
+    clearCrosshairPosition() {
+        const chart = this._getChart();
+
+        chart.clearCrosshairPosition();
     }
 
     updateData(seriesId, data) {
