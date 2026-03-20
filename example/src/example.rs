@@ -2,12 +2,18 @@ use super::dataset::Dataset;
 use charts::{
     chart::Chart,
     data::{
-        LegendOptions, PriceLineOptions,
+        LegendOptions,
+        PriceLineOptions,
         options::{
             background::Background,
             cross_hair::{CrossHairOptions, CrosshairLineOptions},
             layout::{LayoutOptions, LayoutPanesOptions},
-            ChartOptions, LastPriceAnimationMode, LineType, LineWidth, PriceFormatOptions, PriceScaleOptions,
+            ChartOptions,
+            LastPriceAnimationMode,
+            LineType,
+            LineWidth,
+            PriceFormatOptions,
+            PriceScaleOptions,
             TimeScaleOptions,
         },
     },
@@ -31,7 +37,9 @@ use leptos::{
         wrappers::read::Signal,
     },
     tachys::html::attribute::global::{OnAttribute, StyleAttribute},
-    IntoView, component, view,
+    IntoView,
+    component,
+    view,
 };
 use log::error;
 use wasm_bindgen::{JsCast, closure::Closure};
@@ -959,14 +967,15 @@ fn update_pane_text(chart: &charts::ChartHandle, pane_text: RwSignal<String>, pr
 }
 
 fn watermark_svg_data_url() -> String {
-    String::from(
-        "data:image/svg+xml;utf8,\
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'>\
-<rect width='120' height='120' rx='18' fill='%230f172a' fill-opacity='0.08'/>\
-<circle cx='60' cy='60' r='34' fill='%231d4ed8' fill-opacity='0.18'/>\
-<path d='M36 66 L54 44 L68 58 L84 38' fill='none' stroke='%230f172a' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'/>\
-</svg>",
-    )
+    String::from(concat!(
+        "data:image/svg+xml;utf8,",
+        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'>",
+        "<rect width='120' height='120' rx='18' fill='%230f172a' fill-opacity='0.08'/>",
+        "<circle cx='60' cy='60' r='34' fill='%231d4ed8' fill-opacity='0.18'/>",
+        "<path d='M36 66 L54 44 L68 58 L84 38' fill='none' stroke='%230f172a' stroke-width='8' ",
+        "stroke-linecap='round' stroke-linejoin='round'/>",
+        "</svg>",
+    ))
 }
 
 fn schedule_timeout(callback: Closure<dyn FnMut()>, delay_ms: i32, status_text: RwSignal<String>, context: &str) {

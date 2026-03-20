@@ -1,7 +1,8 @@
 use dioxus::prelude::*;
 use dioxus_web::WebEventExt;
 use trading_charts_core::{
-    ChartHandle, JsError,
+    ChartHandle,
+    JsError,
     data::{LegendOptions, options::ChartOptions},
 };
 use wasm_bindgen::JsCast;
@@ -10,13 +11,13 @@ use web_sys::HtmlDivElement;
 #[derive(Clone, Props)]
 pub struct ChartProps {
     #[props(default)]
-    options: Option<ChartOptions>,
+    options:  Option<ChartOptions>,
     #[props(default)]
-    legend: Option<LegendOptions>,
+    legend:   Option<LegendOptions>,
     #[props(default, into)]
-    style: Option<String>,
+    style:    Option<String>,
     #[props(default, into)]
-    class: Option<String>,
+    class:    Option<String>,
     #[props(default)]
     children: Element,
 }
@@ -93,7 +94,9 @@ pub fn Chart(props: ChartProps) -> Element {
                 let element = event.as_web_event();
                 match element.dyn_into::<HtmlDivElement>() {
                     Ok(div) => node.set(Some(div)),
-                    Err(element) => JsError::from_displayable(format!("Mounted element is not a div: {:?}", element)).log(),
+                    Err(element) => {
+                        JsError::from_displayable(format!("Mounted element is not a div: {:?}", element)).log()
+                    }
                 }
             },
         }

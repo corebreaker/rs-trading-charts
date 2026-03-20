@@ -1,6 +1,7 @@
 NPM ?= npm
 TRUNK ?= trunk
 CARGO ?= cargo
+CARGO_FMT ?= cargo +nightly fmt
 LIGHTWEIGHT_CHARTS_VERSION ?= latest
 TRUNK_ENV := env NO_COLOR=false
 
@@ -15,7 +16,9 @@ DIOXUS_EXAMPLE_DIR := example-dioxus
 help:
 	@printf '%s\n' \
 		'help                      Show available targets.' \
+		'format                    Alias for fmt.' \
 		'fmt                       Format the workspace.' \
+		'clean                     Remove Cargo and example build artifacts.' \
 		'check                     Run cargo check for the workspace.' \
 		'check-wasm                Run cargo check for wasm32.' \
 		'build-example             Build the Leptos example with trunk.' \
@@ -27,9 +30,16 @@ help:
 		'verify                    Run fmt, check, check-wasm, and build both examples.' \
 		'update-lightweight-charts Update both JS binding packages to the requested upstream version.'
 
+.PHONY: format
+format: fmt
+
 .PHONY: fmt
 fmt:
-	$(CARGO) fmt --all
+	$(CARGO_FMT) --all
+
+.PHONY: clean
+clean: clean-examples
+	$(CARGO) clean
 
 .PHONY: check
 check:

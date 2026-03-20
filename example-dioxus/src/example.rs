@@ -2,12 +2,18 @@ use super::dataset::Dataset;
 use charts::{
     chart::{Chart, use_chart},
     data::{
-        LegendOptions, PriceLineOptions,
+        LegendOptions,
+        PriceLineOptions,
         options::{
             background::Background,
             cross_hair::{CrossHairOptions, CrosshairLineOptions},
             layout::{LayoutOptions, LayoutPanesOptions},
-            ChartOptions, LastPriceAnimationMode, LineType, LineWidth, PriceFormatOptions, PriceScaleOptions,
+            ChartOptions,
+            LastPriceAnimationMode,
+            LineType,
+            LineWidth,
+            PriceFormatOptions,
+            PriceScaleOptions,
             TimeScaleOptions,
         },
     },
@@ -269,7 +275,7 @@ pub fn app() -> Element {
 #[derive(Clone, Props)]
 struct VisibleRangeProbeProps {
     recent_range: Option<charts::data::TimeRange>,
-    range_text: Signal<String>,
+    range_text:   Signal<String>,
 }
 
 impl PartialEq for VisibleRangeProbeProps {
@@ -308,8 +314,8 @@ fn VisibleRangeProbe(props: VisibleRangeProbeProps) -> Element {
 #[derive(Clone, Props)]
 struct PriceScaleProbeProps {
     price_scale_text: Signal<String>,
-    zoom_request: Signal<u64>,
-    auto_request: Signal<u64>,
+    zoom_request:     Signal<u64>,
+    auto_request:     Signal<u64>,
 }
 
 impl PartialEq for PriceScaleProbeProps {
@@ -371,9 +377,9 @@ fn PriceScaleProbe(props: PriceScaleProbeProps) -> Element {
 
 #[derive(Clone, Props)]
 struct PaneProbeProps {
-    pane_text: Signal<String>,
+    pane_text:      Signal<String>,
     resize_request: Signal<u64>,
-    swap_request: Signal<u64>,
+    swap_request:   Signal<u64>,
 }
 
 impl PartialEq for PaneProbeProps {
@@ -436,8 +442,8 @@ fn PaneProbe(props: PaneProbeProps) -> Element {
 #[derive(Clone, Props)]
 struct CoordinateProbeProps {
     coordinate_text: Signal<String>,
-    recent_range: Option<charts::data::TimeRange>,
-    probe_request: Signal<u64>,
+    recent_range:    Option<charts::data::TimeRange>,
+    probe_request:   Signal<u64>,
 }
 
 impl PartialEq for CoordinateProbeProps {
@@ -549,9 +555,9 @@ fn WatermarkProbe(props: WatermarkProbeProps) -> Element {
 #[derive(Clone, Props)]
 struct DirectSeriesProbeProps {
     direct_series_text: Signal<String>,
-    add_request: Signal<u64>,
-    remove_request: Signal<u64>,
-    data: Vec<charts::data::ValueData>,
+    add_request:        Signal<u64>,
+    remove_request:     Signal<u64>,
+    data:               Vec<charts::data::ValueData>,
 }
 
 impl PartialEq for DirectSeriesProbeProps {
@@ -1099,14 +1105,15 @@ fn update_pane_text(chart: &charts::ChartHandle, pane_text: &mut Signal<String>,
 }
 
 fn watermark_svg_data_url() -> String {
-    String::from(
-        "data:image/svg+xml;utf8,\
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'>\
-<rect width='120' height='120' rx='18' fill='%230f172a' fill-opacity='0.08'/>\
-<circle cx='60' cy='60' r='34' fill='%231d4ed8' fill-opacity='0.18'/>\
-<path d='M36 66 L54 44 L68 58 L84 38' fill='none' stroke='%230f172a' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'/>\
-</svg>",
-    )
+    String::from(concat!(
+        "data:image/svg+xml;utf8,",
+        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'>",
+        "<rect width='120' height='120' rx='18' fill='%230f172a' fill-opacity='0.08'/>",
+        "<circle cx='60' cy='60' r='34' fill='%231d4ed8' fill-opacity='0.18'/>",
+        "<path d='M36 66 L54 44 L68 58 L84 38' fill='none' stroke='%230f172a' stroke-width='8' ",
+        "stroke-linecap='round' stroke-linejoin='round'/>",
+        "</svg>",
+    ))
 }
 
 fn schedule_timeout(callback: Closure<dyn FnMut()>, delay_ms: i32, status_text: &mut Signal<String>, context: &str) {
@@ -1134,7 +1141,7 @@ fn schedule_timeout(callback: Closure<dyn FnMut()>, delay_ms: i32, status_text: 
 
 #[derive(Clone, Props)]
 struct ScreenshotCaptureProps {
-    screenshot_status: Signal<String>,
+    screenshot_status:   Signal<String>,
     screenshot_data_url: Signal<Option<String>>,
 }
 
