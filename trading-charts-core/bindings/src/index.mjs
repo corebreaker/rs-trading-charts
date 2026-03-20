@@ -1,7 +1,9 @@
 import uuidv4 from "@bundled-es-modules/uuid/v4.js";
 import {
     createChart,
+    createImageWatermark,
     createSeriesMarkers,
+    createTextWatermark,
     LineSeries,
     AreaSeries,
     BarSeries,
@@ -56,6 +58,7 @@ export class TradingChart {
     constructor() {
         this._chart = null;
         this._series = {};
+        this._watermarks = {};
     }
 
     _getChartPriceScale(priceScaleId, paneIndex = undefined) {
@@ -83,6 +86,15 @@ export class TradingChart {
         return pane;
     }
 
+    _ensurePane(paneIndex) {
+        const chart = this._getChart();
+        while (chart.panes().length <= paneIndex) {
+            chart.addPane(true);
+        }
+
+        return this._getPane(paneIndex);
+    }
+
     _getSeries(seriesId) {
         const series = this._series[seriesId];
         if (!series) {
@@ -96,6 +108,67 @@ export class TradingChart {
         for (const series of Object.values(this._series)) {
             if (series.chartApi) {
                 series.panel = series.chartApi.getPane().paneIndex();
+            }
+        }
+    }
+
+    _getWatermark(watermarkId) {
+        const watermark = this._watermarks[watermarkId];
+        if (!watermark) {
+            throw new Error(`Watermark with id '${watermarkId}' not found`);
+        }
+
+        return watermark;
+    }
+
+    _bindWatermark(watermarkId) {
+        const watermark = this._getWatermark(watermarkId);
+        const pane = this._ensurePane(watermark.pane);
+
+        if (watermark.api) {
+            watermark.api.detach();
+        }
+
+        watermark.api = watermark.kind === 'text'
+            ? createTextWatermark(pane, watermark.options)
+            : createImageWatermark(pane, watermark.imageUrl, watermark.options);
+    }
+
+    _reindexWatermarksAfterSwap(first, second) {
+        for (const watermark of Object.values(this._watermarks)) {
+            if (watermark.pane === first) {
+                watermark.pane = second;
+            } else if (watermark.pane === second) {
+                watermark.pane = first;
+            }
+        }
+    }
+
+    _reindexWatermarksAfterMove(from, to) {
+        if (from === to) {
+            return;
+        }
+
+        for (const watermark of Object.values(this._watermarks)) {
+            if (watermark.pane === from) {
+                watermark.pane = to;
+            } else if (from < to && watermark.pane > from && watermark.pane <= to) {
+                watermark.pane -= 1;
+            } else if (from > to && watermark.pane >= to && watermark.pane < from) {
+                watermark.pane += 1;
+            }
+        }
+    }
+
+    _reindexWatermarksAfterRemoval(paneIndex) {
+        for (const [watermarkId, watermark] of Object.entries(this._watermarks)) {
+            if (watermark.pane === paneIndex) {
+                if (watermark.api) {
+                    watermark.api.detach();
+                }
+                delete this._watermarks[watermarkId];
+            } else if (watermark.pane > paneIndex) {
+                watermark.pane -= 1;
             }
         }
     }
@@ -140,7 +213,15 @@ export class TradingChart {
             series.markerApi = null;
         }
 
+        for (const watermark of Object.values(this._watermarks)) {
+            if (watermark.api) {
+                watermark.api.detach();
+                watermark.api = null;
+            }
+        }
+
         this._series = {};
+        this._watermarks = {};
     }
 
     applyChartOptions(options) {
@@ -172,6 +253,10 @@ export class TradingChart {
         this._chart = createChart(node, options || {});
         for (const seriesId of Object.keys(this._series)) {
             this._bindSeries(seriesId);
+        }
+
+        for (const watermarkId of Object.keys(this._watermarks)) {
+            this._bindWatermark(watermarkId);
         }
     }
 
@@ -272,6 +357,7 @@ export class TradingChart {
     movePane(paneIndex, targetIndex) {
         this._getPane(paneIndex).moveTo(targetIndex);
         this._syncSeriesPanels();
+        this._reindexWatermarksAfterMove(paneIndex, targetIndex);
     }
 
     removePane(paneIndex) {
@@ -279,6 +365,7 @@ export class TradingChart {
 
         chart.removePane(paneIndex);
         this._syncSeriesPanels();
+        this._reindexWatermarksAfterRemoval(paneIndex);
     }
 
     swapPanes(first, second) {
@@ -286,6 +373,7 @@ export class TradingChart {
 
         chart.swapPanes(first, second);
         this._syncSeriesPanels();
+        this._reindexWatermarksAfterSwap(first, second);
     }
 
     resize(width, height) {
@@ -298,6 +386,73 @@ export class TradingChart {
         const chart = this._getChart();
 
         return chart.takeScreenshot().toDataURL();
+    }
+
+    addTextWatermark(paneIndex, options) {
+        const id = uuidv4();
+        this._watermarks[id] = {
+            id,
+            kind: 'text',
+            pane: paneIndex,
+            options: options || {},
+            api: null,
+        };
+
+        if (this._chart) {
+            this._bindWatermark(id);
+        }
+
+        return id;
+    }
+
+    updateTextWatermark(watermarkId, options) {
+        const watermark = this._getWatermark(watermarkId);
+
+        watermark.options = options || {};
+        if (watermark.api) {
+            watermark.api.applyOptions(watermark.options);
+        }
+    }
+
+    addImageWatermark(paneIndex, imageUrl, options) {
+        const id = uuidv4();
+        this._watermarks[id] = {
+            id,
+            kind: 'image',
+            pane: paneIndex,
+            imageUrl,
+            options: options || {},
+            api: null,
+        };
+
+        if (this._chart) {
+            this._bindWatermark(id);
+        }
+
+        return id;
+    }
+
+    updateImageWatermark(watermarkId, options) {
+        const watermark = this._getWatermark(watermarkId);
+
+        watermark.options = options || {};
+        if (watermark.api) {
+            watermark.api.applyOptions(watermark.options);
+        }
+    }
+
+    removeWatermark(watermarkId) {
+        const watermark = this._watermarks[watermarkId];
+        if (!watermark) {
+            return false;
+        }
+
+        if (watermark.api) {
+            watermark.api.detach();
+        }
+
+        delete this._watermarks[watermarkId];
+        return true;
     }
 
     addSeries(seriesDesc) {

@@ -3,7 +3,8 @@ use crate::{
     data::{
         series::Series,
         options::{ChartOptions, PriceScaleOptions, TimeScaleOptions},
-        LogicalRange, Marker, PaneSize, PriceLineOptions, PriceRange, TimeRange, UTCTimestamp,
+        ImageWatermarkOptions, LogicalRange, Marker, PaneSize, PriceLineOptions, PriceRange, TextWatermarkOptions,
+        TimeRange, UTCTimestamp,
     },
     JsError,
 };
@@ -383,6 +384,56 @@ impl ChartHandle {
             .map_err(|err| JsError::new_from_str(&err.to_string()))?;
 
         Ok(chart.takeScreenshot()?)
+    }
+
+    pub fn add_text_watermark(&self, panel: PanelId, options: &TextWatermarkOptions) -> Result<String, JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.addTextWatermark(panel, to_value(options)?)?)
+    }
+
+    pub fn update_text_watermark(&self, watermark_id: String, options: &TextWatermarkOptions) -> Result<(), JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.updateTextWatermark(watermark_id, to_value(options)?)?)
+    }
+
+    pub fn add_image_watermark(
+        &self,
+        panel: PanelId,
+        image_url: impl Into<String>,
+        options: &ImageWatermarkOptions,
+    ) -> Result<String, JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.addImageWatermark(panel, image_url.into(), to_value(options)?)?)
+    }
+
+    pub fn update_image_watermark(&self, watermark_id: String, options: &ImageWatermarkOptions) -> Result<(), JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.updateImageWatermark(watermark_id, to_value(options)?)?)
+    }
+
+    pub fn remove_watermark(&self, watermark_id: String) -> Result<(), JsError> {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.removeWatermark(watermark_id)?)
     }
 
     pub fn allocate_panel(&self) -> PanelId {

@@ -117,6 +117,34 @@ extern "C" {
     pub(super) fn takeScreenshot(this: &TradingChart) -> Result<String, JsValue>;
 
     #[wasm_bindgen(method, catch)]
+    pub(super) fn addTextWatermark(this: &TradingChart, paneIndex: u32, options: JsValue) -> Result<String, JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(super) fn updateTextWatermark(
+        this: &TradingChart,
+        watermarkId: String,
+        options: JsValue,
+    ) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(super) fn addImageWatermark(
+        this: &TradingChart,
+        paneIndex: u32,
+        imageUrl: String,
+        options: JsValue,
+    ) -> Result<String, JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(super) fn updateImageWatermark(
+        this: &TradingChart,
+        watermarkId: String,
+        options: JsValue,
+    ) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(super) fn removeWatermark(this: &TradingChart, watermarkId: String) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
     pub(super) fn addSeries(this: &TradingChart, series: JsValue) -> Result<String, JsValue>;
 
     #[wasm_bindgen(method, catch)]

@@ -30,6 +30,7 @@ pub fn app() -> Element {
     let price_scale_text = use_signal(|| String::from("Price scale: pending"));
     let pane_text = use_signal(|| String::from("Panes: pending"));
     let coordinate_text = use_signal(|| String::from("Coordinates: pending"));
+    let watermark_text = use_signal(|| String::from("Watermarks: pending"));
     let screenshot_status = use_signal(|| String::from("Screenshot: idle"));
     let screenshot_data_url = use_signal(|| None::<String>);
     let mut price_scale_zoom_request = use_signal(|| 0_u64);
@@ -37,6 +38,7 @@ pub fn app() -> Element {
     let mut pane_resize_request = use_signal(|| 0_u64);
     let mut pane_swap_request = use_signal(|| 0_u64);
     let mut coordinate_probe_request = use_signal(|| 0_u64);
+    let mut watermark_update_request = use_signal(|| 0_u64);
     let chart_options = use_signal(|| {
         ChartOptions::new()
             .with_time_scale(TimeScaleOptions::new().with_time_visible(true))
@@ -163,6 +165,10 @@ pub fn app() -> Element {
                         recent_range: data.read().recent_range(),
                         probe_request: coordinate_probe_request,
                     }
+                    WatermarkProbe {
+                        watermark_text,
+                        update_request: watermark_update_request,
+                    }
                     ScreenshotCapture {
                         screenshot_status,
                         screenshot_data_url,
@@ -176,6 +182,7 @@ pub fn app() -> Element {
                 span { "{price_scale_text()}" }
                 span { "{pane_text()}" }
                 span { "{coordinate_text()}" }
+                span { "{watermark_text()}" }
                 span { "{screenshot_status()}" }
                 div {
                     style: "display:flex;flex-direction:row;column-gap:10px;",
@@ -216,6 +223,10 @@ pub fn app() -> Element {
                     button {
                         onclick: move |_| coordinate_probe_request.set(coordinate_probe_request() + 1),
                         "Probe coordinates"
+                    }
+                    button {
+                        onclick: move |_| watermark_update_request.set(watermark_update_request() + 1),
+                        "Update watermarks"
                     }
                 }
                 if let Some(data_url) = screenshot_data_url() {
@@ -441,6 +452,68 @@ fn CoordinateProbe(props: CoordinateProbeProps) -> Element {
 
             last_probe_request.set(probe_request);
             schedule_coordinate_probe(chart.clone(), recent_range, coordinate_text, 150);
+        });
+    }
+
+    rsx! {}
+}
+
+#[derive(Clone, Props)]
+struct WatermarkProbeProps {
+    watermark_text: Signal<String>,
+    update_request: Signal<u64>,
+}
+
+impl PartialEq for WatermarkProbeProps {
+    fn eq(&self, _other: &Self) -> bool {
+        false
+    }
+}
+
+#[allow(non_snake_case)]
+fn WatermarkProbe(props: WatermarkProbeProps) -> Element {
+    let chart = use_chart();
+    let mut initialized = use_signal(|| false);
+    let mut last_update_request = use_signal(|| 0_u64);
+    let text_watermark_id = use_signal(|| None::<String>);
+    let image_watermark_id = use_signal(|| None::<String>);
+
+    {
+        let chart = chart.clone();
+        let watermark_text = props.watermark_text;
+        use_effect(move || {
+            if initialized() {
+                return;
+            }
+
+            initialized.set(true);
+            schedule_watermark_init(
+                chart.clone(),
+                watermark_text,
+                text_watermark_id,
+                image_watermark_id,
+                150,
+            );
+        });
+    }
+
+    {
+        let chart = chart.clone();
+        let watermark_text = props.watermark_text;
+        use_effect(move || {
+            let update_request = (props.update_request)();
+            if update_request == 0 || update_request == last_update_request() {
+                return;
+            }
+
+            last_update_request.set(update_request);
+            schedule_watermark_update(
+                chart.clone(),
+                watermark_text,
+                text_watermark_id(),
+                image_watermark_id(),
+                150,
+            );
         });
     }
 
@@ -710,6 +783,117 @@ fn schedule_coordinate_probe(
     schedule_timeout(callback, delay_ms, &mut coordinate_text, "coordinate probe");
 }
 
+fn schedule_watermark_init(
+    chart: charts::ChartHandle,
+    mut watermark_text: Signal<String>,
+    mut text_watermark_id: Signal<Option<String>>,
+    mut image_watermark_id: Signal<Option<String>>,
+    delay_ms: i32,
+) {
+    let callback = Closure::<dyn FnMut()>::new(move || {
+        if text_watermark_id().is_some() || image_watermark_id().is_some() {
+            watermark_text.set(String::from("Watermarks: already initialized"));
+            return;
+        }
+
+        let text_options = charts::data::TextWatermarkOptions::new()
+            .with_horz_align("center")
+            .with_vert_align("center")
+            .with_lines(vec![
+                charts::data::TextWatermarkLineOptions::new("rs-trading-charts")
+                    .with_color("rgba(29, 78, 216, 0.20)")
+                    .with_font_size(42.0)
+                    .with_font_style("bold"),
+                charts::data::TextWatermarkLineOptions::new("Dioxus + Lightweight Charts")
+                    .with_color("rgba(2, 132, 199, 0.30)")
+                    .with_font_size(20.0)
+                    .with_font_family("monospace"),
+            ]);
+        let image_options = charts::data::ImageWatermarkOptions::new()
+            .with_max_width(120.0)
+            .with_max_height(120.0)
+            .with_padding(16.0)
+            .with_alpha(0.55);
+
+        let text_id = match chart.add_text_watermark(0, &text_options) {
+            Ok(id) => id,
+            Err(err) => {
+                err.with_prefix("Failed to add text watermark").log();
+                watermark_text.set(String::from("Watermarks: text add failed"));
+                return;
+            }
+        };
+
+        let image_id = match chart.add_image_watermark(1, watermark_svg_data_url(), &image_options) {
+            Ok(id) => id,
+            Err(err) => {
+                err.with_prefix("Failed to add image watermark").log();
+                watermark_text.set(String::from("Watermarks: image add failed"));
+                return;
+            }
+        };
+
+        text_watermark_id.set(Some(text_id));
+        image_watermark_id.set(Some(image_id));
+        watermark_text.set(String::from("Watermarks: initialized"));
+    });
+
+    schedule_timeout(callback, delay_ms, &mut watermark_text, "watermark init");
+}
+
+fn schedule_watermark_update(
+    chart: charts::ChartHandle,
+    mut watermark_text: Signal<String>,
+    text_watermark_id: Option<String>,
+    image_watermark_id: Option<String>,
+    delay_ms: i32,
+) {
+    let callback = Closure::<dyn FnMut()>::new(move || {
+        let Some(text_id) = text_watermark_id.clone() else {
+            watermark_text.set(String::from("Watermarks: text watermark missing"));
+            return;
+        };
+        let Some(image_id) = image_watermark_id.clone() else {
+            watermark_text.set(String::from("Watermarks: image watermark missing"));
+            return;
+        };
+
+        let text_options = charts::data::TextWatermarkOptions::new()
+            .with_horz_align("left")
+            .with_vert_align("top")
+            .with_lines(vec![
+                charts::data::TextWatermarkLineOptions::new("Watermarks updated")
+                    .with_color("rgba(15, 23, 42, 0.22)")
+                    .with_font_size(28.0)
+                    .with_font_style("italic"),
+                charts::data::TextWatermarkLineOptions::new("pane primitives")
+                    .with_color("rgba(220, 38, 38, 0.22)")
+                    .with_font_size(18.0),
+            ]);
+        let image_options = charts::data::ImageWatermarkOptions::new()
+            .with_max_width(96.0)
+            .with_max_height(96.0)
+            .with_padding(8.0)
+            .with_alpha(0.85);
+
+        if let Err(err) = chart.update_text_watermark(text_id, &text_options) {
+            err.with_prefix("Failed to update text watermark").log();
+            watermark_text.set(String::from("Watermarks: text update failed"));
+            return;
+        }
+
+        if let Err(err) = chart.update_image_watermark(image_id, &image_options) {
+            err.with_prefix("Failed to update image watermark").log();
+            watermark_text.set(String::from("Watermarks: image update failed"));
+            return;
+        }
+
+        watermark_text.set(String::from("Watermarks: updated"));
+    });
+
+    schedule_timeout(callback, delay_ms, &mut watermark_text, "watermark update");
+}
+
 fn update_price_scale_text(chart: &charts::ChartHandle, price_scale_text: &mut Signal<String>, prefix: &str) {
     match (
         chart.get_price_scale_visible_range("right", Some(0)),
@@ -770,6 +954,17 @@ fn update_pane_text(chart: &charts::ChartHandle, pane_text: &mut Signal<String>,
         .join(" | ");
 
     pane_text.set(format!("{prefix}: {count} pane(s) [{panes}]"));
+}
+
+fn watermark_svg_data_url() -> String {
+    String::from(
+        "data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'>\
+<rect width='120' height='120' rx='18' fill='%230f172a' fill-opacity='0.08'/>\
+<circle cx='60' cy='60' r='34' fill='%231d4ed8' fill-opacity='0.18'/>\
+<path d='M36 66 L54 44 L68 58 L84 38' fill='none' stroke='%230f172a' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'/>\
+</svg>",
+    )
 }
 
 fn schedule_timeout(callback: Closure<dyn FnMut()>, delay_ms: i32, status_text: &mut Signal<String>, context: &str) {
