@@ -3,6 +3,7 @@
 debug/
 target/
 example/dist/
+example-dioxus/dist/
 trading-charts/bindings/node_modules/
 trading-charts/bindings/target/
 
