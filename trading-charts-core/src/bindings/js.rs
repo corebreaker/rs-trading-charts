@@ -34,6 +34,9 @@ extern "C" {
     pub(super) fn updateData(this: &TradingChart, seriesId: String, data: JsValue) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
+    pub(super) fn updateDataPoint(this: &TradingChart, seriesId: String, data: JsValue) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
     pub(super) fn setMarker(this: &TradingChart, seriesId: String, marker: JsValue) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]

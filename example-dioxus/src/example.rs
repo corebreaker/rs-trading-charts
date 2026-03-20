@@ -7,7 +7,13 @@ use charts::{
         ChartOptions, TimeScaleOptions,
     },
     panel::ChartPanel,
-    series::candlesticks::CandleStickSeries,
+    series::{
+        areas::{AreaSeries, AreaSeriesOptions},
+        bars::{BarSeries, BarSeriesOptions},
+        candlesticks::CandleStickSeries,
+        histograms::{HistogramSeries, HistogramSeriesOptions},
+        lines::{LineSeries, LineSeriesOptions},
+    },
 };
 use dioxus::prelude::*;
 use log::error;
@@ -24,6 +30,24 @@ pub fn app() -> Element {
             )
             .with_auto_size(true)
     });
+    let line_options = LineSeriesOptions::new()
+        .with_title(String::from("Close"))
+        .with_color(String::from("#1d4ed8"))
+        .with_price_line_visible(false);
+    let area_options = AreaSeriesOptions::new()
+        .with_title(String::from("Mid"))
+        .with_top_color(String::from("rgba(14, 165, 233, 0.28)"))
+        .with_bottom_color(String::from("rgba(14, 165, 233, 0.02)"))
+        .with_line_color(String::from("rgba(2, 132, 199, 0.95)"))
+        .with_price_line_visible(false);
+    let bar_options = BarSeriesOptions::new()
+        .with_title(String::from("Bar"))
+        .with_open_visible(true)
+        .with_price_line_visible(false);
+    let histogram_options = HistogramSeriesOptions::new()
+        .with_title(String::from("Delta"))
+        .with_base(0.0)
+        .with_price_line_visible(false);
     let mut data = use_signal(Dataset::new);
 
     rsx! {
@@ -40,11 +64,27 @@ pub fn app() -> Element {
                             data: data.read().data_up().clone(),
                             markers: data.read().markers().clone(),
                         }
+                        LineSeries {
+                            options: Some(line_options.clone()),
+                            data: data.read().line_up(),
+                            markers: Vec::new(),
+                        }
+                        AreaSeries {
+                            options: Some(area_options.clone()),
+                            data: data.read().area_up(),
+                            markers: Vec::new(),
+                        }
                     }
                     ChartPanel {
-                        CandleStickSeries {
+                        BarSeries {
+                            options: Some(bar_options.clone()),
                             data: data.read().data_down().clone(),
                             markers: data.read().markers().clone(),
+                        }
+                        HistogramSeries {
+                            options: Some(histogram_options.clone()),
+                            data: data.read().histogram_down(),
+                            markers: Vec::new(),
                         }
                     }
                     ChartActions {}

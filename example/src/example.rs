@@ -3,11 +3,17 @@ use charts::{
     data::options::{
         background::Background,
         layout::{LayoutOptions, LayoutPanesOptions},
-        TimeScaleOptions, ChartOptions,
+        ChartOptions, TimeScaleOptions,
     },
-    series::candlesticks::CandleStickSeries,
-    panel::ChartPanel,
     chart::Chart,
+    panel::ChartPanel,
+    series::{
+        areas::{AreaSeries, AreaSeriesOptions},
+        bars::{BarSeries, BarSeriesOptions},
+        candlesticks::CandleStickSeries,
+        histograms::{HistogramSeries, HistogramSeriesOptions},
+        lines::{LineSeries, LineSeriesOptions},
+    },
     REFIT_EVENT_KIND,
 };
 
@@ -40,6 +46,32 @@ pub fn App() -> impl IntoView {
             )
             .with_auto_size(true),
     );
+    let (line_options, _) = signal(
+        LineSeriesOptions::new()
+            .with_title(String::from("Close"))
+            .with_color(String::from("#1d4ed8"))
+            .with_price_line_visible(false),
+    );
+    let (area_options, _) = signal(
+        AreaSeriesOptions::new()
+            .with_title(String::from("Mid"))
+            .with_top_color(String::from("rgba(14, 165, 233, 0.28)"))
+            .with_bottom_color(String::from("rgba(14, 165, 233, 0.02)"))
+            .with_line_color(String::from("rgba(2, 132, 199, 0.95)"))
+            .with_price_line_visible(false),
+    );
+    let (bar_options, _) = signal(
+        BarSeriesOptions::new()
+            .with_title(String::from("Bar"))
+            .with_open_visible(true)
+            .with_price_line_visible(false),
+    );
+    let (histogram_options, _) = signal(
+        HistogramSeriesOptions::new()
+            .with_title(String::from("Delta"))
+            .with_base(0.0)
+            .with_price_line_visible(false),
+    );
 
     let data = RwSignal::new(Dataset::new());
 
@@ -52,11 +84,27 @@ pub fn App() -> impl IntoView {
                             data=Signal::derive(move || data.with(|d| d.data_up().clone()))
                             markers=Signal::derive(move || data.with(|d| d.markers().clone()))
                         />
+                        <LineSeries
+                            options=line_options
+                            data=Signal::derive(move || data.with(|d| d.line_up()))
+                            markers=Signal::derive(Vec::new)
+                        />
+                        <AreaSeries
+                            options=area_options
+                            data=Signal::derive(move || data.with(|d| d.area_up()))
+                            markers=Signal::derive(Vec::new)
+                        />
                     </ChartPanel>
                     <ChartPanel>
-                        <CandleStickSeries
+                        <BarSeries
+                            options=bar_options
                             data=Signal::derive(move || data.with(|d| d.data_down().clone()))
                             markers=Signal::derive(move || data.with(|d| d.markers().clone()))
+                        />
+                        <HistogramSeries
+                            options=histogram_options
+                            data=Signal::derive(move || data.with(|d| d.histogram_down()))
+                            markers=Signal::derive(Vec::new)
                         />
                     </ChartPanel>
                 </Chart>

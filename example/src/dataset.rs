@@ -1,5 +1,5 @@
 use charts::{
-    data::{Candlestick, Marker, UTCTimestamp},
+    data::{Candlestick, HistogramData, Marker, UTCTimestamp, ValueData},
     JsError,
 };
 
@@ -78,6 +78,18 @@ impl Dataset {
 
     pub(super) fn data_down(&self) -> &Vec<Candlestick> {
         &self.data_down
+    }
+
+    pub(super) fn line_up(&self) -> Vec<ValueData> {
+        make_line_data(&self.data_up)
+    }
+
+    pub(super) fn area_up(&self) -> Vec<ValueData> {
+        make_area_data(&self.data_up)
+    }
+
+    pub(super) fn histogram_down(&self) -> Vec<HistogramData> {
+        make_histogram_data(&self.data_down)
     }
 
     pub(super) fn markers(&self) -> &Vec<Marker> {
@@ -160,6 +172,33 @@ fn make_markers(data: &Vec<Candlestick>, delta: usize) -> Vec<Marker> {
     markers.push(Marker::sell(data[limit + delta].time()).with_text(String::from("Sx4")));
 
     markers
+}
+
+fn make_line_data(data: &Vec<Candlestick>) -> Vec<ValueData> {
+    data.iter()
+        .map(|candle| ValueData::new(candle.time(), candle.close()))
+        .collect()
+}
+
+fn make_area_data(data: &Vec<Candlestick>) -> Vec<ValueData> {
+    data.iter()
+        .map(|candle| ValueData::new(candle.time(), (candle.high() + candle.low()) / 2.0))
+        .collect()
+}
+
+fn make_histogram_data(data: &Vec<Candlestick>) -> Vec<HistogramData> {
+    data.iter()
+        .map(|candle| {
+            let delta = candle.close() - candle.open();
+            let color = if delta >= 0.0 {
+                "rgba(38, 166, 154, 0.75)"
+            } else {
+                "rgba(239, 83, 80, 0.75)"
+            };
+
+            HistogramData::new(candle.time(), delta).with_color(color.to_string())
+        })
+        .collect()
 }
 
 fn make_dataset() -> Vec<Candlestick> {

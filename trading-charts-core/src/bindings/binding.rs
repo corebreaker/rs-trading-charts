@@ -1,11 +1,11 @@
 use super::js::TradingChart as JsChart;
 use crate::{
-    data::{series::Series, options::ChartOptions, Candlestick, Marker},
+    data::{series::Series, options::ChartOptions, Marker},
     JsError,
 };
 
-use serde_wasm_bindgen::to_value;
 use serde::Serialize;
+use serde_wasm_bindgen::to_value;
 use wasm_bindgen::JsValue;
 use web_sys::HtmlDivElement;
 use std::sync::{
@@ -104,13 +104,28 @@ impl ChartHandle {
         Ok(chart.updateSeriesOptions(series_id, to_value(options)?)?)
     }
 
-    pub fn update_data(&self, series_id: String, data: &Vec<Candlestick>) -> Result<(), JsError> {
+    pub fn update_data<Dat>(&self, series_id: String, data: &Vec<Dat>) -> Result<(), JsError>
+    where
+        Dat: Serialize + Clone,
+    {
         let chart = self
             .chart
             .lock()
             .map_err(|err| JsError::new_from_str(&err.to_string()))?;
 
         Ok(chart.updateData(series_id, to_value(data)?)?)
+    }
+
+    pub fn update_data_point<Dat>(&self, series_id: String, data: &Dat) -> Result<(), JsError>
+    where
+        Dat: Serialize + Clone,
+    {
+        let chart = self
+            .chart
+            .lock()
+            .map_err(|err| JsError::new_from_str(&err.to_string()))?;
+
+        Ok(chart.updateDataPoint(series_id, to_value(data)?)?)
     }
 
     pub fn set_marker(&self, series_id: String, marker: &Marker) -> Result<(), JsError> {

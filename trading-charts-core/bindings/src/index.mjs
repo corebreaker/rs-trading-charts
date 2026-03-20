@@ -48,6 +48,10 @@ function makeMarkerProps(options) {
     return res;
 }
 
+function sortByTime(data) {
+    data.sort((a, b) => a.time - b.time);
+}
+
 export class TradingChart {
     constructor() {
         this._chart = null;
@@ -155,7 +159,7 @@ export class TradingChart {
         }
 
         if (Array.isArray(data)) {
-            data.sort((a, b) => a.time - b.time);
+            sortByTime(data);
         }
 
         const id = uuidv4();
@@ -279,10 +283,38 @@ export class TradingChart {
 
     updateData(seriesId, data) {
         const series = this._getSeries(seriesId);
-        data.sort((a, b) => a.time - b.time);
+        sortByTime(data);
         series.params.data = data;
         if (series.chartApi) {
             series.getApi().setData(data);
+        }
+    }
+
+    updateDataPoint(seriesId, dataPoint) {
+        const series = this._getSeries(seriesId);
+        const data = series.params.data || [];
+        series.params.data = data;
+
+        const idx = data.findIndex(item => item.time === dataPoint.time);
+        let canIncrementallyUpdate = true;
+
+        if (idx >= 0) {
+            data[idx] = dataPoint;
+            canIncrementallyUpdate = idx === data.length - 1;
+        } else if (data.length === 0 || data[data.length - 1].time < dataPoint.time) {
+            data.push(dataPoint);
+        } else {
+            data.push(dataPoint);
+            sortByTime(data);
+            canIncrementallyUpdate = false;
+        }
+
+        if (series.chartApi) {
+            if (canIncrementallyUpdate) {
+                series.getApi().update(dataPoint);
+            } else {
+                series.getApi().setData(data);
+            }
         }
     }
 
