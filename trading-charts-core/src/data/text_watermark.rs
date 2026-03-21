@@ -2,16 +2,16 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct TextWatermarkLineOptions {
-    color: String,
-    text: String,
+    color:       String,
+    text:        String,
     #[serde(rename = "fontSize")]
-    font_size: f64,
+    font_size:   f64,
     #[serde(rename = "lineHeight", skip_serializing_if = "Option::is_none")]
     line_height: Option<f64>,
     #[serde(rename = "fontFamily")]
     font_family: String,
     #[serde(rename = "fontStyle")]
-    font_style: String,
+    font_style:  String,
 }
 
 impl TextWatermarkLineOptions {
@@ -30,7 +30,10 @@ impl TextWatermarkLineOptions {
     }
 
     pub fn with_font_size(self, font_size: f64) -> Self {
-        Self { font_size, ..self }
+        Self {
+            font_size,
+            ..self
+        }
     }
 
     pub fn with_line_height(self, line_height: f64) -> Self {
@@ -58,24 +61,24 @@ impl TextWatermarkLineOptions {
 impl Default for TextWatermarkLineOptions {
     fn default() -> Self {
         Self {
-            color: String::from("rgba(0, 0, 0, 0.5)"),
-            text: String::new(),
-            font_size: 48.0,
+            color:       String::from("rgba(0, 0, 0, 0.5)"),
+            text:        String::new(),
+            font_size:   48.0,
             line_height: None,
             font_family: String::from("-apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif"),
-            font_style: String::new(),
+            font_style:  String::new(),
         }
     }
 }
 
 #[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct TextWatermarkOptions {
-    visible: bool,
+    visible:    bool,
     #[serde(rename = "horzAlign")]
     horz_align: String,
     #[serde(rename = "vertAlign")]
     vert_align: String,
-    lines: Vec<TextWatermarkLineOptions>,
+    lines:      Vec<TextWatermarkLineOptions>,
 }
 
 impl TextWatermarkOptions {
@@ -84,7 +87,10 @@ impl TextWatermarkOptions {
     }
 
     pub fn with_visible(self, visible: bool) -> Self {
-        Self { visible, ..self }
+        Self {
+            visible,
+            ..self
+        }
     }
 
     pub fn with_horz_align(self, horz_align: impl Into<String>) -> Self {
@@ -102,17 +108,20 @@ impl TextWatermarkOptions {
     }
 
     pub fn with_lines(self, lines: Vec<TextWatermarkLineOptions>) -> Self {
-        Self { lines, ..self }
+        Self {
+            lines,
+            ..self
+        }
     }
 }
 
 impl Default for TextWatermarkOptions {
     fn default() -> Self {
         Self {
-            visible: true,
+            visible:    true,
             horz_align: String::from("center"),
             vert_align: String::from("center"),
-            lines: Vec::new(),
+            lines:      Vec::new(),
         }
     }
 }

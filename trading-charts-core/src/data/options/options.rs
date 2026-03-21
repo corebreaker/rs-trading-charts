@@ -1,7 +1,15 @@
 use super::{
-    cross_hair::CrossHairOptions, grid::GridOptions, handle_scale::HandleScaleOptions, layout::LayoutOptions,
-    overlay_price_scale::OverlayPriceScaleOptions, price_scale::PriceScaleOptions, FlagableOptions,
-    HandleScrollOptions, KineticScrollOptions, TimeScaleOptions, TrackingModeOptions,
+    cross_hair::CrossHairOptions,
+    grid::GridOptions,
+    handle_scale::HandleScaleOptions,
+    layout::LayoutOptions,
+    overlay_price_scale::OverlayPriceScaleOptions,
+    price_scale::PriceScaleOptions,
+    FlagableOptions,
+    HandleScrollOptions,
+    KineticScrollOptions,
+    TimeScaleOptions,
+    TrackingModeOptions,
 };
 
 use serde::{Deserialize, Serialize};
@@ -57,19 +65,31 @@ impl ChartOptions {
     }
 
     pub fn with_width(self, width: usize) -> Self {
-        Self { width, ..self }
+        Self {
+            width,
+            ..self
+        }
     }
 
     pub fn with_height(self, height: usize) -> Self {
-        Self { height, ..self }
+        Self {
+            height,
+            ..self
+        }
     }
 
     pub fn with_auto_size(self, auto_size: bool) -> Self {
-        Self { auto_size, ..self }
+        Self {
+            auto_size,
+            ..self
+        }
     }
 
     pub fn with_layout(self, layout: LayoutOptions) -> Self {
-        Self { layout, ..self }
+        Self {
+            layout,
+            ..self
+        }
     }
 
     pub fn with_left_price_scale(self, left_price_scale: PriceScaleOptions) -> Self {
@@ -94,23 +114,38 @@ impl ChartOptions {
     }
 
     pub fn with_time_scale(self, time_scale: TimeScaleOptions) -> Self {
-        Self { time_scale, ..self }
+        Self {
+            time_scale,
+            ..self
+        }
     }
 
     pub fn with_cross_hair(self, cross_hair: CrossHairOptions) -> Self {
-        Self { cross_hair, ..self }
+        Self {
+            cross_hair,
+            ..self
+        }
     }
 
     pub fn with_grid(self, grid: GridOptions) -> Self {
-        Self { grid, ..self }
+        Self {
+            grid,
+            ..self
+        }
     }
 
     pub fn with_handle_scroll(self, handle_scroll: FlagableOptions<HandleScrollOptions>) -> Self {
-        Self { handle_scroll, ..self }
+        Self {
+            handle_scroll,
+            ..self
+        }
     }
 
     pub fn with_handle_scale(self, handle_scale: FlagableOptions<HandleScaleOptions>) -> Self {
-        Self { handle_scale, ..self }
+        Self {
+            handle_scale,
+            ..self
+        }
     }
 
     pub fn with_kinetic_scroll_options(self, kinetic_scroll_options: KineticScrollOptions) -> Self {
@@ -121,7 +156,10 @@ impl ChartOptions {
     }
 
     pub fn with_tracking_mode(self, tracking_mode: TrackingModeOptions) -> Self {
-        Self { tracking_mode, ..self }
+        Self {
+            tracking_mode,
+            ..self
+        }
     }
 
     pub fn width(&self) -> usize {

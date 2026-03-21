@@ -15,15 +15,24 @@ impl KineticScrollOptions {
     }
 
     pub fn new_with_params(touch: bool, mouse: bool) -> Self {
-        Self { touch, mouse }
+        Self {
+            touch,
+            mouse,
+        }
     }
 
     pub fn with_touch(self, touch: bool) -> Self {
-        Self { touch, ..self }
+        Self {
+            touch,
+            ..self
+        }
     }
 
     pub fn with_mouse(self, mouse: bool) -> Self {
-        Self { mouse, ..self }
+        Self {
+            mouse,
+            ..self
+        }
     }
 
     pub fn touch(&self) -> bool {

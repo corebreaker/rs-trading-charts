@@ -8,7 +8,9 @@ pub struct SolidColor {
 
 impl SolidColor {
     pub fn new(color: String) -> Self {
-        Self { color }
+        Self {
+            color,
+        }
     }
 
     pub fn color(&self) -> &str {

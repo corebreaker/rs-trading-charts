@@ -1,6 +1,9 @@
 use serde::{
     de::{Visitor, Error},
-    Deserialize, Serialize, Deserializer, Serializer,
+    Deserialize,
+    Serialize,
+    Deserializer,
+    Serializer,
 };
 use std::fmt::{Formatter, Result as FmtResult};
 

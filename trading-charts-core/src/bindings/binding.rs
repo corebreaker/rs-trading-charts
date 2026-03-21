@@ -3,12 +3,27 @@ use crate::{
     data::{
         series::Series,
         options::{ChartOptions, PriceScaleOptions, TimeScaleOptions},
-        Candlestick, HistogramData, ImageWatermarkOptions, LegendOptions, LogicalRange, Marker, PaneSize,
-        PriceLineOptions, PriceRange, TextWatermarkOptions, TimeRange, UTCTimestamp, ValueData,
+        Candlestick,
+        HistogramData,
+        ImageWatermarkOptions,
+        LegendOptions,
+        LogicalRange,
+        Marker,
+        PaneSize,
+        PriceLineOptions,
+        PriceRange,
+        TextWatermarkOptions,
+        TimeRange,
+        UTCTimestamp,
+        ValueData,
     },
     series::{
-        areas::AreaSeriesOptions, bars::BarSeriesOptions, baselines::BaselineSeriesOptions,
-        candlesticks::CandlestickOptions, histograms::HistogramSeriesOptions, lines::LineSeriesOptions,
+        areas::AreaSeriesOptions,
+        bars::BarSeriesOptions,
+        baselines::BaselineSeriesOptions,
+        candlesticks::CandlestickOptions,
+        histograms::HistogramSeriesOptions,
+        lines::LineSeriesOptions,
     },
     JsError,
 };
@@ -19,16 +34,17 @@ use wasm_bindgen::JsValue;
 use web_sys::HtmlDivElement;
 use std::sync::{
     atomic::{AtomicBool, AtomicU32, Ordering},
-    Arc, Mutex,
+    Arc,
+    Mutex,
 };
 
 pub type PanelId = u32;
 
 #[derive(Clone)]
 pub struct ChartHandle {
-    options: Arc<JsValue>,
-    chart: Arc<Mutex<JsChart>>,
-    bound: Arc<AtomicBool>,
+    options:    Arc<JsValue>,
+    chart:      Arc<Mutex<JsChart>>,
+    bound:      Arc<AtomicBool>,
     next_panel: Arc<AtomicU32>,
 }
 
@@ -465,8 +481,7 @@ impl ChartHandle {
     pub fn add_series<Dat, Opt>(&self, series: &mut Series<Dat, Opt>) -> Result<(), JsError>
     where
         Dat: Serialize + Clone,
-        Opt: Serialize + Clone,
-    {
+        Opt: Serialize + Clone, {
         let chart = self
             .chart
             .lock()
@@ -684,8 +699,7 @@ impl ChartHandle {
 
     pub fn update_data<Dat>(&self, series_id: String, data: &Vec<Dat>) -> Result<(), JsError>
     where
-        Dat: Serialize + Clone,
-    {
+        Dat: Serialize + Clone, {
         let chart = self
             .chart
             .lock()
@@ -696,8 +710,7 @@ impl ChartHandle {
 
     pub fn update_data_point<Dat>(&self, series_id: String, data: &Dat) -> Result<(), JsError>
     where
-        Dat: Serialize + Clone,
-    {
+        Dat: Serialize + Clone, {
         let chart = self
             .chart
             .lock()
@@ -771,8 +784,7 @@ impl ChartHandle {
     ) -> Result<String, JsError>
     where
         Dat: Serialize + Clone,
-        Opt: Serialize + Clone,
-    {
+        Opt: Serialize + Clone, {
         let mut series: Series<Dat, Opt> = Series::new(series_type);
         if let Some(panel) = panel {
             series.set_panel(panel);

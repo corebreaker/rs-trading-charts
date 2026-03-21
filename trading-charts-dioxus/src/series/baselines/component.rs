@@ -8,12 +8,12 @@ use dioxus::prelude::*;
 
 #[derive(Clone, Props)]
 pub struct BaselineSeriesProps {
-    data: Vec<ValueData>,
-    markers: Vec<Marker>,
+    data:        Vec<ValueData>,
+    markers:     Vec<Marker>,
     #[props(default)]
     price_lines: Vec<PriceLineOptions>,
     #[props(default)]
-    options: Option<BaselineSeriesOptions>,
+    options:     Option<BaselineSeriesOptions>,
 }
 
 impl PartialEq for BaselineSeriesProps {

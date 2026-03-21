@@ -1,11 +1,13 @@
 use super::BaselineSeriesOptions;
 use crate::{
-    ChartHandle, PanelId,
+    ChartHandle,
+    PanelId,
     data::{Marker, PriceLineOptions, ValueData, series::Series},
 };
 
 use leptos::{
-    IntoView, component,
+    IntoView,
+    component,
     context::use_context,
     reactive::{
         effect::Effect,

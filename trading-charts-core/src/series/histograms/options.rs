@@ -5,29 +5,29 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "camelCase")]
 pub struct HistogramSeriesOptions {
     #[serde(skip_serializing_if = "Option::is_none")]
-    title: Option<String>,
+    title:              Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    visible: Option<bool>,
+    visible:            Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    color: Option<String>,
+    color:              Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    base: Option<f64>,
+    base:               Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     last_value_visible: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     price_line_visible: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    price_line_source: Option<PriceLineSource>,
+    price_line_source:  Option<PriceLineSource>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    price_line_width: Option<LineWidth>,
+    price_line_width:   Option<LineWidth>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    price_line_color: Option<String>,
+    price_line_color:   Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    price_line_style: Option<LineStyle>,
+    price_line_style:   Option<LineStyle>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    price_format: Option<PriceFormatOptions>,
+    price_format:       Option<PriceFormatOptions>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    price_scale_id: Option<String>,
+    price_scale_id:     Option<String>,
 }
 
 impl HistogramSeriesOptions {

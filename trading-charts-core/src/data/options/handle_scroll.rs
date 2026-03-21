@@ -21,7 +21,10 @@ impl HandleScrollOptions {
     }
 
     pub fn with_mouse_wheel(self, mouse_wheel: bool) -> Self {
-        Self { mouse_wheel, ..self }
+        Self {
+            mouse_wheel,
+            ..self
+        }
     }
 
     pub fn with_pressed_mouse_move(self, pressed_mouse_move: bool) -> Self {
@@ -81,10 +84,10 @@ impl HandleScrollOptions {
 impl Default for HandleScrollOptions {
     fn default() -> Self {
         Self {
-            mouse_wheel: defaults::mouse_wheel(),
+            mouse_wheel:        defaults::mouse_wheel(),
             pressed_mouse_move: defaults::pressed_mouse_move(),
-            horz_touch_drag: defaults::horz_touch_drag(),
-            vert_touch_drag: defaults::vert_touch_drag(),
+            horz_touch_drag:    defaults::horz_touch_drag(),
+            vert_touch_drag:    defaults::vert_touch_drag(),
         }
     }
 }

@@ -3,11 +3,11 @@ use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
 #[derive(Default, Copy, Clone)]
 pub enum LineType {
     #[default]
-    Simple = 0,
+    Simple    = 0,
 
     WithSteps = 1,
 
-    Curved = 2,
+    Curved    = 2,
 }
 
 impl Serialize for LineType {

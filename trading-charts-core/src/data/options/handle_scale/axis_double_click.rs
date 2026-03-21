@@ -15,15 +15,24 @@ impl AxisDoubleClickOptions {
     }
 
     pub fn new_with_params(time: bool, price: bool) -> Self {
-        Self { time, price }
+        Self {
+            time,
+            price,
+        }
     }
 
     pub fn with_time(self, time: bool) -> Self {
-        Self { time, ..self }
+        Self {
+            time,
+            ..self
+        }
     }
 
     pub fn with_price(self, price: bool) -> Self {
-        Self { price, ..self }
+        Self {
+            price,
+            ..self
+        }
     }
 
     pub fn time(&self) -> bool {
@@ -46,7 +55,7 @@ impl AxisDoubleClickOptions {
 impl Default for AxisDoubleClickOptions {
     fn default() -> Self {
         Self {
-            time: defaults::time(),
+            time:  defaults::time(),
             price: defaults::price(),
         }
     }

@@ -53,31 +53,52 @@ impl PriceScaleOptions {
     }
 
     pub fn with_auto_scale(self, auto_scale: bool) -> Self {
-        Self { auto_scale, ..self }
+        Self {
+            auto_scale,
+            ..self
+        }
     }
 
     pub fn with_mode(self, mode: PriceScaleMode) -> Self {
-        Self { mode, ..self }
+        Self {
+            mode,
+            ..self
+        }
     }
 
     pub fn with_invert_scale(self, invert_scale: bool) -> Self {
-        Self { invert_scale, ..self }
+        Self {
+            invert_scale,
+            ..self
+        }
     }
 
     pub fn with_align_labels(self, align_labels: bool) -> Self {
-        Self { align_labels, ..self }
+        Self {
+            align_labels,
+            ..self
+        }
     }
 
     pub fn with_scale_margins(self, scale_margins: PriceScaleMargins) -> Self {
-        Self { scale_margins, ..self }
+        Self {
+            scale_margins,
+            ..self
+        }
     }
 
     pub fn with_border_visible(self, border_visible: bool) -> Self {
-        Self { border_visible, ..self }
+        Self {
+            border_visible,
+            ..self
+        }
     }
 
     pub fn with_text_color(self, text_color: String) -> Self {
-        Self { text_color, ..self }
+        Self {
+            text_color,
+            ..self
+        }
     }
 
     pub fn with_entire_text_only(self, entire_text_only: bool) -> Self {
@@ -88,15 +109,24 @@ impl PriceScaleOptions {
     }
 
     pub fn with_visible(self, visible: bool) -> Self {
-        Self { visible, ..self }
+        Self {
+            visible,
+            ..self
+        }
     }
 
     pub fn with_ticks_visible(self, ticks_visible: bool) -> Self {
-        Self { ticks_visible, ..self }
+        Self {
+            ticks_visible,
+            ..self
+        }
     }
 
     pub fn with_minimum_width(self, minimum_width: f64) -> Self {
-        Self { minimum_width, ..self }
+        Self {
+            minimum_width,
+            ..self
+        }
     }
 
     pub fn with_minimum_size(self, minimum_size: f64) -> Self {
@@ -230,17 +260,17 @@ impl PriceScaleOptions {
 impl Default for PriceScaleOptions {
     fn default() -> Self {
         Self {
-            auto_scale: defaults::auto_scale(),
-            mode: PriceScaleMode::default(),
-            invert_scale: defaults::invert_scale(),
-            align_labels: defaults::align_labels(),
-            scale_margins: PriceScaleMargins::default(),
-            border_visible: defaults::border_visible(),
-            text_color: defaults::text_color(),
-            entire_text_only: defaults::entire_text_only(),
-            visible: defaults::visible(),
-            ticks_visible: defaults::ticks_visible(),
-            minimum_width: defaults::minimum_width(),
+            auto_scale:                     defaults::auto_scale(),
+            mode:                           PriceScaleMode::default(),
+            invert_scale:                   defaults::invert_scale(),
+            align_labels:                   defaults::align_labels(),
+            scale_margins:                  PriceScaleMargins::default(),
+            border_visible:                 defaults::border_visible(),
+            text_color:                     defaults::text_color(),
+            entire_text_only:               defaults::entire_text_only(),
+            visible:                        defaults::visible(),
+            ticks_visible:                  defaults::ticks_visible(),
+            minimum_width:                  defaults::minimum_width(),
             ensure_edge_tick_marks_visible: defaults::ensure_edge_tick_marks_visible(),
         }
     }

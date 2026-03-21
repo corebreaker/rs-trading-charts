@@ -13,7 +13,9 @@ impl TrackingModeOptions {
     }
 
     pub fn new_with_exit_mode(exit_mode: TrackingModeExitMode) -> Self {
-        Self { exit_mode }
+        Self {
+            exit_mode,
+        }
     }
 
     pub fn exit_mode(&self) -> &TrackingModeExitMode {

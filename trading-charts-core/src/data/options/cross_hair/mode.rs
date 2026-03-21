@@ -2,12 +2,12 @@ use serde::{de::Error, Deserialize, Serialize, Deserializer, Serializer};
 
 #[derive(Default, Copy, Clone)]
 pub enum CrosshairMode {
-    Normal = 0,
+    Normal     = 0,
 
     #[default]
-    Magnet = 1,
+    Magnet     = 1,
 
-    Hidden = 2,
+    Hidden     = 2,
 
     MagnetOHLC = 3,
 }

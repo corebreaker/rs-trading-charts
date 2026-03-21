@@ -18,7 +18,10 @@ impl LayoutPanesOptions {
     }
 
     pub fn with_enable_resize(self, enable_resize: bool) -> Self {
-        Self { enable_resize, ..self }
+        Self {
+            enable_resize,
+            ..self
+        }
     }
 
     pub fn with_separator_color(self, separator_color: String) -> Self {
@@ -63,8 +66,8 @@ impl LayoutPanesOptions {
 impl Default for LayoutPanesOptions {
     fn default() -> Self {
         Self {
-            enable_resize: defaults::enable_resize(),
-            separator_color: defaults::separator_color(),
+            enable_resize:         defaults::enable_resize(),
+            separator_color:       defaults::separator_color(),
             separator_hover_color: defaults::separator_hover_color(),
         }
     }

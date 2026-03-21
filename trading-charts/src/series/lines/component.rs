@@ -1,6 +1,7 @@
 use super::LineSeriesOptions;
 use crate::{
-    ChartHandle, PanelId,
+    ChartHandle,
+    PanelId,
     data::{Marker, PriceLineOptions, ValueData, series::Series},
 };
 
@@ -11,7 +12,9 @@ use leptos::{
         wrappers::read::Signal,
     },
     context::use_context,
-    IntoView, component, view,
+    IntoView,
+    component,
+    view,
 };
 
 #[component(transparent)]

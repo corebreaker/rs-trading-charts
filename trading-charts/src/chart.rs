@@ -18,7 +18,9 @@ use leptos::{
     children::Children,
     context::Provider,
     html::Div,
-    IntoView, component, view,
+    IntoView,
+    component,
+    view,
 };
 
 fn make_chart(options: Option<Signal<ChartOptions>>) -> Result<ChartHandle, JsError> {

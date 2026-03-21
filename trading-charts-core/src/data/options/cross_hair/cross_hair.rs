@@ -31,15 +31,24 @@ impl CrossHairOptions {
     }
 
     pub fn with_mode(self, mode: CrosshairMode) -> Self {
-        Self { mode, ..self }
+        Self {
+            mode,
+            ..self
+        }
     }
 
     pub fn with_vert_line(self, vert_line: CrosshairLineOptions) -> Self {
-        Self { vert_line, ..self }
+        Self {
+            vert_line,
+            ..self
+        }
     }
 
     pub fn with_horz_line(self, horz_line: CrosshairLineOptions) -> Self {
-        Self { horz_line, ..self }
+        Self {
+            horz_line,
+            ..self
+        }
     }
 
     pub fn mode(&self) -> &CrosshairMode {

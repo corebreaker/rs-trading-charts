@@ -11,21 +11,21 @@ extern "C" {
 
 #[derive(Serialize, Deserialize)]
 pub struct Series<Dat: Serialize + Clone, Opt: Serialize + Clone> {
-    id: Option<String>,
-    r#type: String,
-    data: Vec<Dat>,
+    id:      Option<String>,
+    r#type:  String,
+    data:    Vec<Dat>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    panel: Option<PanelId>,
+    panel:   Option<PanelId>,
     options: Option<Opt>,
 }
 
 impl<Dat: Serialize + Clone, Opt: Serialize + Clone> Series<Dat, Opt> {
     pub fn new(r#type: impl AsRef<str>) -> Self {
         Self {
-            id: None,
-            r#type: r#type.as_ref().to_string(),
-            data: Vec::new(),
-            panel: None,
+            id:      None,
+            r#type:  r#type.as_ref().to_string(),
+            data:    Vec::new(),
+            panel:   None,
             options: None,
         }
     }

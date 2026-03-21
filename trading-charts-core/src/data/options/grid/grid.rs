@@ -16,15 +16,24 @@ impl GridOptions {
     }
 
     pub fn new_with_params(vert_lines: GridLineOptions, horz_lines: GridLineOptions) -> Self {
-        Self { vert_lines, horz_lines }
+        Self {
+            vert_lines,
+            horz_lines,
+        }
     }
 
     pub fn with_vert_lines(self, vert_lines: GridLineOptions) -> Self {
-        Self { vert_lines, ..self }
+        Self {
+            vert_lines,
+            ..self
+        }
     }
 
     pub fn with_horz_lines(self, horz_lines: GridLineOptions) -> Self {
-        Self { horz_lines, ..self }
+        Self {
+            horz_lines,
+            ..self
+        }
     }
 
     pub fn vert_lines(&self) -> &GridLineOptions {

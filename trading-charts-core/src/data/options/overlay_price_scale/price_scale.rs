@@ -44,31 +44,52 @@ impl OverlayPriceScaleOptions {
     }
 
     pub fn with_mode(self, mode: OverlayPriceScaleMode) -> Self {
-        Self { mode, ..self }
+        Self {
+            mode,
+            ..self
+        }
     }
 
     pub fn with_invert_scale(self, invert_scale: bool) -> Self {
-        Self { invert_scale, ..self }
+        Self {
+            invert_scale,
+            ..self
+        }
     }
 
     pub fn with_align_labels(self, align_labels: bool) -> Self {
-        Self { align_labels, ..self }
+        Self {
+            align_labels,
+            ..self
+        }
     }
 
     pub fn with_scale_margins(self, scale_margins: OverlayPriceScaleMargins) -> Self {
-        Self { scale_margins, ..self }
+        Self {
+            scale_margins,
+            ..self
+        }
     }
 
     pub fn with_border_visible(self, border_visible: bool) -> Self {
-        Self { border_visible, ..self }
+        Self {
+            border_visible,
+            ..self
+        }
     }
 
     pub fn with_border_color(self, border_color: String) -> Self {
-        Self { border_color, ..self }
+        Self {
+            border_color,
+            ..self
+        }
     }
 
     pub fn with_text_color(self, text_color: String) -> Self {
-        Self { text_color, ..self }
+        Self {
+            text_color,
+            ..self
+        }
     }
 
     pub fn with_entire_text_only(self, entire_text_only: bool) -> Self {
@@ -79,7 +100,10 @@ impl OverlayPriceScaleOptions {
     }
 
     pub fn with_ticks_visible(self, ticks_visible: bool) -> Self {
-        Self { ticks_visible, ..self }
+        Self {
+            ticks_visible,
+            ..self
+        }
     }
 
     pub fn with_minimum_size(self, minimum_size: f64) -> Self {
@@ -185,16 +209,16 @@ impl OverlayPriceScaleOptions {
 impl Default for OverlayPriceScaleOptions {
     fn default() -> Self {
         Self {
-            mode: OverlayPriceScaleMode::default(),
-            invert_scale: defaults::invert_scale(),
-            align_labels: defaults::align_labels(),
-            scale_margins: OverlayPriceScaleMargins::default(),
-            border_visible: defaults::border_visible(),
-            border_color: defaults::border_color(),
-            text_color: defaults::text_color(),
+            mode:             OverlayPriceScaleMode::default(),
+            invert_scale:     defaults::invert_scale(),
+            align_labels:     defaults::align_labels(),
+            scale_margins:    OverlayPriceScaleMargins::default(),
+            border_visible:   defaults::border_visible(),
+            border_color:     defaults::border_color(),
+            text_color:       defaults::text_color(),
             entire_text_only: defaults::entire_text_only(),
-            ticks_visible: defaults::ticks_visible(),
-            minimum_width: defaults::minimum_width(),
+            ticks_visible:    defaults::ticks_visible(),
+            minimum_width:    defaults::minimum_width(),
         }
     }
 }

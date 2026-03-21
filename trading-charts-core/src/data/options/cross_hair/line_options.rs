@@ -28,23 +28,38 @@ impl CrosshairLineOptions {
     }
 
     pub fn with_color(self, color: String) -> Self {
-        Self { color, ..self }
+        Self {
+            color,
+            ..self
+        }
     }
 
     pub fn with_width(self, width: LineWidth) -> Self {
-        Self { width, ..self }
+        Self {
+            width,
+            ..self
+        }
     }
 
     pub fn with_style(self, style: LineStyle) -> Self {
-        Self { style, ..self }
+        Self {
+            style,
+            ..self
+        }
     }
 
     pub fn with_visible(self, visible: bool) -> Self {
-        Self { visible, ..self }
+        Self {
+            visible,
+            ..self
+        }
     }
 
     pub fn with_label_visible(self, label_visible: bool) -> Self {
-        Self { label_visible, ..self }
+        Self {
+            label_visible,
+            ..self
+        }
     }
 
     pub fn with_label_background_color(self, label_background_color: String) -> Self {
@@ -122,11 +137,11 @@ impl CrosshairLineOptions {
 impl Default for CrosshairLineOptions {
     fn default() -> Self {
         Self {
-            color: defaults::color(),
-            width: LineWidth::default(),
-            style: LineStyle::default(),
-            visible: defaults::visible(),
-            label_visible: defaults::label_visible(),
+            color:                  defaults::color(),
+            width:                  LineWidth::default(),
+            style:                  LineStyle::default(),
+            visible:                defaults::visible(),
+            label_visible:          defaults::label_visible(),
             label_background_color: defaults::label_background_color(),
         }
     }

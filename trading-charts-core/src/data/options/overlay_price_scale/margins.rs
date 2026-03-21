@@ -15,15 +15,24 @@ impl OverlayPriceScaleMargins {
     }
 
     pub fn new_with_params(top: f64, bottom: f64) -> Self {
-        Self { top, bottom }
+        Self {
+            top,
+            bottom,
+        }
     }
 
     pub fn with_top(self, top: f64) -> Self {
-        Self { top, ..self }
+        Self {
+            top,
+            ..self
+        }
     }
 
     pub fn with_bottom(self, bottom: f64) -> Self {
-        Self { bottom, ..self }
+        Self {
+            bottom,
+            ..self
+        }
     }
 
     pub fn top(&self) -> f64 {
@@ -46,7 +55,7 @@ impl OverlayPriceScaleMargins {
 impl Default for OverlayPriceScaleMargins {
     fn default() -> Self {
         Self {
-            top: defaults::top(),
+            top:    defaults::top(),
             bottom: defaults::bottom(),
         }
     }

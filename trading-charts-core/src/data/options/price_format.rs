@@ -12,11 +12,11 @@ pub enum PriceFormatType {
 #[derive(Serialize, Deserialize, Clone)]
 pub struct PriceFormatOptions {
     #[serde(rename = "type")]
-    kind: PriceFormatType,
+    kind:      PriceFormatType,
     #[serde(skip_serializing_if = "Option::is_none")]
     precision: Option<usize>,
     #[serde(rename = "minMove", skip_serializing_if = "Option::is_none")]
-    min_move: Option<f64>,
+    min_move:  Option<f64>,
 }
 
 impl PriceFormatOptions {

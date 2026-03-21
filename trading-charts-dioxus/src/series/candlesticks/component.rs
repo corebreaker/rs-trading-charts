@@ -8,12 +8,12 @@ use dioxus::prelude::*;
 
 #[derive(Clone, Props)]
 pub struct CandleStickSeriesProps {
-    data: Vec<Candlestick>,
-    markers: Vec<Marker>,
+    data:        Vec<Candlestick>,
+    markers:     Vec<Marker>,
     #[props(default)]
     price_lines: Vec<PriceLineOptions>,
     #[props(default)]
-    options: Option<CandlestickOptions>,
+    options:     Option<CandlestickOptions>,
 }
 
 impl PartialEq for CandleStickSeriesProps {

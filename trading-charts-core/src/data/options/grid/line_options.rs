@@ -19,19 +19,32 @@ impl GridLineOptions {
     }
 
     pub fn new_with_params(color: String, style: LineStyle, visible: bool) -> Self {
-        Self { color, style, visible }
+        Self {
+            color,
+            style,
+            visible,
+        }
     }
 
     pub fn with_color(self, color: String) -> Self {
-        Self { color, ..self }
+        Self {
+            color,
+            ..self
+        }
     }
 
     pub fn with_style(self, style: LineStyle) -> Self {
-        Self { style, ..self }
+        Self {
+            style,
+            ..self
+        }
     }
 
     pub fn with_visible(self, visible: bool) -> Self {
-        Self { visible, ..self }
+        Self {
+            visible,
+            ..self
+        }
     }
 
     pub fn color(&self) -> &str {
@@ -70,8 +83,8 @@ impl GridLineOptions {
 impl Default for GridLineOptions {
     fn default() -> Self {
         Self {
-            color: defaults::color(),
-            style: LineStyle::default(),
+            color:   defaults::color(),
+            style:   LineStyle::default(),
             visible: defaults::visible(),
         }
     }

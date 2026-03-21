@@ -4,23 +4,23 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct PriceLineOptions {
-    price: f64,
+    price:                 f64,
     #[serde(skip_serializing_if = "Option::is_none")]
-    id: Option<String>,
+    id:                    Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    color: Option<String>,
+    color:                 Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    line_width: Option<LineWidth>,
+    line_width:            Option<LineWidth>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    line_style: Option<LineStyle>,
+    line_style:            Option<LineStyle>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    line_visible: Option<bool>,
+    line_visible:          Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    axis_label_visible: Option<bool>,
+    axis_label_visible:    Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    title: Option<String>,
+    title:                 Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    axis_label_color: Option<String>,
+    axis_label_color:      Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     axis_label_text_color: Option<String>,
 }
@@ -42,7 +42,10 @@ impl PriceLineOptions {
     }
 
     pub fn with_id(self, id: String) -> Self {
-        Self { id: Some(id), ..self }
+        Self {
+            id: Some(id),
+            ..self
+        }
     }
 
     pub fn with_color(self, color: String) -> Self {

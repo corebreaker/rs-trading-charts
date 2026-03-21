@@ -31,19 +31,31 @@ impl LayoutOptions {
     }
 
     pub fn with_background(self, background: Background) -> Self {
-        Self { background, ..self }
+        Self {
+            background,
+            ..self
+        }
     }
 
     pub fn with_text_color(self, text_color: String) -> Self {
-        Self { text_color, ..self }
+        Self {
+            text_color,
+            ..self
+        }
     }
 
     pub fn with_font_size(self, font_size: usize) -> Self {
-        Self { font_size, ..self }
+        Self {
+            font_size,
+            ..self
+        }
     }
 
     pub fn with_font_family(self, font_family: String) -> Self {
-        Self { font_family, ..self }
+        Self {
+            font_family,
+            ..self
+        }
     }
 
     pub fn with_attribution_logo(self, attribution_logo: bool) -> Self {
@@ -54,11 +66,17 @@ impl LayoutOptions {
     }
 
     pub fn with_color_space(self, color_space: ColorSpace) -> Self {
-        Self { color_space, ..self }
+        Self {
+            color_space,
+            ..self
+        }
     }
 
     pub fn with_panes(self, panes: LayoutPanesOptions) -> Self {
-        Self { panes, ..self }
+        Self {
+            panes,
+            ..self
+        }
     }
 
     pub fn background(&self) -> &Background {
@@ -133,12 +151,12 @@ impl LayoutOptions {
 impl Default for LayoutOptions {
     fn default() -> Self {
         Self {
-            background: Background::default(),
-            text_color: defaults::text_color(),
-            font_size: defaults::font_size(),
-            font_family: defaults::font_family(),
-            color_space: ColorSpace::default(),
-            panes: LayoutPanesOptions::default(),
+            background:       Background::default(),
+            text_color:       defaults::text_color(),
+            font_size:        defaults::font_size(),
+            font_family:      defaults::font_family(),
+            color_space:      ColorSpace::default(),
+            panes:            LayoutPanesOptions::default(),
             attribution_logo: false,
         }
     }

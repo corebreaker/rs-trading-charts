@@ -89,7 +89,10 @@ impl CandlestickOptions {
     }
 
     pub fn with_title(self, title: String) -> Self {
-        Self { title, ..self }
+        Self {
+            title,
+            ..self
+        }
     }
 
     pub fn with_last_value_visible(self, last_value_visible: bool) -> Self {
@@ -107,7 +110,10 @@ impl CandlestickOptions {
     }
 
     pub fn with_visible(self, visible: bool) -> Self {
-        Self { visible, ..self }
+        Self {
+            visible,
+            ..self
+        }
     }
 
     pub fn with_price_line_visible(self, price_line_visible: bool) -> Self {
@@ -181,23 +187,38 @@ impl CandlestickOptions {
     }
 
     pub fn with_up_color(self, up_color: String) -> Self {
-        Self { up_color, ..self }
+        Self {
+            up_color,
+            ..self
+        }
     }
 
     pub fn with_down_color(self, down_color: String) -> Self {
-        Self { down_color, ..self }
+        Self {
+            down_color,
+            ..self
+        }
     }
 
     pub fn with_wick_visible(self, wick_visible: bool) -> Self {
-        Self { wick_visible, ..self }
+        Self {
+            wick_visible,
+            ..self
+        }
     }
 
     pub fn with_border_visible(self, border_visible: bool) -> Self {
-        Self { border_visible, ..self }
+        Self {
+            border_visible,
+            ..self
+        }
     }
 
     pub fn with_border_color(self, border_color: String) -> Self {
-        Self { border_color, ..self }
+        Self {
+            border_color,
+            ..self
+        }
     }
 
     pub fn with_border_up_color(self, border_up_color: String) -> Self {
@@ -215,11 +236,17 @@ impl CandlestickOptions {
     }
 
     pub fn with_wick_color(self, wick_color: String) -> Self {
-        Self { wick_color, ..self }
+        Self {
+            wick_color,
+            ..self
+        }
     }
 
     pub fn with_wick_up_color(self, wick_up_color: String) -> Self {
-        Self { wick_up_color, ..self }
+        Self {
+            wick_up_color,
+            ..self
+        }
     }
 
     pub fn with_wick_down_color(self, wick_down_color: String) -> Self {
@@ -230,7 +257,10 @@ impl CandlestickOptions {
     }
 
     pub fn with_price_scale_id(self, price_scale_id: String) -> Self {
-        Self { price_scale_id, ..self }
+        Self {
+            price_scale_id,
+            ..self
+        }
     }
 
     pub fn title(&self) -> &str {
@@ -489,31 +519,31 @@ impl CandlestickOptions {
 impl Default for CandlestickOptions {
     fn default() -> Self {
         Self {
-            title: String::new(),
-            last_value_visible: defaults::last_value_visible(),
+            title:                    String::new(),
+            last_value_visible:       defaults::last_value_visible(),
             crosshair_marker_visible: defaults::crosshair_marker_visible(),
-            visible: defaults::visible(),
-            price_line_visible: defaults::price_line_visible(),
-            price_line_source: PriceLineSource::default(),
-            price_line_width: LineWidth::default(),
-            price_line_color: defaults::price_line_color(),
-            price_line_style: LineStyle::default(),
-            price_format: None,
-            base_line_visible: defaults::base_line_visible(),
-            base_line_color: defaults::base_line_color(),
-            base_line_width: LineWidth::default(),
-            base_line_style: LineStyle::default(),
-            up_color: defaults::up_color(),
-            down_color: defaults::down_color(),
-            wick_visible: defaults::wick_visible(),
-            border_visible: defaults::border_visible(),
-            border_color: defaults::border_color(),
-            border_up_color: defaults::border_up_color(),
-            border_down_color: defaults::border_down_color(),
-            wick_color: defaults::wick_color(),
-            wick_up_color: defaults::wick_up_color(),
-            wick_down_color: defaults::wick_down_color(),
-            price_scale_id: defaults::price_scale_id(),
+            visible:                  defaults::visible(),
+            price_line_visible:       defaults::price_line_visible(),
+            price_line_source:        PriceLineSource::default(),
+            price_line_width:         LineWidth::default(),
+            price_line_color:         defaults::price_line_color(),
+            price_line_style:         LineStyle::default(),
+            price_format:             None,
+            base_line_visible:        defaults::base_line_visible(),
+            base_line_color:          defaults::base_line_color(),
+            base_line_width:          LineWidth::default(),
+            base_line_style:          LineStyle::default(),
+            up_color:                 defaults::up_color(),
+            down_color:               defaults::down_color(),
+            wick_visible:             defaults::wick_visible(),
+            border_visible:           defaults::border_visible(),
+            border_color:             defaults::border_color(),
+            border_up_color:          defaults::border_up_color(),
+            border_down_color:        defaults::border_down_color(),
+            wick_color:               defaults::wick_color(),
+            wick_up_color:            defaults::wick_up_color(),
+            wick_down_color:          defaults::wick_down_color(),
+            price_scale_id:           defaults::price_scale_id(),
         }
     }
 }

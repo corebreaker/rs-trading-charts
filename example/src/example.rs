@@ -65,11 +65,11 @@ pub fn App() -> impl IntoView {
         .with_auto_size(true);
     let legend_options = Some(
         LegendOptions::new()
+            .with_text("Legend demo")
             .with_text_color("#0f172a")
-            .with_background_color("rgba(255, 255, 255, 0.82)")
-            .with_font_size(12.0)
-            .with_top(10.0)
-            .with_left(10.0),
+            .with_background_color("rgba(0, 0, 0, 0)")
+            .with_font_family("Avenir Next, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif")
+            .with_font_size(12.0),
     );
     let line_options = LineSeriesOptions::new()
         .with_title(String::from("Close"))

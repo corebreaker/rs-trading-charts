@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct HistogramData {
-    time: UTCTimestamp,
+    time:  UTCTimestamp,
     value: f64,
     #[serde(skip_serializing_if = "Option::is_none")]
     color: Option<String>,

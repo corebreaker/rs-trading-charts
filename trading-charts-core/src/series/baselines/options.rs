@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone)]
 pub struct BaselineBaseValue {
     #[serde(rename = "type")]
-    kind: String,
+    kind:  String,
     price: f64,
 }
 
@@ -27,65 +27,65 @@ impl Default for BaselineBaseValue {
 #[serde(rename_all = "camelCase")]
 pub struct BaselineSeriesOptions {
     #[serde(skip_serializing_if = "Option::is_none")]
-    title: Option<String>,
+    title:                             Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    visible: Option<bool>,
+    visible:                           Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    base_value: Option<BaselineBaseValue>,
+    base_value:                        Option<BaselineBaseValue>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    relative_gradient: Option<bool>,
+    relative_gradient:                 Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    top_fill_color1: Option<String>,
+    top_fill_color1:                   Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    top_fill_color2: Option<String>,
+    top_fill_color2:                   Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    top_line_color: Option<String>,
+    top_line_color:                    Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    bottom_fill_color1: Option<String>,
+    bottom_fill_color1:                Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    bottom_fill_color2: Option<String>,
+    bottom_fill_color2:                Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    bottom_line_color: Option<String>,
+    bottom_line_color:                 Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    line_width: Option<LineWidth>,
+    line_width:                        Option<LineWidth>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    line_style: Option<LineStyle>,
+    line_style:                        Option<LineStyle>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    line_type: Option<LineType>,
+    line_type:                         Option<LineType>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    line_visible: Option<bool>,
+    line_visible:                      Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    point_markers_visible: Option<bool>,
+    point_markers_visible:             Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    point_markers_radius: Option<f64>,
+    point_markers_radius:              Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    crosshair_marker_visible: Option<bool>,
+    crosshair_marker_visible:          Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    crosshair_marker_radius: Option<f64>,
+    crosshair_marker_radius:           Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    crosshair_marker_border_color: Option<String>,
+    crosshair_marker_border_color:     Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     crosshair_marker_background_color: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    crosshair_marker_border_width: Option<f64>,
+    crosshair_marker_border_width:     Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    last_price_animation: Option<LastPriceAnimationMode>,
+    last_price_animation:              Option<LastPriceAnimationMode>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    last_value_visible: Option<bool>,
+    last_value_visible:                Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    price_line_visible: Option<bool>,
+    price_line_visible:                Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    price_line_source: Option<PriceLineSource>,
+    price_line_source:                 Option<PriceLineSource>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    price_line_width: Option<LineWidth>,
+    price_line_width:                  Option<LineWidth>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    price_line_color: Option<String>,
+    price_line_color:                  Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    price_line_style: Option<LineStyle>,
+    price_line_style:                  Option<LineStyle>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    price_format: Option<PriceFormatOptions>,
+    price_format:                      Option<PriceFormatOptions>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    price_scale_id: Option<String>,
+    price_scale_id:                    Option<String>,
 }
 
 impl BaselineSeriesOptions {

@@ -85,11 +85,17 @@ impl TimeScaleOptions {
     }
 
     pub fn with_right_offset(self, right_offset: f64) -> Self {
-        Self { right_offset, ..self }
+        Self {
+            right_offset,
+            ..self
+        }
     }
 
     pub fn with_bar_spacing(self, bar_spacing: f64) -> Self {
-        Self { bar_spacing, ..self }
+        Self {
+            bar_spacing,
+            ..self
+        }
     }
 
     pub fn with_min_bar_spacing(self, min_bar_spacing: f64) -> Self {
@@ -107,11 +113,17 @@ impl TimeScaleOptions {
     }
 
     pub fn with_fix_left_edge(self, fix_left_edge: bool) -> Self {
-        Self { fix_left_edge, ..self }
+        Self {
+            fix_left_edge,
+            ..self
+        }
     }
 
     pub fn with_fix_right_edge(self, fix_right_edge: bool) -> Self {
-        Self { fix_right_edge, ..self }
+        Self {
+            fix_right_edge,
+            ..self
+        }
     }
 
     pub fn with_lock_visible_time_range_on_resize(self, lock_visible_time_range_on_resize: bool) -> Self {
@@ -129,19 +141,31 @@ impl TimeScaleOptions {
     }
 
     pub fn with_border_visible(self, border_visible: bool) -> Self {
-        Self { border_visible, ..self }
+        Self {
+            border_visible,
+            ..self
+        }
     }
 
     pub fn with_border_color(self, border_color: String) -> Self {
-        Self { border_color, ..self }
+        Self {
+            border_color,
+            ..self
+        }
     }
 
     pub fn with_visible(self, visible: bool) -> Self {
-        Self { visible, ..self }
+        Self {
+            visible,
+            ..self
+        }
     }
 
     pub fn with_time_visible(self, time_visible: bool) -> Self {
-        Self { time_visible, ..self }
+        Self {
+            time_visible,
+            ..self
+        }
     }
 
     pub fn with_seconds_visible(self, seconds_visible: bool) -> Self {
@@ -169,7 +193,10 @@ impl TimeScaleOptions {
     }
 
     pub fn with_ticks_visible(self, ticks_visible: bool) -> Self {
-        Self { ticks_visible, ..self }
+        Self {
+            ticks_visible,
+            ..self
+        }
     }
 
     pub fn with_tick_mark_max_character_length(self, tick_mark_max_character_length: Option<usize>) -> Self {
@@ -187,7 +214,10 @@ impl TimeScaleOptions {
     }
 
     pub fn with_minimum_height(self, minimum_height: f64) -> Self {
-        Self { minimum_height, ..self }
+        Self {
+            minimum_height,
+            ..self
+        }
     }
 
     pub fn with_allow_bold_labels(self, allow_bold_labels: bool) -> Self {

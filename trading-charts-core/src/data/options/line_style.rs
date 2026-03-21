@@ -3,13 +3,13 @@ use serde::{de::Error, Deserialize, Serialize, Deserializer, Serializer};
 #[derive(Default, Copy, Clone)]
 pub enum LineStyle {
     #[default]
-    Solid = 0,
+    Solid        = 0,
 
-    Dotted = 1,
+    Dotted       = 1,
 
-    Dashed = 2,
+    Dashed       = 2,
 
-    LargeDashed = 3,
+    LargeDashed  = 3,
 
     SparseDotted = 4,
 }

@@ -5,7 +5,7 @@ pub enum TrackingModeExitMode {
     #[default]
     OnTouchEnd = 0,
 
-    OnNextTap = 1,
+    OnNextTap  = 1,
 }
 
 impl Serialize for TrackingModeExitMode {

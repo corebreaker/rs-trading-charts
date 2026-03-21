@@ -44,7 +44,10 @@ impl Marker {
     }
 
     pub fn with_text(self, text: String) -> Self {
-        Self { text, ..self }
+        Self {
+            text,
+            ..self
+        }
     }
 
     pub fn time(&self) -> UTCTimestamp {

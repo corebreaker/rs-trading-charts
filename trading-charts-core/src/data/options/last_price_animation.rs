@@ -3,9 +3,9 @@ use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
 #[derive(Default, Copy, Clone)]
 pub enum LastPriceAnimationMode {
     #[default]
-    Disabled = 0,
+    Disabled     = 0,
 
-    Continuous = 1,
+    Continuous   = 1,
 
     OnDataUpdate = 2,
 }

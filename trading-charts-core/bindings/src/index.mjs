@@ -54,6 +54,40 @@ function sortByTime(data) {
     data.sort((a, b) => a.time - b.time);
 }
 
+const openEye = `
+<svg xmlns="http://www.w3.org/2000/svg" width="22" height="16" viewBox="0 0 24 24">
+    <path style="fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke:currentColor;stroke-opacity:1;stroke-miterlimit:4;"
+          d="M 21.998437 12 C 21.998437 12 18.998437 18 12 18
+             C 5.001562 18 2.001562 12 2.001562 12
+             C 2.001562 12 5.001562 6 12 6
+             C 18.998437 6 21.998437 12 21.998437 12 Z" />
+    <path style="fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke:currentColor;stroke-opacity:1;stroke-miterlimit:4;"
+          d="M 15 12
+             C 15 13.654687 13.654687 15 12 15
+             C 10.345312 15 9 13.654687 9 12
+             C 9 10.345312 10.345312 9 12 9
+             C 13.654687 9 15 10.345312 15 12 Z" />
+</svg>
+`;
+
+const closedEye = `
+<svg xmlns="http://www.w3.org/2000/svg" width="22" height="16" viewBox="0 0 24 24">
+    <path style="fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke:currentColor;stroke-opacity:1;stroke-miterlimit:4;"
+          d="M 3 3 L 21 21" />
+    <path style="fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke:currentColor;stroke-opacity:1;stroke-miterlimit:4;"
+          d="M 21.998437 12
+             C 21.998437 12 18.998437 18 12 18
+             C 5.001562 18 2.001562 12 2.001562 12
+             C 2.001562 12 5.001562 6 12 6
+             C 14.211 6 16.106 6.897 17.7 8.1" />
+    <path style="fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke:currentColor;stroke-opacity:1;stroke-miterlimit:4;"
+          d="M 9.9 9.9
+             C 9.367 10.434 9 11.178 9 12
+             C 9 13.654687 10.345312 15 12 15
+             C 12.822 15 13.566 14.633 14.1 14.1" />
+</svg>
+`;
+
 export class TradingChart {
     constructor() {
         this._chart = null;
@@ -63,8 +97,7 @@ export class TradingChart {
         this._legend = {
             options: null,
             root: null,
-            ohlcNode: null,
-            volumeNode: null,
+            textNode: null,
             rowsNode: null,
             rows: {},
             crosshairHandler: null,
@@ -139,12 +172,13 @@ export class TradingChart {
             showSeries: true,
             showVolume: true,
             toggleSeriesVisibility: true,
+            text: '',
             textColor: '#0f172a',
-            backgroundColor: 'rgba(255, 255, 255, 0.78)',
+            backgroundColor: 'rgba(0, 0, 0, 0)',
             fontSize: 12,
-            fontFamily: "-apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif",
-            top: 12,
-            left: 12,
+            fontFamily: "Avenir Next, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+            top: 10,
+            left: 10,
         }, options || {});
     }
 
@@ -252,15 +286,84 @@ export class TradingChart {
         return data[data.length - 1];
     }
 
-    _getOhlcSeries() {
-        return Object.values(this._series).find(series => ['candlestick', 'bar'].includes(series.params?.type));
+    _isOhlcSeries(series) {
+        return ['candlestick', 'bar'].includes(series.params?.type);
     }
 
-    _getVolumeSeries() {
-        return Object.values(this._series).find(series => (
+    _isVolumeSeries(series) {
+        return (
             series.params?.type === 'histogram'
             && series.params?.options?.priceFormat?.type === 'volume'
-        ));
+        );
+    }
+
+    _createLegendSvgIcon(svgContent) {
+        const tempContainer = document.createElement('div');
+        tempContainer.innerHTML = svgContent.trim();
+        return tempContainer.querySelector('svg');
+    }
+
+    _getLegendEntryTokens(series, dataPoint) {
+        const options = series.params?.options || {};
+
+        if (this._isOhlcSeries(series)) {
+            return [
+                {
+                    symbol: series.params?.type === 'bar' ? '┌' : '⋰',
+                    color: options.upColor || options.borderUpColor || '#26a69a',
+                },
+                {
+                    symbol: series.params?.type === 'bar' ? '└' : '⋱',
+                    color: options.downColor || options.borderDownColor || '#ef5350',
+                },
+            ];
+        }
+
+        if (series.params?.type === 'area') {
+            return [{ symbol: '◪', color: options.lineColor || this._getSeriesColor(series, dataPoint) }];
+        }
+
+        if (series.params?.type === 'histogram') {
+            return [{ symbol: this._isVolumeSeries(series) ? '▥' : '▨', color: this._getSeriesColor(series, dataPoint) }];
+        }
+
+        if (series.params?.type === 'baseline') {
+            return [{ symbol: '◫', color: this._getSeriesColor(series, dataPoint) }];
+        }
+
+        return [{ symbol: '―', color: this._getSeriesColor(series, dataPoint) }];
+    }
+
+    _renderLegendInfo(series, dataPoint, showPercent) {
+        const title = this._getSeriesTitle(series);
+        const tokens = this._getLegendEntryTokens(series, dataPoint);
+        const tokenMarkup = tokens
+            .map(token => `<span style="color: ${token.color};">${token.symbol}</span>`)
+            .join(' ');
+
+        if (
+            this._isOhlcSeries(series)
+            && dataPoint
+            && typeof dataPoint.open === 'number'
+            && typeof dataPoint.close === 'number'
+        ) {
+            const openPrice = this._formatSeriesPrice(series, dataPoint.open);
+            const closePrice = this._formatSeriesPrice(series, dataPoint.close);
+            const percentMarkup = showPercent && dataPoint.open !== 0
+                ? (() => {
+                    const percent = ((dataPoint.close - dataPoint.open) / dataPoint.open) * 100;
+                    const prefix = percent >= 0 ? '+' : '';
+                    const color = percent >= 0 ? tokens[0]?.color : tokens[1]?.color || tokens[0]?.color;
+                    return `, <span style="color: ${color};">${prefix}${percent.toFixed(2)}%</span>`;
+                })()
+                : '';
+
+            return `${tokenMarkup} ${title}: <span style="color: ${tokens[0]?.color};">O ${openPrice}</span>, <span style="color: ${tokens[1]?.color || tokens[0]?.color};">C ${closePrice}</span>${percentMarkup}`;
+        }
+
+        const price = this._extractSeriesPrice(dataPoint);
+        const value = Number.isFinite(price) ? this._formatSeriesPrice(series, price) : '-';
+        return `${tokenMarkup} ${title}: ${value}`;
     }
 
     _setSeriesVisible(seriesId, visible) {
@@ -282,8 +385,7 @@ export class TradingChart {
         }
 
         this._legend.root = null;
-        this._legend.ohlcNode = null;
-        this._legend.volumeNode = null;
+        this._legend.textNode = null;
         this._legend.rowsNode = null;
         this._legend.rows = {};
         this._legend.crosshairHandler = null;
@@ -304,43 +406,40 @@ export class TradingChart {
         }
 
         for (const [seriesId, series] of Object.entries(this._series)) {
+            if (this._isOhlcSeries(series) && !options.showOhlc) {
+                continue;
+            }
+
+            if (this._isVolumeSeries(series) && !options.showVolume) {
+                continue;
+            }
+
             const row = document.createElement('div');
+            row.className = 'legend-series-row';
             row.style.display = 'flex';
             row.style.alignItems = 'center';
-            row.style.gap = '8px';
-            row.style.pointerEvents = 'none';
+            row.style.justifyContent = 'flex-start';
+            row.style.marginBottom = '4px';
+            row.style.pointerEvents = 'auto';
 
-            const swatch = document.createElement('span');
-            swatch.style.display = 'inline-block';
-            swatch.style.width = '10px';
-            swatch.style.height = '10px';
-            swatch.style.borderRadius = '999px';
-            swatch.style.flex = '0 0 10px';
-
-            const label = document.createElement('span');
-            label.textContent = this._getSeriesTitle(series);
-            label.style.minWidth = '64px';
-
-            const value = document.createElement('span');
-            value.style.fontVariantNumeric = 'tabular-nums';
-            value.style.opacity = '0.92';
-
-            row.appendChild(swatch);
-            row.appendChild(label);
-            row.appendChild(value);
+            const info = document.createElement('div');
+            info.className = 'series-info';
+            info.style.flex = '1';
+            info.style.fontVariantNumeric = 'tabular-nums';
 
             let toggle = null;
             if (options.toggleSeriesVisibility) {
-                toggle = document.createElement('button');
-                toggle.type = 'button';
-                toggle.style.pointerEvents = 'auto';
-                toggle.style.border = '1px solid rgba(15, 23, 42, 0.16)';
-                toggle.style.background = 'rgba(255, 255, 255, 0.65)';
-                toggle.style.borderRadius = '999px';
-                toggle.style.padding = '2px 8px';
-                toggle.style.fontSize = '11px';
-                toggle.style.lineHeight = '1.2';
+                toggle = document.createElement('div');
+                toggle.className = 'legend-toggle-switch';
+                toggle.setAttribute('role', 'button');
+                toggle.setAttribute('aria-label', `Toggle visibility for ${this._getSeriesTitle(series)}`);
                 toggle.style.cursor = 'pointer';
+                toggle.style.display = 'flex';
+                toggle.style.alignItems = 'center';
+                toggle.style.marginRight = '10px';
+                toggle.style.borderRadius = '4px';
+                toggle.style.color = options.textColor;
+                toggle.style.pointerEvents = 'auto';
                 toggle.addEventListener('click', event => {
                     event.preventDefault();
                     event.stopPropagation();
@@ -349,8 +448,10 @@ export class TradingChart {
                 row.appendChild(toggle);
             }
 
+            row.appendChild(info);
+
             rowsNode.appendChild(row);
-            this._legend.rows[seriesId] = { row, swatch, label, value, toggle };
+            this._legend.rows[seriesId] = { row, info, toggle };
         }
     }
 
@@ -360,54 +461,9 @@ export class TradingChart {
             return;
         }
 
-        if (this._legend.ohlcNode) {
-            const series = this._getOhlcSeries();
-            if (series && options.showOhlc) {
-                const dataPoint = this._getSeriesLegendData(series, param);
-                if (
-                    dataPoint &&
-                    typeof dataPoint.open === 'number' &&
-                    typeof dataPoint.high === 'number' &&
-                    typeof dataPoint.low === 'number' &&
-                    typeof dataPoint.close === 'number'
-                ) {
-                    const parts = [
-                        `O ${this._formatSeriesPrice(series, dataPoint.open)}`,
-                        `H ${this._formatSeriesPrice(series, dataPoint.high)}`,
-                        `L ${this._formatSeriesPrice(series, dataPoint.low)}`,
-                        `C ${this._formatSeriesPrice(series, dataPoint.close)}`,
-                    ];
-
-                    if (options.showPercent && dataPoint.open !== 0) {
-                        const percent = ((dataPoint.close - dataPoint.open) / dataPoint.open) * 100;
-                        const prefix = percent >= 0 ? '+' : '';
-                        parts.push(`${prefix}${percent.toFixed(2)}%`);
-                    }
-
-                    this._legend.ohlcNode.textContent = `${this._getSeriesTitle(series)}  ${parts.join('  ')}`;
-                    this._legend.ohlcNode.style.display = '';
-                } else {
-                    this._legend.ohlcNode.style.display = 'none';
-                }
-            } else {
-                this._legend.ohlcNode.style.display = 'none';
-            }
-        }
-
-        if (this._legend.volumeNode) {
-            const volumeSeries = this._getVolumeSeries();
-            if (volumeSeries && options.showVolume) {
-                const dataPoint = this._getSeriesLegendData(volumeSeries, param);
-                const price = this._extractSeriesPrice(dataPoint);
-                if (Number.isFinite(price)) {
-                    this._legend.volumeNode.textContent = `${this._getSeriesTitle(volumeSeries)}  ${this._formatSeriesPrice(volumeSeries, price)}`;
-                    this._legend.volumeNode.style.display = '';
-                } else {
-                    this._legend.volumeNode.style.display = 'none';
-                }
-            } else {
-                this._legend.volumeNode.style.display = 'none';
-            }
+        if (this._legend.textNode) {
+            this._legend.textNode.textContent = options.text || '';
+            this._legend.textNode.style.display = options.text ? '' : 'none';
         }
 
         for (const [seriesId, row] of Object.entries(this._legend.rows)) {
@@ -417,15 +473,13 @@ export class TradingChart {
             }
 
             const dataPoint = this._getSeriesLegendData(series, param);
-            const price = this._extractSeriesPrice(dataPoint);
             const visible = this._getSeriesVisible(series);
 
-            row.label.textContent = this._getSeriesTitle(series);
-            row.swatch.style.background = this._getSeriesColor(series, dataPoint);
-            row.value.textContent = Number.isFinite(price) ? this._formatSeriesPrice(series, price) : '';
+            row.info.innerHTML = this._renderLegendInfo(series, dataPoint, options.showPercent);
             row.row.style.opacity = visible ? '1' : '0.52';
             if (row.toggle) {
-                row.toggle.textContent = visible ? 'hide' : 'show';
+                row.toggle.setAttribute('aria-pressed', visible ? 'true' : 'false');
+                row.toggle.replaceChildren(this._createLegendSvgIcon(visible ? openEye : closedEye));
             }
         }
     }
@@ -446,41 +500,32 @@ export class TradingChart {
         root.style.position = 'absolute';
         root.style.left = `${options.left}px`;
         root.style.top = `${options.top}px`;
-        root.style.zIndex = '20';
+        root.style.zIndex = '3000';
         root.style.display = 'flex';
         root.style.flexDirection = 'column';
-        root.style.gap = '6px';
         root.style.maxWidth = 'calc(100% - 24px)';
-        root.style.padding = '8px 10px';
-        root.style.borderRadius = '10px';
+        root.style.padding = '0px';
+        root.style.borderRadius = '0px';
         root.style.background = options.backgroundColor;
         root.style.color = options.textColor;
         root.style.fontSize = `${options.fontSize}px`;
         root.style.fontFamily = options.fontFamily;
-        root.style.lineHeight = '1.35';
-        root.style.boxShadow = '0 6px 24px rgba(15, 23, 42, 0.08)';
+        root.style.lineHeight = 'normal';
+        root.style.boxShadow = 'none';
         root.style.pointerEvents = 'none';
 
-        const ohlcNode = document.createElement('div');
-        ohlcNode.style.fontVariantNumeric = 'tabular-nums';
-        ohlcNode.style.fontWeight = '600';
-        root.appendChild(ohlcNode);
-
-        const volumeNode = document.createElement('div');
-        volumeNode.style.fontVariantNumeric = 'tabular-nums';
-        volumeNode.style.opacity = '0.9';
-        root.appendChild(volumeNode);
+        const textNode = document.createElement('span');
+        textNode.style.lineHeight = '1.8';
+        root.appendChild(textNode);
 
         const rowsNode = document.createElement('div');
         rowsNode.style.display = 'flex';
         rowsNode.style.flexDirection = 'column';
-        rowsNode.style.gap = '4px';
         root.appendChild(rowsNode);
 
         this._node.appendChild(root);
         this._legend.root = root;
-        this._legend.ohlcNode = ohlcNode;
-        this._legend.volumeNode = volumeNode;
+        this._legend.textNode = textNode;
         this._legend.rowsNode = rowsNode;
         this._rebuildLegendRows();
         this._refreshLegend();

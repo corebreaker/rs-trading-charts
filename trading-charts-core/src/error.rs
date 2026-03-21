@@ -11,8 +11,8 @@ use std::{
 #[derive(Debug, Clone)]
 pub struct JsError {
     message: String,
-    prefix: Option<String>,
-    data: Option<JsValue>,
+    prefix:  Option<String>,
+    data:    Option<JsValue>,
 }
 
 impl JsError {
@@ -26,24 +26,24 @@ impl JsError {
 
         Self {
             message: message.as_string().unwrap_or_else(|| format!("{message:?}")),
-            prefix: None,
-            data: None,
+            prefix:  None,
+            data:    None,
         }
     }
 
     pub fn from_displayable<E: Display>(err: E) -> Self {
         Self {
             message: err.to_string(),
-            prefix: None,
-            data: None,
+            prefix:  None,
+            data:    None,
         }
     }
 
     pub fn new_from_str(message: impl AsRef<str>) -> Self {
         Self {
             message: message.as_ref().to_string(),
-            prefix: None,
-            data: None,
+            prefix:  None,
+            data:    None,
         }
     }
 
@@ -107,8 +107,8 @@ impl From<SerdeError> for JsError {
     fn from(err: SerdeError) -> Self {
         Self {
             message: format!("JSON error: {err}"),
-            prefix: None,
-            data: None,
+            prefix:  None,
+            data:    None,
         }
     }
 }
@@ -117,8 +117,8 @@ impl From<ParseError> for JsError {
     fn from(err: ParseError) -> Self {
         Self {
             message: format!("Parse error: {err}"),
-            prefix: None,
-            data: None,
+            prefix:  None,
+            data:    None,
         }
     }
 }

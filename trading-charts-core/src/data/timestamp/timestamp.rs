@@ -2,7 +2,10 @@ use super::parse_str::parse_str;
 use crate::JsError;
 use serde::{
     de::{Visitor, Error as SerdeError},
-    Deserialize, Deserializer, Serialize, Serializer,
+    Deserialize,
+    Deserializer,
+    Serialize,
+    Serializer,
 };
 
 use chrono::{DateTime, Utc, SecondsFormat};

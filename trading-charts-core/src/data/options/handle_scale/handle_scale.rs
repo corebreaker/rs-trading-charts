@@ -86,8 +86,8 @@ impl HandleScaleOptions {
 impl Default for HandleScaleOptions {
     fn default() -> Self {
         Self {
-            mouse_wheel: defaults::mouse_wheel(),
-            pinch: defaults::pinch(),
+            mouse_wheel:             defaults::mouse_wheel(),
+            pinch:                   defaults::pinch(),
             axis_pressed_mouse_move: FlagableOptions::default(),
             axis_double_click_reset: FlagableOptions::default(),
         }

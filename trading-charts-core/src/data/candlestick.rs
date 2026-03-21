@@ -3,10 +3,10 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Candlestick {
-    time: UTCTimestamp,
-    open: f64,
-    high: f64,
-    low: f64,
+    time:  UTCTimestamp,
+    open:  f64,
+    high:  f64,
+    low:   f64,
     close: f64,
 }
 

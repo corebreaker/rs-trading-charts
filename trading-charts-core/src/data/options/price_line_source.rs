@@ -3,7 +3,7 @@ use serde::{de::Error, Deserialize, Serialize, Deserializer, Serializer};
 #[derive(Default, Copy, Clone)]
 pub enum PriceLineSource {
     #[default]
-    LastBar = 0,
+    LastBar     = 0,
 
     LastVisible = 1,
 }

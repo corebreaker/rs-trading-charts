@@ -8,12 +8,12 @@ use dioxus::prelude::*;
 
 #[derive(Clone, Props)]
 pub struct HistogramSeriesProps {
-    data: Vec<HistogramData>,
-    markers: Vec<Marker>,
+    data:        Vec<HistogramData>,
+    markers:     Vec<Marker>,
     #[props(default)]
     price_lines: Vec<PriceLineOptions>,
     #[props(default)]
-    options: Option<HistogramSeriesOptions>,
+    options:     Option<HistogramSeriesOptions>,
 }
 
 impl PartialEq for HistogramSeriesProps {

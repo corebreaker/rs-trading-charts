@@ -3,7 +3,11 @@ use proc_macro2::Span;
 use proc_macro::TokenStream;
 use syn::{
     parse::{Parse, ParseStream},
-    Ident, Token, LitStr, Result as SynResult, parse_macro_input,
+    Ident,
+    Token,
+    LitStr,
+    Result as SynResult,
+    parse_macro_input,
 };
 
 use std::{path::PathBuf, fs::read_to_string, env};
@@ -52,7 +56,10 @@ impl Parse for PathOption {
             path.extend(PathBuf::from(&path_str[PREFIX.len()..]).iter());
         }
 
-        Ok(Self { span, path })
+        Ok(Self {
+            span,
+            path,
+        })
     }
 }
 

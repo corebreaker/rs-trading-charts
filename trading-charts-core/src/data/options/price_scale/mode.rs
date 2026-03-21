@@ -3,11 +3,11 @@ use serde::{de::Error, Deserialize, Serialize, Deserializer, Serializer};
 #[derive(Default, Copy, Clone)]
 pub enum PriceScaleMode {
     #[default]
-    Normal = 0,
+    Normal       = 0,
 
-    Logarithmic = 1,
+    Logarithmic  = 1,
 
-    Percentage = 2,
+    Percentage   = 2,
 
     IndexedTo100 = 3,
 }

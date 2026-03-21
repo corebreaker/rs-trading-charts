@@ -3,11 +3,11 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct ImageWatermarkOptions {
     #[serde(rename = "maxWidth", skip_serializing_if = "Option::is_none")]
-    max_width: Option<f64>,
+    max_width:  Option<f64>,
     #[serde(rename = "maxHeight", skip_serializing_if = "Option::is_none")]
     max_height: Option<f64>,
-    padding: f64,
-    alpha: f64,
+    padding:    f64,
+    alpha:      f64,
 }
 
 impl ImageWatermarkOptions {
@@ -30,21 +30,27 @@ impl ImageWatermarkOptions {
     }
 
     pub fn with_padding(self, padding: f64) -> Self {
-        Self { padding, ..self }
+        Self {
+            padding,
+            ..self
+        }
     }
 
     pub fn with_alpha(self, alpha: f64) -> Self {
-        Self { alpha, ..self }
+        Self {
+            alpha,
+            ..self
+        }
     }
 }
 
 impl Default for ImageWatermarkOptions {
     fn default() -> Self {
         Self {
-            max_width: None,
+            max_width:  None,
             max_height: None,
-            padding: 0.0,
-            alpha: 1.0,
+            padding:    0.0,
+            alpha:      1.0,
         }
     }
 }
