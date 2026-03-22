@@ -1,26 +1,32 @@
-use crate::bindings::TradingChartBinding;
-use leptos::{tachys::view::any_view::IntoAny, children::Children, context::use_context, IntoView, component, view};
+use crate::ChartHandle;
+use leptos::{
+    IntoView,
+    children::Children,
+    component,
+    context::{Provider, use_context},
+    tachys::view::any_view::IntoAny,
+    view,
+};
 
 #[component]
 pub fn ChartPanel(#[prop(optional)] children: Option<Children>) -> impl IntoView {
     match children {
         None => view!(<></>).into_any(),
         Some(children) => {
-            let chart: Option<TradingChartBinding> = use_context();
-            if let Some(chart) = chart.clone() {
-                if let Err(err) = chart.add_panel() {
-                    err.with_prefix("Failed to add panel").log();
-                }
-            };
+            let chart: Option<ChartHandle> = use_context();
+            match chart {
+                None => children().into_any(),
+                Some(chart) => {
+                    let panel_id = chart.allocate_panel();
 
-            let res = children().into_any();
-            if let Some(chart) = chart {
-                if let Err(err) = chart.remove_panel() {
-                    err.with_prefix("Failed to remove panel").log();
+                    view! {
+                        <Provider value=panel_id>
+                            {children()}
+                        </Provider>
+                    }
+                    .into_any()
                 }
-            };
-
-            res
+            }
         }
     }
 }

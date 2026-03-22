@@ -1,5 +1,5 @@
-use super::data::{options::ChartOptions};
-use crate::{bindings::TradingChartBinding, JsError, REFIT_EVENT_KIND};
+use super::data::{LegendOptions, options::ChartOptions};
+use crate::{ChartHandle, JsError, REFIT_EVENT_KIND};
 use emitix::{leptos::LeptosEventChannels, EventManager};
 use leptos::{
     tachys::{
@@ -16,18 +16,18 @@ use leptos::{
         wrappers::read::Signal,
     },
     children::Children,
-    context::provide_context,
+    context::Provider,
     html::Div,
     IntoView,
     component,
     view,
 };
 
-fn make_chart(options: Option<Signal<ChartOptions>>) -> Result<TradingChartBinding, JsError> {
+fn make_chart(options: Option<Signal<ChartOptions>>) -> Result<ChartHandle, JsError> {
     Ok(match options {
-        None => TradingChartBinding::new(None)?,
+        None => ChartHandle::new(None)?,
         Some(options) => {
-            let chart = options.with_untracked(|options| TradingChartBinding::new(Some(options)))?;
+            let chart = options.with_untracked(|options| ChartHandle::new(Some(options)))?;
             let _ = Effect::new({
                 let chart = chart.clone();
 
@@ -48,6 +48,7 @@ fn make_chart(options: Option<Signal<ChartOptions>>) -> Result<TradingChartBindi
 #[component]
 pub fn Chart(
     #[prop(optional, into)] options: Option<Signal<ChartOptions>>,
+    #[prop(optional, into)] legend: Option<Signal<Option<LegendOptions>>>,
     #[prop(optional, into)] style: Option<String>,
     #[prop(optional, into)] class: Option<String>,
     #[prop(optional)] refit: Option<LeptosEventChannels>,
@@ -84,28 +85,46 @@ pub fn Chart(
 
         move || {
             if let Some(node) = node_ref.get() {
-                if let Err(err) = chart.bind_chart(node) {
+                if let Err(err) = chart.bind(node) {
                     err.with_prefix("Failed to bind chart").log();
                 }
             }
         }
     });
 
-    provide_context(chart);
+    if let Some(legend) = legend {
+        let chart = chart.clone();
+        let _ = Effect::new(move || {
+            legend.with(|legend| match legend {
+                Some(legend) => {
+                    if let Err(err) = chart.apply_legend_options(legend) {
+                        err.with_prefix("Failed to apply legend options").log();
+                    }
+                }
+                None => {
+                    if let Err(err) = chart.remove_legend() {
+                        err.with_prefix("Failed to remove legend").log();
+                    }
+                }
+            })
+        });
+    }
 
     let style = style.map_or_else(String::new, |s| s.to_string());
     let class = class.map_or_else(String::new, |s| s.to_string());
-    let children = match children {
-        Some(children) => children().into_any(),
-        None => view!(<></>).into_any(),
-    };
-
-    let res = view! {
-        <>
-            <div style=style class=class node_ref={node_ref}/>
-            {children}
-        </>
-    };
-
-    res.into_any()
+    match children {
+        Some(children) => view! {
+            <Provider value=chart>
+                <div style=style class=class node_ref={node_ref}/>
+                {children()}
+            </Provider>
+        }
+        .into_any(),
+        None => view! {
+            <Provider value=chart>
+                <div style=style class=class node_ref={node_ref}/>
+            </Provider>
+        }
+        .into_any(),
+    }
 }

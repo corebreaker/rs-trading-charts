@@ -24,6 +24,7 @@ emitix = { workspace = true }
 leptos = { workspace = true }
 log = { workspace = true }
 wasm-bindgen = { workspace = true }
+web-sys = { workspace = true }
 
 [profile.release]
 opt-level = 'z'

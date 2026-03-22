@@ -12,18 +12,6 @@ keywords.workspace = true
 categories.workspace = true
 
 [dependencies]
-gloo-console = "0.3"
-chrono = { version = "0.4.38", features = ["alloc", "serde", "wasmbind"] }
-wasmbind-macro = { version = "0.1", path = "../wasmbind-macro", package = "wasmbind-js-file-macro" }
-
 emitix = { workspace = true }
-js-sys = { workspace = true }
 leptos = { workspace = true }
-serde = { workspace = true }
-serde-wasm-bindgen = { workspace = true }
-wasm-bindgen = { workspace = true }
-web-sys = { workspace = true }
-
-[build-dependencies]
-npm_rs = "1.0"
-log = { workspace = true }
+trading-charts-core = { path = "../trading-charts-core", version = "0.1.14" }

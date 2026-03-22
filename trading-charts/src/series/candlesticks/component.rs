@@ -1,7 +1,8 @@
 use super::CandlestickOptions;
 use crate::{
-    bindings::TradingChartBinding,
-    data::{series::Series, Candlestick, Marker},
+    ChartHandle,
+    PanelId,
+    data::{Candlestick, Marker, PriceLineOptions, series::Series},
 };
 
 use leptos::{
@@ -21,11 +22,15 @@ pub fn CandleStickSeries(
     #[prop(optional, into)] options: Option<Signal<CandlestickOptions>>,
     #[prop(into)] data: Signal<Vec<Candlestick>>,
     #[prop(into)] markers: Signal<Vec<Marker>>,
+    #[prop(optional, into)] price_lines: Signal<Vec<PriceLineOptions>>,
 ) -> impl IntoView {
-    let chart: Option<TradingChartBinding> = use_context();
+    let chart: Option<ChartHandle> = use_context();
     if let Some(chart) = chart {
         let series = {
             let mut series: Series<Candlestick, CandlestickOptions> = Series::new("candlestick");
+            if let Some(panel_id) = use_context::<PanelId>() {
+                series.set_panel(panel_id);
+            }
             if let Some(options) = &options {
                 series.set_options(options.get());
             }
@@ -87,6 +92,23 @@ pub fn CandleStickSeries(
 
                     if let Err(err) = res {
                         err.with_prefix("Failed to set markers").log();
+                    }
+                }
+            });
+
+            let _ = Effect::new({
+                let id = id.clone();
+                let chart = chart.clone();
+
+                move || {
+                    let res = price_lines.with(|price_lines| {
+                        chart
+                            .set_price_lines(id.clone(), price_lines)
+                            .map_err(|err| err.with_serializable_data(price_lines))
+                    });
+
+                    if let Err(err) = res {
+                        err.with_prefix("Failed to set price lines").log();
                     }
                 }
             });

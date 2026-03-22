@@ -15,7 +15,7 @@ trunk serve
 ```
 
 ## This example
-This example is a simple demonstrationof how to use the `trading-charts` crate.
+This example is a simple demonstration of how to use the `trading-charts` crate.
 It is a Rust binding of [Lightweight Charts] for [Leptos].
 
 You can find the source code in the `src` directory.
