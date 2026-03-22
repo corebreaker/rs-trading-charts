@@ -29,4 +29,4 @@ You should see a simple line chart with some random data, like this:
 [Docs.rs]: https://img.shields.io/docsrs/trading-charts?style=for-the-badge
 [Lightweight Charts]: https://github.com/tradingview/lightweight-charts
 [Leptos]: https://leptos.dev/
-[Screenshot]: ./assets/example.png
+[Screenshot]: assets/example.png

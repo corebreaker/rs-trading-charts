@@ -14,4 +14,4 @@ categories.workspace = true
 [dependencies]
 emitix = { workspace = true }
 leptos = { workspace = true }
-trading-charts-core = { path = "../trading-charts-core", version = "0.1.14" }
+trading-charts-core = { path = "../trading-charts-core", version = "0.2", package = "trading-charts-core" }

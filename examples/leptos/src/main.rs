@@ -1,4 +1,4 @@
-use trading_charts_example::example::App;
+use trading_charts_example_leptos::example::App;
 use leptos::{mount::mount_to_body, view};
 
 fn main() {
