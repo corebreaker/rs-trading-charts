@@ -2,8 +2,8 @@
 # will have compiled files and executables
 debug/
 target/
-example/dist/
-example-dioxus/dist/
+examples/leptos/dist/
+examples/dioxus/dist/
 trading-charts-core/bindings/node_modules/
 trading-charts-core/bindings/target/
 trading-charts/bindings/node_modules/

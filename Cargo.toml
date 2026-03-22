@@ -5,13 +5,14 @@ members = [
     "trading-charts",
     "trading-charts-dioxus",
     "wasmbind-macro",
-    "example",
-    "example-dioxus",
+    "examples/leptos",
+    "examples/dioxus",
 ]
+
 default-members = ["trading-charts-core", "trading-charts", "trading-charts-dioxus", "wasmbind-macro"]
 
 [workspace.package]
-version = "0.1.14"
+version = "0.2.0"
 edition = "2021"
 authors = ["Frédéric Meyer <frederic.meyer.77@gmail.com>"]
 description = "Rust bindings of Lightweight Charts with Leptos and Dioxus adapters"
@@ -38,8 +39,8 @@ gc = "cargo sweep -r -t 10 ."
 [workspace.dependencies]
 console_error_panic_hook = "0.1"
 console_log = "1.0"
-dioxus = { version = "0.7.3", default-features = false }
-dioxus-web = { version = "0.7.3", default-features = false }
+dioxus = { version = "0.7", default-features = false }
+dioxus-web = { version = "0.7", default-features = false }
 emitix = { version = "1.1", features = ["leptos"] }
 js-sys = "0.3"
 leptos = { version = "0.8", features = ["csr"] }

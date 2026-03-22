@@ -1,4 +1,4 @@
-use trading_charts_dioxus_example::example::app;
+use trading_charts_example_dioxus::example::app;
 
 fn main() {
     #[cfg(debug_assertions)]
