@@ -333,17 +333,18 @@ function isOptionGroup(value) {
  * The groups are copied, so that the kept options never share them with the merged options.
  */
 export function mergeOptions(kept, options) {
+    let res = kept || {};
     for (const [name, value] of Object.entries(options || {})) {
         if (value === undefined) {
             continue;
         }
 
         if (isOptionGroup(value)) {
-            kept[name] = mergeOptions(isOptionGroup(kept[name]) ? kept[name] : {}, value);
+            res[name] = mergeOptions(isOptionGroup(res[name]) ? res[name] : {}, value);
         } else {
-            kept[name] = value;
+            res[name] = value;
         }
     }
 
-    return kept;
+    return res;
 }

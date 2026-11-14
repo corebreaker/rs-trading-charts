@@ -1,4 +1,5 @@
 import { createImageWatermark, createTextWatermark } from 'lightweight-charts';
+import { mergeOptions } from './formatters.mjs';
 import { newId } from './utils.mjs';
 
 /**
@@ -82,11 +83,15 @@ export class Watermarks {
         });
     }
 
-    /** Apply options to a watermark, merged into its kept options like Lightweight Charts merges them. */
+    /**
+     * Apply options to a watermark, merged into its kept options.
+     *
+     * The kept options are applied whole, so that the watermark gets the same options as on the next binding.
+     */
     update(watermarkId, options) {
         const watermark = this._get(watermarkId);
 
-        watermark.options = Object.assign({}, watermark.options, options || {});
+        watermark.options = mergeOptions(watermark.options, options);
         if (watermark.api) {
             watermark.api.applyOptions(watermark.options);
         }

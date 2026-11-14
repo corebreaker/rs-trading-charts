@@ -132,7 +132,7 @@ export class SeriesEntry {
             this.chartApi.applyOptions(this._owner.resolveOptions(options));
         }
 
-        this.params.options = mergeOptions(this.params.options || {}, options);
+        this.params.options = mergeOptions(this.params.options, options);
     }
 
     setVisible(visible) {
@@ -266,11 +266,16 @@ export class SeriesEntry {
             this.chartApi.priceScale().applyOptions(this._owner.resolveOptions(options));
         }
 
-        this.priceScaleOptions = mergeOptions(this.priceScaleOptions || {}, options);
+        this.priceScaleOptions = mergeOptions(this.priceScaleOptions, options);
     }
 
+    /**
+     * Apply options to the markers of the series, merged into their kept options.
+     *
+     * The kept options are applied whole, so that the markers get the same options as on the next binding.
+     */
     applyMarkersOptions(options) {
-        this.markersOptions = Object.assign({}, this.markersOptions, options || {});
+        this.markersOptions = mergeOptions(this.markersOptions, options);
         if (this.markerApi) {
             this.markerApi.applyOptions(this.markersOptions);
         }

@@ -413,7 +413,7 @@ export class TradingChart {
         }
 
         const kept = this._priceScaleOptions.get(index);
-        kept.set(priceScaleId, mergeOptions(kept.get(priceScaleId) || {}, options));
+        kept.set(priceScaleId, mergeOptions(kept.get(priceScaleId), options));
     }
 
     /**
