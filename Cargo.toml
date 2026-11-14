@@ -1,15 +1,15 @@
 [workspace]
 resolver = "3"
 members = [
-    "trading-charts-core",
-    "trading-charts",
-    "trading-charts-dioxus",
+    "core",
+    "leptos",
+    "dioxus",
     "wasmbind-macro",
     "examples/leptos",
     "examples/dioxus",
 ]
 
-default-members = ["trading-charts-core", "trading-charts", "trading-charts-dioxus", "wasmbind-macro"]
+default-members = ["core", "leptos", "dioxus", "wasmbind-macro"]
 
 [workspace.package]
 version = "1.0.0"

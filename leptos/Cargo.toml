@@ -1,0 +1,18 @@
+[package]
+name = "trading-charts"
+readme = "README.md"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+description.workspace = true
+repository.workspace = true
+documentation.workspace = true
+license.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+emitix = { workspace = true }
+leptos = { workspace = true }
+serde = { workspace = true }
+trading-charts-core = { path = "../core", version = "1.0", package = "trading-charts-core" }

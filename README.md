@@ -12,12 +12,12 @@ and the JS library is bundled in the WebAssembly module, so there is no JS to wr
 
 ## Crates
 
-| Crate                                              | Use it for                                                       |
-|----------------------------------------------------|------------------------------------------------------------------|
-| [`trading-charts`](trading-charts)                 | [Leptos] components.                                             |
-| [`trading-charts-dioxus`](trading-charts-dioxus)   | [Dioxus] components, for the web renderer.                       |
-| [`trading-charts-core`](trading-charts-core)       | The framework-agnostic chart handle, data and option types.      |
-| [`wasmbind-js-file-macro`](wasmbind-macro)         | The macro inlining the bundled JS module in the WebAssembly one. |
+| Crate                    | Directory                          | Role                                               |
+|--------------------------|------------------------------------|----------------------------------------------------|
+| `trading-charts`         | [`leptos`](leptos)                 | [Leptos] components.                               |
+| `trading-charts-dioxus`  | [`dioxus`](dioxus)                 | [Dioxus] components, for the web renderer.         |
+| `trading-charts-core`    | [`core`](core)                     | Framework-agnostic chart handle, data and options. |
+| `wasmbind-js-file-macro` | [`wasmbind-macro`](wasmbind-macro) | Macro inlining the JS bundle into the wasm module. |
 
 The adapters re-export the core types, so an application only depends on the adapter of its framework.
 The charts need a browser: the Dioxus desktop, mobile and liveview renderers are not supported.
@@ -111,7 +111,7 @@ Serve them with `cargo make serve-example` and `cargo make serve-example-dioxus`
 
 ## Development
 
-The JS binding (`trading-charts-core/bindings`) is bundled by the build script of `trading-charts-core`,
+The JS binding (`core/bindings`) is bundled by the build script of the `trading-charts-core` crate,
 which requires [Node.js](https://nodejs.org/) and npm.
 
 The workspace tasks are run with [cargo-make](https://github.com/sagiegurari/cargo-make)

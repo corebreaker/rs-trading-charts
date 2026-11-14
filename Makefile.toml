@@ -13,7 +13,7 @@ skip_crate_env_info = true
 [env]
 LEPTOS_EXAMPLE_DIR = "examples/leptos"
 DIOXUS_EXAMPLE_DIR = "examples/dioxus"
-CORE_BINDINGS_DIR = "trading-charts-core/bindings"
+CORE_BINDINGS_DIR = "core/bindings"
 WASM_TARGET = "wasm32-unknown-unknown"
 LIGHTWEIGHT_CHARTS_VERSION = { value = "latest", condition = { env_not_set = ["LIGHTWEIGHT_CHARTS_VERSION"] } }
 
