@@ -18,6 +18,7 @@ use crate::{
         PriceLineOptions,
         PriceRange,
         RangePreset,
+        ScreenshotOptions,
         TextWatermarkOptions,
         TimeRange,
         UTCTimestamp,
@@ -37,7 +38,7 @@ use crate::{
 use serde::{de::DeserializeOwned, Serialize};
 use serde_wasm_bindgen::{from_value, to_value};
 use wasm_bindgen::{closure::Closure, JsValue};
-use web_sys::HtmlDivElement;
+use web_sys::{HtmlCanvasElement, HtmlDivElement};
 use std::{
     cell::{Cell, RefCell},
     sync::Arc,
@@ -333,7 +334,23 @@ impl ChartHandle {
 
     /// Take a screenshot of the chart, returned as a PNG data URL.
     pub fn take_screenshot_data_url(&self) -> Result<String, JsError> {
-        Ok(self.js().takeScreenshot()?)
+        self.take_screenshot(&ScreenshotOptions::default())
+    }
+
+    /// Take a screenshot of the chart, returned as a data URL in the format of the options.
+    pub fn take_screenshot(&self, options: &ScreenshotOptions) -> Result<String, JsError> {
+        Ok(self.js().takeScreenshot(to_value(options)?)?)
+    }
+
+    /// Take a screenshot of the chart, returned as a canvas, for instance to draw it in another canvas or to get a
+    /// blob from it.
+    pub fn take_screenshot_canvas(&self, options: &ScreenshotOptions) -> Result<HtmlCanvasElement, JsError> {
+        Ok(self.js().takeScreenshotCanvas(to_value(options)?)?)
+    }
+
+    /// Take a screenshot of the chart and have the browser download it as a file named `filename`.
+    pub fn download_screenshot(&self, filename: &str, options: &ScreenshotOptions) -> Result<(), JsError> {
+        Ok(self.js().downloadScreenshot(filename, to_value(options)?)?)
     }
 
     // -----------------------------------------------------------------------------------------------------------------

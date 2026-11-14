@@ -1,6 +1,6 @@
 use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
 use wasmbind_macro::wasmbind_dump_js_file_as_inline;
-use web_sys::HtmlDivElement;
+use web_sys::{HtmlCanvasElement, HtmlDivElement};
 
 #[wasmbind_dump_js_file_as_inline(path = "${outDir}/bindings/target/module.mjs")]
 extern "C" {
@@ -151,7 +151,13 @@ extern "C" {
     pub(crate) fn resize(this: &TradingChart, width: f64, height: f64) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(crate) fn takeScreenshot(this: &TradingChart) -> Result<String, JsValue>;
+    pub(crate) fn takeScreenshot(this: &TradingChart, options: JsValue) -> Result<String, JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(crate) fn takeScreenshotCanvas(this: &TradingChart, options: JsValue) -> Result<HtmlCanvasElement, JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(crate) fn downloadScreenshot(this: &TradingChart, filename: &str, options: JsValue) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
     pub(crate) fn setLegendOptions(this: &TradingChart, options: JsValue) -> Result<(), JsValue>;

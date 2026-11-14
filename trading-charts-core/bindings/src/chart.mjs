@@ -480,8 +480,39 @@ export class TradingChart {
         this._getChart().resize(width, height);
     }
 
-    takeScreenshot() {
-        return this._getChart().takeScreenshot().toDataURL();
+    /**
+     * Take a screenshot of the chart, returned as a canvas.
+     *
+     * Options: `addTopLayer` (include the top layer and the primitives) and `includeCrosshair` (include the
+     * crosshair, with `addTopLayer` only).
+     */
+    takeScreenshotCanvas(options = null) {
+        const { addTopLayer = false, includeCrosshair = false } = options || {};
+
+        return this._getChart().takeScreenshot(addTopLayer, includeCrosshair);
+    }
+
+    /**
+     * Take a screenshot of the chart, returned as a data URL.
+     *
+     * Options: those of `takeScreenshotCanvas`, `mimeType` (`image/png` by default) and `quality` (from 0 to 1).
+     */
+    takeScreenshot(options = null) {
+        const { mimeType = 'image/png', quality = undefined } = options || {};
+
+        return this.takeScreenshotCanvas(options).toDataURL(mimeType, quality);
+    }
+
+    /** Take a screenshot of the chart and download it as a file. Options: see `takeScreenshot`. */
+    downloadScreenshot(filename, options = null) {
+        const link = document.createElement('a');
+
+        link.href = this.takeScreenshot(options);
+        link.download = filename;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
     }
 
     // -----------------------------------------------------------------------------------------------------------------

@@ -13,6 +13,7 @@ mod price_line;
 mod price_range;
 mod price_volume;
 mod range_preset;
+mod screenshot;
 mod sync;
 mod text_watermark;
 mod time_range;
@@ -51,6 +52,7 @@ pub use self::{
     price_line::PriceLineOptions,
     price_range::PriceRange,
     range_preset::RangePreset,
+    screenshot::{ImageFormat, ScreenshotOptions},
     price_volume::{OhlcvData, PriceData, PriceSeriesStyle, PriceVolume, VolumeColors, VOLUME_PRICE_SCALE_ID},
     sync::SyncOptions,
     text_watermark::{TextWatermarkLineOptions, TextWatermarkOptions},
