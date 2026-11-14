@@ -1,4 +1,6 @@
 import { createChart } from 'lightweight-charts';
+import { trackChart, untrackChart } from './fonts.mjs';
+import { resolveOptions } from './formatters.mjs';
 import { Legend } from './legend.mjs';
 import { SeriesEntry } from './series.mjs';
 import { newId } from './utils.mjs';
@@ -17,6 +19,14 @@ export class TradingChart {
         this._series = {};
         this._watermarks = new Watermarks(this);
         this._legend = new Legend(this);
+        this._timeContext = {
+            toUtc: time => time,
+        };
+    }
+
+    /** Replace the formatter descriptors of options sent by Rust by functions. */
+    resolveOptions(options) {
+        return resolveOptions(options || {}, this._timeContext);
     }
 
     /** The Lightweight Charts chart, or `null` when the chart is not bound. */
@@ -109,6 +119,7 @@ export class TradingChart {
     // -----------------------------------------------------------------------------------------------------------------
 
     destroy() {
+        untrackChart(this);
         this._unbindAll();
         this._watermarks.destroy();
         this._series = {};
@@ -119,7 +130,8 @@ export class TradingChart {
         this._unbindAll();
 
         this._node = node;
-        this._chart = createChart(node, options || {});
+        this._chart = createChart(node, this.resolveOptions(options));
+        trackChart(this);
         for (const seriesId of Object.keys(this._series)) {
             this._bindSeries(seriesId);
         }
@@ -133,11 +145,22 @@ export class TradingChart {
     // -----------------------------------------------------------------------------------------------------------------
 
     applyChartOptions(options) {
-        this._getChart().applyOptions(options);
+        this._getChart().applyOptions(this.resolveOptions(options));
     }
 
     applyTimeScaleOptions(options) {
-        this._getChart().timeScale().applyOptions(options);
+        this._getChart().timeScale().applyOptions(this.resolveOptions(options));
+    }
+
+    /** Redraw the texts of the chart, after a web font has been loaded. */
+    refreshFonts() {
+        if (!this._chart) {
+            return;
+        }
+
+        const fontFamily = this._chart.options().layout.fontFamily;
+        this._chart.applyOptions({ layout: { fontFamily } });
+        this._watermarks.bindAll();
     }
 
     applyPriceScaleOptions(priceScaleId, paneIndex, options) {
@@ -294,7 +317,7 @@ export class TradingChart {
         }
 
         const id = newId();
-        this._series[id] = new SeriesEntry(id, seriesDesc);
+        this._series[id] = new SeriesEntry(id, seriesDesc, options => this.resolveOptions(options));
         this._bindSeries(id);
         this._legend.update();
 

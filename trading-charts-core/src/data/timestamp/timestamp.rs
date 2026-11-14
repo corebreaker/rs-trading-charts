@@ -42,8 +42,21 @@ impl UTCTimestamp {
         DateTime::<Utc>::from_timestamp(self.timestamp / 1000, ((self.timestamp % 1000) as u32) * 1_000_000).unwrap()
     }
 
+    /// Create a timestamp from a number of seconds since the Unix epoch, as used by Lightweight Charts.
+    pub fn from_seconds(seconds: f64) -> Self {
+        Self {
+            timestamp: (seconds * 1000.0).round() as i64,
+        }
+    }
+
+    /// Number of milliseconds since the Unix epoch.
     pub fn timestamp(&self) -> i64 {
         self.timestamp
+    }
+
+    /// Number of seconds since the Unix epoch, as used by Lightweight Charts.
+    pub fn seconds(&self) -> f64 {
+        self.timestamp as f64 / 1000.0
     }
 }
 

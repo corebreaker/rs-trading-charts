@@ -1,5 +1,5 @@
 mod chart;
-mod js;
+pub(crate) mod js;
 mod series;
 
 pub use chart::{ChartHandle, PanelId};

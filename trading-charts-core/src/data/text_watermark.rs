@@ -1,4 +1,4 @@
-use {crate::data::options::HorzAlign, crate::data::options::VertAlign};
+use {crate::data::format::FontFamily, crate::data::options::HorzAlign, crate::data::options::VertAlign};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
@@ -12,7 +12,7 @@ pub struct TextWatermarkLineOptions {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     line_height: Option<f64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    font_family: Option<String>,
+    font_family: Option<FontFamily>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     font_style:  Option<String>,
 }
@@ -106,19 +106,19 @@ impl TextWatermarkLineOptions {
     /// Font family.
     ///
     /// Default: `-apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif`.
-    pub fn with_font_family(self, font_family: impl Into<String>) -> Self {
+    pub fn with_font_family(self, font_family: impl Into<FontFamily>) -> Self {
         Self {
             font_family: Some(font_family.into()),
             ..self
         }
     }
 
-    pub fn font_family(&self) -> Option<&str> {
-        self.font_family.as_deref()
+    pub fn font_family(&self) -> Option<&FontFamily> {
+        self.font_family.as_ref()
     }
 
     /// Set or reset (with `None`) the `fontFamily` option.
-    pub fn set_font_family(&mut self, font_family: Option<String>) {
+    pub fn set_font_family(&mut self, font_family: Option<FontFamily>) {
         self.font_family = font_family;
     }
 

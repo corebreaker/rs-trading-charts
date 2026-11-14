@@ -3,3 +3,5 @@
 // Every export of this file must have a matching `extern "C"` declaration in `src/bindings/js.rs`.
 
 export { TradingChart } from './chart.mjs';
+export { loadWebFont } from './fonts.mjs';
+export { registerCustomFunction, unregisterCustomFunction } from './formatters.mjs';

@@ -13,6 +13,7 @@ mod time_range;
 mod timestamp;
 mod value_data;
 
+pub mod format;
 pub mod options;
 pub mod series;
 

@@ -34,12 +34,13 @@ function getSeriesType(type) {
  * price lines so that the series can be recreated when the chart is bound again to a DOM node.
  */
 export class SeriesEntry {
-    constructor(id, { type, data, options, panel }) {
+    constructor(id, { type, data, options, panel }, resolveOptions = options => options) {
         if (Array.isArray(data)) {
             sortByTime(data);
         }
 
         this.id = id;
+        this._resolveOptions = resolveOptions;
         this.chartApi = null;
         this.markerApi = null;
         this.markerData = [];
@@ -86,7 +87,7 @@ export class SeriesEntry {
     bind(chart) {
         const params = this.params;
 
-        this.chartApi = chart.addSeries(getSeriesType(params.type), params.options);
+        this.chartApi = chart.addSeries(getSeriesType(params.type), this._resolveOptions(params.options));
         if (isDefined(this.panel)) {
             this.chartApi.moveToPane(this.panel);
         }
@@ -129,7 +130,7 @@ export class SeriesEntry {
     applyOptions(options) {
         this.params.options = options;
         if (this.chartApi) {
-            this.chartApi.applyOptions(options);
+            this.chartApi.applyOptions(this._resolveOptions(options));
         }
     }
 

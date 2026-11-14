@@ -1,3 +1,4 @@
+use crate::data::format::FontFamily;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
@@ -13,7 +14,7 @@ pub struct LegendOptions {
     text_color:               String,
     background_color:         String,
     font_size:                f64,
-    font_family:              String,
+    font_family:              FontFamily,
     top:                      f64,
     left:                     f64,
 }
@@ -93,7 +94,7 @@ impl LegendOptions {
         }
     }
 
-    pub fn with_font_family(self, font_family: impl Into<String>) -> Self {
+    pub fn with_font_family(self, font_family: impl Into<FontFamily>) -> Self {
         Self {
             font_family: font_family.into(),
             ..self
@@ -128,7 +129,7 @@ impl Default for LegendOptions {
             text_color:               String::from("#0f172a"),
             background_color:         String::from("rgba(0, 0, 0, 0)"),
             font_size:                12.0,
-            font_family:              String::from(
+            font_family:              FontFamily::from(
                 "Avenir Next, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
             ),
             top:                      10.0,

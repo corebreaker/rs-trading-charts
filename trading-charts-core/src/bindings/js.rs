@@ -4,6 +4,14 @@ use web_sys::HtmlDivElement;
 
 #[wasmbind_dump_js_file_as_inline(path = "${outDir}/bindings/target/module.mjs")]
 extern "C" {
+    #[wasm_bindgen(catch)]
+    pub(crate) fn registerCustomFunction(kind: &str, name: &str, function: &JsValue) -> Result<(), JsValue>;
+
+    pub(crate) fn unregisterCustomFunction(kind: &str, name: &str) -> bool;
+
+    #[wasm_bindgen(catch)]
+    pub(crate) fn loadWebFont(family: &str, source: &str, descriptors: JsValue) -> Result<js_sys::Promise, JsValue>;
+
     pub(crate) type TradingChart;
 
     #[wasm_bindgen(constructor)]

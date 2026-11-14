@@ -1,4 +1,4 @@
-use crate::data::options::ConflationPriority;
+use {crate::data::format::TickMarkFormatter, crate::data::options::ConflationPriority};
 use serde::{Deserialize, Serialize};
 
 /// Extended time scale options for time-based horizontal scale
@@ -57,6 +57,8 @@ pub struct TimeScaleOptions {
     precompute_conflation_on_init: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     precompute_conflation_priority: Option<ConflationPriority>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    tick_mark_formatter: Option<TickMarkFormatter>,
 }
 
 impl TimeScaleOptions {
@@ -607,5 +609,24 @@ impl TimeScaleOptions {
     /// Set or reset (with `None`) the `precomputeConflationPriority` option.
     pub fn set_precompute_conflation_priority(&mut self, precompute_conflation_priority: Option<ConflationPriority>) {
         self.precompute_conflation_priority = precompute_conflation_priority;
+    }
+
+    /// Tick marks formatter can be used to customize tick marks labels on the time axis.
+    ///
+    /// Default: `undefined`.
+    pub fn with_tick_mark_formatter(self, tick_mark_formatter: TickMarkFormatter) -> Self {
+        Self {
+            tick_mark_formatter: Some(tick_mark_formatter),
+            ..self
+        }
+    }
+
+    pub fn tick_mark_formatter(&self) -> Option<&TickMarkFormatter> {
+        self.tick_mark_formatter.as_ref()
+    }
+
+    /// Set or reset (with `None`) the `tickMarkFormatter` option.
+    pub fn set_tick_mark_formatter(&mut self, tick_mark_formatter: Option<TickMarkFormatter>) {
+        self.tick_mark_formatter = tick_mark_formatter;
     }
 }
