@@ -1,72 +1,56 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone)]
+/// Represents options for enabling or disabling kinetic scrolling with mouse and touch gestures.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct KineticScrollOptions {
-    #[serde(default = "defaults::touch")]
-    touch: bool,
-
-    #[serde(default = "defaults::mouse")]
-    mouse: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    touch: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    mouse: Option<bool>,
 }
 
 impl KineticScrollOptions {
+    /// Create options where every option keeps its default value.
     pub fn new() -> Self {
         Self::default()
     }
 
-    pub fn new_with_params(touch: bool, mouse: bool) -> Self {
-        Self {
-            touch,
-            mouse,
-        }
-    }
-
+    /// Enable kinetic scroll with touch gestures.
+    ///
+    /// Default: `true`.
     pub fn with_touch(self, touch: bool) -> Self {
         Self {
-            touch,
+            touch: Some(touch),
             ..self
         }
     }
 
-    pub fn with_mouse(self, mouse: bool) -> Self {
-        Self {
-            mouse,
-            ..self
-        }
-    }
-
-    pub fn touch(&self) -> bool {
+    pub fn touch(&self) -> Option<bool> {
         self.touch
     }
 
-    pub fn set_touch(&mut self, touch: bool) {
+    /// Set or reset (with `None`) the `touch` option.
+    pub fn set_touch(&mut self, touch: Option<bool>) {
         self.touch = touch;
     }
 
-    pub fn mouse(&self) -> bool {
+    /// Enable kinetic scroll with the mouse.
+    ///
+    /// Default: `false`.
+    pub fn with_mouse(self, mouse: bool) -> Self {
+        Self {
+            mouse: Some(mouse),
+            ..self
+        }
+    }
+
+    pub fn mouse(&self) -> Option<bool> {
         self.mouse
     }
 
-    pub fn set_mouse(&mut self, mouse: bool) {
+    /// Set or reset (with `None`) the `mouse` option.
+    pub fn set_mouse(&mut self, mouse: Option<bool>) {
         self.mouse = mouse;
-    }
-}
-
-impl Default for KineticScrollOptions {
-    fn default() -> Self {
-        Self {
-            touch: defaults::touch(),
-            mouse: defaults::mouse(),
-        }
-    }
-}
-
-mod defaults {
-    pub(super) fn touch() -> bool {
-        true
-    }
-
-    pub(super) fn mouse() -> bool {
-        false
     }
 }

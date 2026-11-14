@@ -1,6 +1,6 @@
 use serde::{de::Error, Deserialize, Serialize, Deserializer, Serializer};
 
-#[derive(Default, Copy, Clone)]
+#[derive(Default, Copy, Clone, PartialEq, Debug)]
 pub enum PriceLineSource {
     #[default]
     LastBar     = 0,

@@ -22,11 +22,3 @@ console_error_panic_hook = { workspace = true }
 console_log = { workspace = true }
 dioxus = { workspace = true, features = ["lib", "web", "launch"] }
 log = { workspace = true }
-wasm-bindgen = { workspace = true }
-web-sys = { workspace = true }
-
-[profile.release]
-opt-level = 'z'
-lto = true
-codegen-units = 1
-panic = "abort"

@@ -4,6 +4,7 @@ target = "./index.html"
 [watch]
 watch = [
     ".",
+    "../style.css",
     "../../trading-charts-core/src",
     "../../trading-charts-core/build.rs",
     "../../trading-charts-core/Cargo.toml",

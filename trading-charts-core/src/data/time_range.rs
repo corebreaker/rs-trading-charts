@@ -1,7 +1,7 @@
 use super::UTCTimestamp;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone, Copy, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Debug)]
 pub struct TimeRange {
     from: UTCTimestamp,
     to:   UTCTimestamp,

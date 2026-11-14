@@ -1,72 +1,56 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone)]
+/// Represents options for how the time and price axes react to mouse movements.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct AxisPressedMouseMoveOptions {
-    #[serde(rename = "time", default = "defaults::time")]
-    time: bool,
-
-    #[serde(rename = "price", default = "defaults::price")]
-    price: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    time:  Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    price: Option<bool>,
 }
 
 impl AxisPressedMouseMoveOptions {
+    /// Create options where every option keeps its default value.
     pub fn new() -> Self {
         Self::default()
     }
 
-    pub fn new_with_params(time: bool, price: bool) -> Self {
-        Self {
-            time,
-            price,
-        }
-    }
-
+    /// Enable scaling the time axis by holding down the left mouse button and moving the mouse.
+    ///
+    /// Default: `true`.
     pub fn with_time(self, time: bool) -> Self {
         Self {
-            time,
+            time: Some(time),
             ..self
         }
     }
 
-    pub fn with_price(self, price: bool) -> Self {
-        Self {
-            price,
-            ..self
-        }
-    }
-
-    pub fn time(&self) -> bool {
+    pub fn time(&self) -> Option<bool> {
         self.time
     }
 
-    pub fn set_time(&mut self, time: bool) {
+    /// Set or reset (with `None`) the `time` option.
+    pub fn set_time(&mut self, time: Option<bool>) {
         self.time = time;
     }
 
-    pub fn price(&self) -> bool {
+    /// Enable scaling the price axis by holding down the left mouse button and moving the mouse.
+    ///
+    /// Default: `true`.
+    pub fn with_price(self, price: bool) -> Self {
+        Self {
+            price: Some(price),
+            ..self
+        }
+    }
+
+    pub fn price(&self) -> Option<bool> {
         self.price
     }
 
-    pub fn set_price(&mut self, price: bool) {
+    /// Set or reset (with `None`) the `price` option.
+    pub fn set_price(&mut self, price: Option<bool>) {
         self.price = price;
-    }
-}
-
-impl Default for AxisPressedMouseMoveOptions {
-    fn default() -> Self {
-        Self {
-            time:  defaults::time(),
-            price: defaults::price(),
-        }
-    }
-}
-
-mod defaults {
-    pub(super) fn time() -> bool {
-        true
-    }
-
-    pub(super) fn price() -> bool {
-        true
     }
 }

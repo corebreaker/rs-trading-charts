@@ -1,101 +1,78 @@
-use super::super::LineStyle;
+use crate::data::options::LineStyle;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone)]
+/// Grid line options.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct GridLineOptions {
-    #[serde(default = "defaults::color")]
-    color: String,
-
-    #[serde(default)]
-    style: LineStyle,
-
-    #[serde(default = "defaults::visible")]
-    visible: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    color:   Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    style:   Option<LineStyle>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    visible: Option<bool>,
 }
 
 impl GridLineOptions {
+    /// Create options where every option keeps its default value.
     pub fn new() -> Self {
         Self::default()
     }
 
-    pub fn new_with_params(color: String, style: LineStyle, visible: bool) -> Self {
+    /// Line color.
+    ///
+    /// Default: `"#D6DCDE"`.
+    pub fn with_color(self, color: impl Into<String>) -> Self {
         Self {
-            color,
-            style,
-            visible,
-        }
-    }
-
-    pub fn with_color(self, color: String) -> Self {
-        Self {
-            color,
+            color: Some(color.into()),
             ..self
         }
     }
 
-    pub fn with_style(self, style: LineStyle) -> Self {
-        Self {
-            style,
-            ..self
-        }
+    pub fn color(&self) -> Option<&str> {
+        self.color.as_deref()
     }
 
-    pub fn with_visible(self, visible: bool) -> Self {
-        Self {
-            visible,
-            ..self
-        }
-    }
-
-    pub fn color(&self) -> &str {
-        &self.color
-    }
-
-    pub fn color_mut(&mut self) -> &mut String {
-        &mut self.color
-    }
-
-    pub fn set_color(&mut self, color: String) {
+    /// Set or reset (with `None`) the `color` option.
+    pub fn set_color(&mut self, color: Option<String>) {
         self.color = color;
     }
 
-    pub fn style(&self) -> &LineStyle {
-        &self.style
+    /// Line style.
+    ///
+    /// Default: `LineStyle.Solid`.
+    pub fn with_style(self, style: LineStyle) -> Self {
+        Self {
+            style: Some(style),
+            ..self
+        }
     }
 
-    pub fn style_mut(&mut self) -> &mut LineStyle {
-        &mut self.style
+    pub fn style(&self) -> Option<LineStyle> {
+        self.style
     }
 
-    pub fn set_style(&mut self, style: LineStyle) {
+    /// Set or reset (with `None`) the `style` option.
+    pub fn set_style(&mut self, style: Option<LineStyle>) {
         self.style = style;
     }
 
-    pub fn visible(&self) -> bool {
+    /// Display the lines.
+    ///
+    /// Default: `true`.
+    pub fn with_visible(self, visible: bool) -> Self {
+        Self {
+            visible: Some(visible),
+            ..self
+        }
+    }
+
+    pub fn visible(&self) -> Option<bool> {
         self.visible
     }
 
-    pub fn set_visible(&mut self, visible: bool) {
+    /// Set or reset (with `None`) the `visible` option.
+    pub fn set_visible(&mut self, visible: Option<bool>) {
         self.visible = visible;
-    }
-}
-
-impl Default for GridLineOptions {
-    fn default() -> Self {
-        Self {
-            color:   defaults::color(),
-            style:   LineStyle::default(),
-            visible: defaults::visible(),
-        }
-    }
-}
-
-mod defaults {
-    pub(super) fn color() -> String {
-        String::from("#D6DCDE")
-    }
-
-    pub(super) fn visible() -> bool {
-        true
     }
 }

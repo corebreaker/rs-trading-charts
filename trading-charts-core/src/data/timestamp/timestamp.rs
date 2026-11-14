@@ -42,8 +42,21 @@ impl UTCTimestamp {
         DateTime::<Utc>::from_timestamp(self.timestamp / 1000, ((self.timestamp % 1000) as u32) * 1_000_000).unwrap()
     }
 
+    /// Create a timestamp from a number of seconds since the Unix epoch, as used by Lightweight Charts.
+    pub fn from_seconds(seconds: f64) -> Self {
+        Self {
+            timestamp: (seconds * 1000.0).round() as i64,
+        }
+    }
+
+    /// Number of milliseconds since the Unix epoch.
     pub fn timestamp(&self) -> i64 {
         self.timestamp
+    }
+
+    /// Number of seconds since the Unix epoch, as used by Lightweight Charts.
+    pub fn seconds(&self) -> f64 {
+        self.timestamp as f64 / 1000.0
     }
 }
 
@@ -51,7 +64,7 @@ impl FromStr for UTCTimestamp {
     type Err = JsError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let dt = parse_str(s.as_ref())?;
+        let dt = parse_str(s)?;
 
         Ok(Self::from_datetime(dt))
     }
@@ -71,9 +84,9 @@ impl From<DateTime<Utc>> for UTCTimestamp {
     }
 }
 
-impl Into<DateTime<Utc>> for UTCTimestamp {
-    fn into(self) -> DateTime<Utc> {
-        self.into_datetime()
+impl From<UTCTimestamp> for DateTime<Utc> {
+    fn from(timestamp: UTCTimestamp) -> Self {
+        timestamp.into_datetime()
     }
 }
 

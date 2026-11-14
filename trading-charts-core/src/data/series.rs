@@ -1,17 +1,11 @@
-use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
+use wasm_bindgen::JsValue;
 use serde::{Deserialize, Serialize};
 use serde_wasm_bindgen::to_value;
 use crate::PanelId;
 
-#[wasm_bindgen]
-extern "C" {
-    #[wasm_bindgen(js_namespace = Math)]
-    fn random() -> f64;
-}
-
-#[derive(Serialize, Deserialize)]
+/// Description of a series to add to a chart with [`ChartHandle::add_series`](crate::ChartHandle::add_series).
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct Series<Dat: Serialize + Clone, Opt: Serialize + Clone> {
-    id:      Option<String>,
     r#type:  String,
     data:    Vec<Dat>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -22,20 +16,11 @@ pub struct Series<Dat: Serialize + Clone, Opt: Serialize + Clone> {
 impl<Dat: Serialize + Clone, Opt: Serialize + Clone> Series<Dat, Opt> {
     pub fn new(r#type: impl AsRef<str>) -> Self {
         Self {
-            id:      None,
             r#type:  r#type.as_ref().to_string(),
             data:    Vec::new(),
             panel:   None,
             options: None,
         }
-    }
-
-    pub fn id(&self) -> Option<&String> {
-        self.id.as_ref()
-    }
-
-    pub fn set_id(&mut self, id: String) {
-        self.id.replace(id);
     }
 
     #[allow(dead_code)]

@@ -1,229 +1,282 @@
 use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
 use wasmbind_macro::wasmbind_dump_js_file_as_inline;
-use web_sys::HtmlDivElement;
+use web_sys::{HtmlCanvasElement, HtmlDivElement};
 
 #[wasmbind_dump_js_file_as_inline(path = "${outDir}/bindings/target/module.mjs")]
 extern "C" {
-    pub(super) type TradingChart;
+    #[wasm_bindgen(catch)]
+    pub(crate) fn registerCustomFunction(kind: &str, name: &str, function: &JsValue) -> Result<(), JsValue>;
+
+    pub(crate) fn unregisterCustomFunction(kind: &str, name: &str) -> bool;
+
+    #[wasm_bindgen(catch)]
+    pub(crate) fn loadWebFont(family: &str, source: &str, descriptors: JsValue) -> Result<js_sys::Promise, JsValue>;
+
+    #[wasm_bindgen(catch)]
+    pub(crate) fn registerMarkerStyle(id: &str, style: JsValue) -> Result<(), JsValue>;
+
+    pub(crate) fn unregisterMarkerStyle(id: &str) -> bool;
+
+    pub(crate) fn listMarkerStyleIds(prefix: &str) -> Vec<String>;
+
+    pub(crate) fn getMarkerStyle(id: &str) -> JsValue;
+
+    pub(crate) fn getMarkerStyles(prefix: &str) -> JsValue;
+
+    #[wasm_bindgen(catch)]
+    pub(crate) fn unregisterMarkerStylesWithPrefix(prefix: &str) -> Result<u32, JsValue>;
+
+    pub(crate) fn clearMarkerStyles();
+
+    pub(crate) type TradingChart;
 
     #[wasm_bindgen(constructor)]
-    pub(super) fn new() -> TradingChart;
+    pub(crate) fn new() -> TradingChart;
 
     #[wasm_bindgen(method)]
-    pub(super) fn destroy(this: &TradingChart);
+    pub(crate) fn destroy(this: &TradingChart);
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn applyChartOptions(this: &TradingChart, options: JsValue) -> Result<(), JsValue>;
+    pub(crate) fn applyChartOptions(this: &TradingChart, options: JsValue) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn applyTimeScaleOptions(this: &TradingChart, options: JsValue) -> Result<(), JsValue>;
+    pub(crate) fn applyTimeScaleOptions(this: &TradingChart, options: JsValue) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn applyPriceScaleOptions(
+    pub(crate) fn applyPriceScaleOptions(
         this: &TradingChart,
-        priceScaleId: String,
+        priceScaleId: &str,
         paneIndex: JsValue,
         options: JsValue,
     ) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn bindChart(this: &TradingChart, node: HtmlDivElement, options: JsValue) -> Result<(), JsValue>;
+    pub(crate) fn bindChart(this: &TradingChart, node: HtmlDivElement) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn refitContent(this: &TradingChart) -> Result<(), JsValue>;
+    pub(crate) fn subscribe(this: &TradingChart, kind: &str, callback: &JsValue) -> Result<String, JsValue>;
+
+    #[wasm_bindgen(method)]
+    pub(crate) fn unsubscribe(this: &TradingChart, subscriptionId: &str) -> bool;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn getVisibleRange(this: &TradingChart) -> Result<JsValue, JsValue>;
+    pub(crate) fn setSyncGroup(this: &TradingChart, name: Option<String>, options: JsValue) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn setVisibleRange(this: &TradingChart, range: JsValue) -> Result<(), JsValue>;
+    pub(crate) fn setTimeZone(this: &TradingChart, timeZone: Option<String>) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method)]
+    pub(crate) fn getTimeZone(this: &TradingChart) -> Option<String>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn getVisibleLogicalRange(this: &TradingChart) -> Result<JsValue, JsValue>;
+    pub(crate) fn showRange(this: &TradingChart, preset: JsValue) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn setVisibleLogicalRange(this: &TradingChart, range: JsValue) -> Result<(), JsValue>;
+    pub(crate) fn refitContent(this: &TradingChart) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn logicalToCoordinate(this: &TradingChart, logical: f64) -> Result<JsValue, JsValue>;
+    pub(crate) fn getVisibleRange(this: &TradingChart) -> Result<JsValue, JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn coordinateToLogical(this: &TradingChart, coordinate: f64) -> Result<JsValue, JsValue>;
+    pub(crate) fn setVisibleRange(this: &TradingChart, range: JsValue) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn timeToCoordinate(this: &TradingChart, time: JsValue) -> Result<JsValue, JsValue>;
+    pub(crate) fn getVisibleLogicalRange(this: &TradingChart) -> Result<JsValue, JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn coordinateToTime(this: &TradingChart, coordinate: f64) -> Result<JsValue, JsValue>;
+    pub(crate) fn setVisibleLogicalRange(this: &TradingChart, range: JsValue) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn getPriceScaleVisibleRange(
+    pub(crate) fn logicalToCoordinate(this: &TradingChart, logical: f64) -> Result<JsValue, JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(crate) fn coordinateToLogical(this: &TradingChart, coordinate: f64) -> Result<JsValue, JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(crate) fn timeToCoordinate(this: &TradingChart, time: JsValue) -> Result<JsValue, JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(crate) fn coordinateToTime(this: &TradingChart, coordinate: f64) -> Result<JsValue, JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(crate) fn getPriceScaleVisibleRange(
         this: &TradingChart,
-        priceScaleId: String,
+        priceScaleId: &str,
         paneIndex: JsValue,
     ) -> Result<JsValue, JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn setPriceScaleVisibleRange(
+    pub(crate) fn setPriceScaleVisibleRange(
         this: &TradingChart,
-        priceScaleId: String,
+        priceScaleId: &str,
         paneIndex: JsValue,
         range: JsValue,
     ) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn setPriceScaleAutoScale(
+    pub(crate) fn setPriceScaleAutoScale(
         this: &TradingChart,
-        priceScaleId: String,
+        priceScaleId: &str,
         paneIndex: JsValue,
         on: bool,
     ) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn getPriceScaleWidth(
+    pub(crate) fn getPriceScaleWidth(
         this: &TradingChart,
-        priceScaleId: String,
+        priceScaleId: &str,
         paneIndex: JsValue,
     ) -> Result<f64, JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn getPaneCount(this: &TradingChart) -> Result<u32, JsValue>;
+    pub(crate) fn getPaneCount(this: &TradingChart) -> Result<u32, JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn getPaneSize(this: &TradingChart, paneIndex: u32) -> Result<JsValue, JsValue>;
+    pub(crate) fn configurePane(this: &TradingChart, paneIndex: u32, settings: JsValue) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn setPaneHeight(this: &TradingChart, paneIndex: u32, height: f64) -> Result<(), JsValue>;
+    pub(crate) fn getPaneHeight(this: &TradingChart, paneIndex: u32) -> Result<f64, JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn getPaneStretchFactor(this: &TradingChart, paneIndex: u32) -> Result<f64, JsValue>;
+    pub(crate) fn getPaneSize(this: &TradingChart, paneIndex: u32) -> Result<JsValue, JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn setPaneStretchFactor(this: &TradingChart, paneIndex: u32, stretchFactor: f64) -> Result<(), JsValue>;
+    pub(crate) fn setPaneHeight(this: &TradingChart, paneIndex: u32, height: f64) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn movePane(this: &TradingChart, paneIndex: u32, targetIndex: u32) -> Result<(), JsValue>;
+    pub(crate) fn getPaneStretchFactor(this: &TradingChart, paneIndex: u32) -> Result<f64, JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn removePane(this: &TradingChart, paneIndex: u32) -> Result<(), JsValue>;
+    pub(crate) fn setPaneStretchFactor(this: &TradingChart, paneIndex: u32, stretchFactor: f64) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn swapPanes(this: &TradingChart, first: u32, second: u32) -> Result<(), JsValue>;
+    pub(crate) fn movePane(this: &TradingChart, paneIndex: u32, targetIndex: u32) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn resize(this: &TradingChart, width: f64, height: f64) -> Result<(), JsValue>;
+    pub(crate) fn removePane(this: &TradingChart, paneIndex: u32) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn takeScreenshot(this: &TradingChart) -> Result<String, JsValue>;
+    pub(crate) fn swapPanes(this: &TradingChart, first: u32, second: u32) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn setLegendOptions(this: &TradingChart, options: JsValue) -> Result<(), JsValue>;
+    pub(crate) fn resize(this: &TradingChart, width: f64, height: f64) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn removeLegend(this: &TradingChart) -> Result<(), JsValue>;
+    pub(crate) fn takeScreenshot(this: &TradingChart, options: JsValue) -> Result<String, JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn addTextWatermark(this: &TradingChart, paneIndex: u32, options: JsValue) -> Result<String, JsValue>;
+    pub(crate) fn takeScreenshotCanvas(this: &TradingChart, options: JsValue) -> Result<HtmlCanvasElement, JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn updateTextWatermark(
-        this: &TradingChart,
-        watermarkId: String,
-        options: JsValue,
-    ) -> Result<(), JsValue>;
+    pub(crate) fn downloadScreenshot(this: &TradingChart, filename: &str, options: JsValue) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn addImageWatermark(
+    pub(crate) fn setLegendOptions(this: &TradingChart, options: JsValue) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(crate) fn removeLegend(this: &TradingChart) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(crate) fn addTextWatermark(this: &TradingChart, paneIndex: u32, options: JsValue) -> Result<String, JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(crate) fn updateTextWatermark(this: &TradingChart, watermarkId: &str, options: JsValue) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(crate) fn addImageWatermark(
         this: &TradingChart,
         paneIndex: u32,
-        imageUrl: String,
+        imageUrl: &str,
         options: JsValue,
     ) -> Result<String, JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn updateImageWatermark(
+    pub(crate) fn updateImageWatermark(this: &TradingChart, watermarkId: &str, options: JsValue)
+        -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(crate) fn removeWatermark(this: &TradingChart, watermarkId: &str) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(crate) fn addSeries(this: &TradingChart, series: JsValue) -> Result<String, JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(crate) fn updateSeriesOptions(this: &TradingChart, seriesId: &str, options: JsValue) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(crate) fn applySeriesPriceScaleOptions(
         this: &TradingChart,
-        watermarkId: String,
+        seriesId: &str,
         options: JsValue,
     ) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn removeWatermark(this: &TradingChart, watermarkId: String) -> Result<(), JsValue>;
+    pub(crate) fn getSeriesPriceScaleVisibleRange(this: &TradingChart, seriesId: &str) -> Result<JsValue, JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn addSeries(this: &TradingChart, series: JsValue) -> Result<String, JsValue>;
-
-    #[wasm_bindgen(method, catch)]
-    pub(super) fn updateSeriesOptions(this: &TradingChart, seriesId: String, options: JsValue) -> Result<(), JsValue>;
-
-    #[wasm_bindgen(method, catch)]
-    pub(super) fn applySeriesPriceScaleOptions(
+    pub(crate) fn setSeriesPriceScaleVisibleRange(
         this: &TradingChart,
-        seriesId: String,
-        options: JsValue,
-    ) -> Result<(), JsValue>;
-
-    #[wasm_bindgen(method, catch)]
-    pub(super) fn getSeriesPriceScaleVisibleRange(this: &TradingChart, seriesId: String) -> Result<JsValue, JsValue>;
-
-    #[wasm_bindgen(method, catch)]
-    pub(super) fn setSeriesPriceScaleVisibleRange(
-        this: &TradingChart,
-        seriesId: String,
+        seriesId: &str,
         range: JsValue,
     ) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn setSeriesPriceScaleAutoScale(this: &TradingChart, seriesId: String, on: bool) -> Result<(), JsValue>;
+    pub(crate) fn setSeriesPriceScaleAutoScale(this: &TradingChart, seriesId: &str, on: bool) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn getSeriesPriceScaleWidth(this: &TradingChart, seriesId: String) -> Result<f64, JsValue>;
+    pub(crate) fn getSeriesPriceScaleWidth(this: &TradingChart, seriesId: &str) -> Result<f64, JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn moveSeriesToPane(this: &TradingChart, seriesId: String, paneIndex: u32) -> Result<(), JsValue>;
+    pub(crate) fn moveSeriesToPane(this: &TradingChart, seriesId: &str, paneIndex: u32) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn getSeriesPaneIndex(this: &TradingChart, seriesId: String) -> Result<u32, JsValue>;
+    pub(crate) fn getSeriesPaneIndex(this: &TradingChart, seriesId: &str) -> Result<u32, JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn getSeriesOrder(this: &TradingChart, seriesId: String) -> Result<u32, JsValue>;
+    pub(crate) fn getSeriesOrder(this: &TradingChart, seriesId: &str) -> Result<u32, JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn setSeriesOrder(this: &TradingChart, seriesId: String, order: u32) -> Result<(), JsValue>;
+    pub(crate) fn setSeriesOrder(this: &TradingChart, seriesId: &str, order: u32) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn priceToCoordinate(this: &TradingChart, seriesId: String, price: f64) -> Result<JsValue, JsValue>;
+    pub(crate) fn priceToCoordinate(this: &TradingChart, seriesId: &str, price: f64) -> Result<JsValue, JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn coordinateToPrice(this: &TradingChart, seriesId: String, coordinate: f64)
-        -> Result<JsValue, JsValue>;
+    pub(crate) fn coordinateToPrice(this: &TradingChart, seriesId: &str, coordinate: f64) -> Result<JsValue, JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn setCrosshairPosition(
+    pub(crate) fn setCrosshairPosition(
         this: &TradingChart,
-        seriesId: String,
+        seriesId: &str,
         price: f64,
         horizontalPosition: JsValue,
     ) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn clearCrosshairPosition(this: &TradingChart) -> Result<(), JsValue>;
+    pub(crate) fn clearCrosshairPosition(this: &TradingChart) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn removeSeries(this: &TradingChart, seriesId: String) -> Result<(), JsValue>;
+    pub(crate) fn removeSeries(this: &TradingChart, seriesId: &str) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn updateData(this: &TradingChart, seriesId: String, data: JsValue) -> Result<(), JsValue>;
+    pub(crate) fn updateData(this: &TradingChart, seriesId: &str, data: JsValue) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn updateDataPoint(this: &TradingChart, seriesId: String, data: JsValue) -> Result<(), JsValue>;
+    pub(crate) fn updateDataPoint(this: &TradingChart, seriesId: &str, data: JsValue) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn setMarker(this: &TradingChart, seriesId: String, marker: JsValue) -> Result<(), JsValue>;
+    pub(crate) fn setMarker(this: &TradingChart, seriesId: &str, marker: JsValue) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn setMarkers(this: &TradingChart, seriesId: String, markers: JsValue) -> Result<(), JsValue>;
+    pub(crate) fn setMarkers(this: &TradingChart, seriesId: &str, markers: JsValue) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(super) fn setPriceLines(this: &TradingChart, seriesId: String, priceLines: JsValue) -> Result<(), JsValue>;
+    pub(crate) fn applySeriesMarkersOptions(
+        this: &TradingChart,
+        seriesId: &str,
+        options: JsValue,
+    ) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(crate) fn setPriceLines(this: &TradingChart, seriesId: &str, priceLines: JsValue) -> Result<(), JsValue>;
 }

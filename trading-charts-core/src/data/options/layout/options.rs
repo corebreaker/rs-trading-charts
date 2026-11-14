@@ -1,181 +1,171 @@
-use super::{super::background::Background, ColorSpace, LayoutPanesOptions};
+use {
+    crate::data::format::FontFamily,
+    crate::data::options::background::Background,
+    crate::data::options::layout::ColorSpace,
+    crate::data::options::layout::LayoutPanesOptions,
+};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone)]
+/// Represents layout options
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct LayoutOptions {
-    #[serde(default)]
-    pub background: Background,
-
-    #[serde(rename = "textColor", default = "defaults::text_color")]
-    pub text_color: String,
-
-    #[serde(rename = "fontSize", default = "defaults::font_size")]
-    pub font_size: usize,
-
-    #[serde(rename = "fontFamily", default = "defaults::font_family")]
-    pub font_family: String,
-
-    #[serde(rename = "attributionLogo", default = "defaults::attribution_logo")]
-    pub attribution_logo: bool,
-
-    #[serde(rename = "colorSpace", default)]
-    pub color_space: ColorSpace,
-
-    #[serde(default)]
-    pub panes: LayoutPanesOptions,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    background:       Option<Background>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    text_color:       Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    font_size:        Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    font_family:      Option<FontFamily>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    panes:            Option<LayoutPanesOptions>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    attribution_logo: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    color_space:      Option<ColorSpace>,
 }
 
 impl LayoutOptions {
+    /// Create options where every option keeps its default value.
     pub fn new() -> Self {
         Self::default()
     }
 
-    pub fn with_background(self, background: Background) -> Self {
+    /// Chart and scales background color.
+    ///
+    /// Default: `{ type: ColorType.Solid, color: '#FFFFFF' }`.
+    pub fn with_background(self, background: impl Into<Background>) -> Self {
         Self {
-            background,
+            background: Some(background.into()),
             ..self
         }
     }
 
-    pub fn with_text_color(self, text_color: String) -> Self {
-        Self {
-            text_color,
-            ..self
-        }
+    pub fn background(&self) -> Option<&Background> {
+        self.background.as_ref()
     }
 
-    pub fn with_font_size(self, font_size: usize) -> Self {
-        Self {
-            font_size,
-            ..self
-        }
-    }
-
-    pub fn with_font_family(self, font_family: String) -> Self {
-        Self {
-            font_family,
-            ..self
-        }
-    }
-
-    pub fn with_attribution_logo(self, attribution_logo: bool) -> Self {
-        Self {
-            attribution_logo,
-            ..self
-        }
-    }
-
-    pub fn with_color_space(self, color_space: ColorSpace) -> Self {
-        Self {
-            color_space,
-            ..self
-        }
-    }
-
-    pub fn with_panes(self, panes: LayoutPanesOptions) -> Self {
-        Self {
-            panes,
-            ..self
-        }
-    }
-
-    pub fn background(&self) -> &Background {
-        &self.background
-    }
-
-    pub fn set_background(&mut self, background: Background) {
+    /// Set or reset (with `None`) the `background` option.
+    pub fn set_background(&mut self, background: Option<Background>) {
         self.background = background;
     }
 
-    pub fn text_color(&self) -> &str {
-        &self.text_color
+    /// Color of text on the scales.
+    ///
+    /// Default: `"#191919"`.
+    pub fn with_text_color(self, text_color: impl Into<String>) -> Self {
+        Self {
+            text_color: Some(text_color.into()),
+            ..self
+        }
     }
 
-    pub fn text_color_mut(&mut self) -> &mut String {
-        &mut self.text_color
+    pub fn text_color(&self) -> Option<&str> {
+        self.text_color.as_deref()
     }
 
-    pub fn set_text_color(&mut self, text_color: String) {
+    /// Set or reset (with `None`) the `textColor` option.
+    pub fn set_text_color(&mut self, text_color: Option<String>) {
         self.text_color = text_color;
     }
 
-    pub fn font_size(&self) -> usize {
+    /// Font size of text on scales in pixels.
+    ///
+    /// Default: `12`.
+    pub fn with_font_size(self, font_size: impl Into<f64>) -> Self {
+        Self {
+            font_size: Some(font_size.into()),
+            ..self
+        }
+    }
+
+    pub fn font_size(&self) -> Option<f64> {
         self.font_size
     }
 
-    pub fn set_font_size(&mut self, font_size: usize) {
+    /// Set or reset (with `None`) the `fontSize` option.
+    pub fn set_font_size(&mut self, font_size: Option<f64>) {
         self.font_size = font_size;
     }
 
-    pub fn font_family(&self) -> &str {
-        &self.font_family
+    /// Font family of text on the scales.
+    ///
+    /// Default: `-apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif`.
+    pub fn with_font_family(self, font_family: impl Into<FontFamily>) -> Self {
+        Self {
+            font_family: Some(font_family.into()),
+            ..self
+        }
     }
 
-    pub fn font_family_mut(&mut self) -> &mut String {
-        &mut self.font_family
+    pub fn font_family(&self) -> Option<&FontFamily> {
+        self.font_family.as_ref()
     }
 
-    pub fn set_font_family(&mut self, font_family: String) {
+    /// Set or reset (with `None`) the `fontFamily` option.
+    pub fn set_font_family(&mut self, font_family: Option<FontFamily>) {
         self.font_family = font_family;
     }
 
-    pub fn attribution_logo(&self) -> bool {
+    /// Panes options.
+    pub fn with_panes(self, panes: LayoutPanesOptions) -> Self {
+        Self {
+            panes: Some(panes),
+            ..self
+        }
+    }
+
+    pub fn panes(&self) -> Option<&LayoutPanesOptions> {
+        self.panes.as_ref()
+    }
+
+    /// Set or reset (with `None`) the `panes` option.
+    pub fn set_panes(&mut self, panes: Option<LayoutPanesOptions>) {
+        self.panes = panes;
+    }
+
+    /// Display the TradingView attribution logo on the main chart pane.
+    ///
+    /// The licence for library specifies that you add the "attribution notice" from the NOTICE file to your code and a
+    /// link to https://www.tradingview.com/ to the page of your website or mobile application that is available to your
+    /// users. Using this attribution logo is sufficient for meeting this linking requirement. However,
+    /// if you already fulfill this requirement then you can disable this attribution logo.
+    ///
+    /// Default: `true`.
+    pub fn with_attribution_logo(self, attribution_logo: bool) -> Self {
+        Self {
+            attribution_logo: Some(attribution_logo),
+            ..self
+        }
+    }
+
+    pub fn attribution_logo(&self) -> Option<bool> {
         self.attribution_logo
     }
 
-    pub fn set_attribution_logo(&mut self, attribution_logo: bool) {
+    /// Set or reset (with `None`) the `attributionLogo` option.
+    pub fn set_attribution_logo(&mut self, attribution_logo: Option<bool>) {
         self.attribution_logo = attribution_logo;
     }
 
-    pub fn color_space(&self) -> &ColorSpace {
-        &self.color_space
-    }
-
-    pub fn set_color_space(&mut self, color_space: ColorSpace) {
-        self.color_space = color_space;
-    }
-
-    pub fn panes(&self) -> &LayoutPanesOptions {
-        &self.panes
-    }
-
-    pub fn panes_mut(&mut self) -> &mut LayoutPanesOptions {
-        &mut self.panes
-    }
-
-    pub fn set_panes(&mut self, panes: LayoutPanesOptions) {
-        self.panes = panes;
-    }
-}
-
-impl Default for LayoutOptions {
-    fn default() -> Self {
+    /// Specifies the color space of the rendering context for the internal canvas elements.
+    ///
+    /// Note: this option should only be specified during the chart creation and not changed at a later stage by using
+    /// `applyOptions`.
+    pub fn with_color_space(self, color_space: ColorSpace) -> Self {
         Self {
-            background:       Background::default(),
-            text_color:       defaults::text_color(),
-            font_size:        defaults::font_size(),
-            font_family:      defaults::font_family(),
-            color_space:      ColorSpace::default(),
-            panes:            LayoutPanesOptions::default(),
-            attribution_logo: false,
+            color_space: Some(color_space),
+            ..self
         }
     }
-}
 
-mod defaults {
-    pub(super) fn text_color() -> String {
-        String::from("#191919")
+    pub fn color_space(&self) -> Option<ColorSpace> {
+        self.color_space
     }
 
-    pub(super) fn font_size() -> usize {
-        12
-    }
-
-    pub(super) fn font_family() -> String {
-        String::from("-apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif")
-    }
-
-    pub(super) fn attribution_logo() -> bool {
-        true
+    /// Set or reset (with `None`) the `colorSpace` option.
+    pub fn set_color_space(&mut self, color_space: Option<ColorSpace>) {
+        self.color_space = color_space;
     }
 }

@@ -1,72 +1,59 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone)]
+/// Defines margins of the price scale.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct PriceScaleMargins {
-    #[serde(rename = "top", default = "defaults::top")]
-    top: f64,
-
-    #[serde(rename = "bottom", default = "defaults::bottom")]
-    bottom: f64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    top:    Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    bottom: Option<f64>,
 }
 
 impl PriceScaleMargins {
+    /// Create options where every option keeps its default value.
     pub fn new() -> Self {
         Self::default()
     }
 
-    pub fn new_with_params(top: f64, bottom: f64) -> Self {
+    /// Top margin in percentages. Must be greater or equal to 0 and less than 1.
+    pub fn with_top(self, top: impl Into<f64>) -> Self {
         Self {
-            top,
-            bottom,
-        }
-    }
-
-    pub fn with_top(self, top: f64) -> Self {
-        Self {
-            top,
+            top: Some(top.into()),
             ..self
         }
     }
 
-    pub fn with_bottom(self, bottom: f64) -> Self {
-        Self {
-            bottom,
-            ..self
-        }
-    }
-
-    pub fn top(&self) -> f64 {
+    pub fn top(&self) -> Option<f64> {
         self.top
     }
 
-    pub fn set_top(&mut self, top: f64) {
+    /// Set or reset (with `None`) the `top` option.
+    pub fn set_top(&mut self, top: Option<f64>) {
         self.top = top;
     }
 
-    pub fn bottom(&self) -> f64 {
+    /// Bottom margin in percentages. Must be greater or equal to 0 and less than 1.
+    pub fn with_bottom(self, bottom: impl Into<f64>) -> Self {
+        Self {
+            bottom: Some(bottom.into()),
+            ..self
+        }
+    }
+
+    pub fn bottom(&self) -> Option<f64> {
         self.bottom
     }
 
-    pub fn set_bottom(&mut self, bottom: f64) {
+    /// Set or reset (with `None`) the `bottom` option.
+    pub fn set_bottom(&mut self, bottom: Option<f64>) {
         self.bottom = bottom;
     }
 }
 
-impl Default for PriceScaleMargins {
-    fn default() -> Self {
-        Self {
-            top:    defaults::top(),
-            bottom: defaults::bottom(),
-        }
-    }
-}
-
-mod defaults {
-    pub(super) fn top() -> f64 {
-        0.2
-    }
-
-    pub(super) fn bottom() -> f64 {
-        0.1
+impl From<(f64, f64)> for PriceScaleMargins {
+    /// Create margins from the `(top, bottom)` pair.
+    fn from((top, bottom): (f64, f64)) -> Self {
+        Self::new().with_top(top).with_bottom(bottom)
     }
 }

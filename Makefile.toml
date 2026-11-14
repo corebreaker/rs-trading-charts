@@ -1,0 +1,163 @@
+# Task runner for the workspace, based on cargo-make (https://github.com/sagiegurari/cargo-make).
+#
+# Install it once with `cargo install cargo-make`, then run `cargo make <task>` from the workspace root.
+# Run `cargo make` alone to list the available tasks.
+
+[config]
+default_to_workspace = false
+skip_core_tasks = true
+skip_git_env_info = true
+skip_rust_env_info = true
+skip_crate_env_info = true
+
+[env]
+LEPTOS_EXAMPLE_DIR = "examples/leptos"
+DIOXUS_EXAMPLE_DIR = "examples/dioxus"
+CORE_BINDINGS_DIR = "trading-charts-core/bindings"
+WASM_TARGET = "wasm32-unknown-unknown"
+LIGHTWEIGHT_CHARTS_VERSION = { value = "latest", condition = { env_not_set = ["LIGHTWEIGHT_CHARTS_VERSION"] } }
+
+[tasks.default]
+alias = "help"
+
+[tasks.help]
+description = "List the available tasks."
+category = "Help"
+command = "cargo"
+args = ["make", "--list-all-steps", "--hide-uninteresting"]
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Formatting and checks
+# ---------------------------------------------------------------------------------------------------------------------
+
+[tasks.fmt]
+description = "Format the workspace with the nightly rustfmt."
+category = "Development"
+toolchain = "nightly"
+command = "cargo"
+args = ["fmt", "--all"]
+
+[tasks.format]
+description = "Alias for fmt."
+category = "Development"
+alias = "fmt"
+
+[tasks.fmt-check]
+description = "Check the formatting of the workspace without modifying files."
+category = "Development"
+toolchain = "nightly"
+command = "cargo"
+args = ["fmt", "--all", "--", "--check"]
+
+[tasks.check]
+description = "Run cargo check for the workspace."
+category = "Development"
+command = "cargo"
+args = ["check", "--workspace"]
+
+[tasks.check-wasm]
+description = "Run cargo check for the workspace on the wasm32 target."
+category = "Development"
+command = "cargo"
+args = ["check", "--workspace", "--target", "${WASM_TARGET}"]
+
+[tasks.test]
+description = "Run the tests of the core crate and the README examples of the library crates."
+category = "Development"
+command = "cargo"
+args = ["test", "-p", "trading-charts-core", "-p", "trading-charts", "-p", "trading-charts-dioxus"]
+
+[tasks.clippy]
+description = "Run clippy for the workspace on the wasm32 target."
+category = "Development"
+command = "cargo"
+args = ["clippy", "--workspace", "--target", "${WASM_TARGET}"]
+
+[tasks.verify]
+description = "Run fmt, check, check-wasm, clippy, test, and build both examples."
+category = "Development"
+dependencies = ["fmt", "check", "check-wasm", "clippy", "test", "build-examples"]
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Examples
+# ---------------------------------------------------------------------------------------------------------------------
+
+[tasks.build-example]
+description = "Build the Leptos example with trunk."
+category = "Examples"
+cwd = "${LEPTOS_EXAMPLE_DIR}"
+env = { NO_COLOR = "false" }
+command = "trunk"
+args = ["build"]
+
+[tasks.build-example-dioxus]
+description = "Build the Dioxus example with trunk."
+category = "Examples"
+cwd = "${DIOXUS_EXAMPLE_DIR}"
+env = { NO_COLOR = "false" }
+command = "trunk"
+args = ["build"]
+
+[tasks.build-examples]
+description = "Build both examples with trunk."
+category = "Examples"
+dependencies = ["build-example", "build-example-dioxus"]
+
+[tasks.serve-example]
+description = "Serve the Leptos example on its Trunk.toml port."
+category = "Examples"
+cwd = "${LEPTOS_EXAMPLE_DIR}"
+env = { NO_COLOR = "false" }
+command = "trunk"
+args = ["serve"]
+
+[tasks.serve-example-dioxus]
+description = "Serve the Dioxus example on its Trunk.toml port."
+category = "Examples"
+cwd = "${DIOXUS_EXAMPLE_DIR}"
+env = { NO_COLOR = "false" }
+command = "trunk"
+args = ["serve"]
+
+[tasks.clean-examples]
+description = "Remove the dist and .trunk artifacts of the examples."
+category = "Examples"
+script_runner = "@duckscript"
+script = '''
+rm -r ${LEPTOS_EXAMPLE_DIR}/dist ${LEPTOS_EXAMPLE_DIR}/.trunk
+rm -r ${DIOXUS_EXAMPLE_DIR}/dist ${DIOXUS_EXAMPLE_DIR}/.trunk
+'''
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Maintenance
+# ---------------------------------------------------------------------------------------------------------------------
+
+[tasks.clean]
+description = "Remove the Cargo and example build artifacts."
+category = "Maintenance"
+command = "cargo"
+args = ["clean"]
+dependencies = ["clean-examples"]
+
+[tasks.gc]
+description = "Remove build artifacts older than 10 days (requires `cargo install cargo-sweep`)."
+category = "Maintenance"
+command = "cargo"
+args = ["sweep", "-r", "-t", "10", "."]
+
+[tasks.update-lightweight-charts]
+description = "Update the JS binding package to LIGHTWEIGHT_CHARTS_VERSION (default: latest)."
+category = "Maintenance"
+cwd = "${CORE_BINDINGS_DIR}"
+script_runner = "@shell"
+script = '''
+npm install --package-lock-only --ignore-scripts --save-exact lightweight-charts@${LIGHTWEIGHT_CHARTS_VERSION}
+node -p "'Updated bindings to Lightweight Charts ' + require('./package-lock.json').packages['node_modules/lightweight-charts'].version"
+'''
+
+# On Windows, `npm` is a batch file: it must be invoked with `call`, otherwise the script stops right after it.
+[tasks.update-lightweight-charts.windows]
+script = '''
+call npm install --package-lock-only --ignore-scripts --save-exact lightweight-charts@%LIGHTWEIGHT_CHARTS_VERSION%
+node -p "'Updated bindings to Lightweight Charts ' + require('./package-lock.json').packages['node_modules/lightweight-charts'].version"
+'''
