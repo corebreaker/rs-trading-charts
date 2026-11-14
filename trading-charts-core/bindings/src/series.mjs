@@ -49,6 +49,7 @@ export class SeriesEntry {
         this.markerApi = null;
         this.markerData = [];
         this.markersOptions = {};
+        this.priceScaleOptions = null;
         this.priceLines = [];
         this.priceLineApis = [];
         this.sorted = false;
@@ -92,6 +93,10 @@ export class SeriesEntry {
         if (params.data) {
             this.chartApi.setData(this._chartData(params.data));
             chart.timeScale().fitContent();
+        }
+
+        if (this.priceScaleOptions) {
+            this.chartApi.priceScale().applyOptions(this.priceScaleOptions);
         }
 
         this.markerApi = createSeriesMarkers(this.chartApi, [], this.markersOptions);
@@ -250,6 +255,14 @@ export class SeriesEntry {
     setMarkers(markers) {
         this.markerData = markers.map(resolveMarker).filter(marker => marker !== null);
         this.sorted = false;
+    }
+
+    /** Apply options to the price scale of the series, kept to be applied again when the series is bound. */
+    applyPriceScaleOptions(options) {
+        this.priceScaleOptions = Object.assign({}, this.priceScaleOptions, options || {});
+        if (this.chartApi) {
+            this.chartApi.priceScale().applyOptions(options || {});
+        }
     }
 
     applyMarkersOptions(options) {

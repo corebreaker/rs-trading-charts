@@ -6,3 +6,4 @@ pub mod baselines;
 pub mod candlesticks;
 pub mod histograms;
 pub mod lines;
+pub mod price_volume;

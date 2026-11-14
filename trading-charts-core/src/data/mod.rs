@@ -11,6 +11,7 @@ mod pane_options;
 mod pane_size;
 mod price_line;
 mod price_range;
+mod price_volume;
 mod sync;
 mod text_watermark;
 mod time_range;
@@ -44,6 +45,7 @@ pub use self::{
     pane_size::PaneSize,
     price_line::PriceLineOptions,
     price_range::PriceRange,
+    price_volume::{OhlcvData, PriceData, PriceSeriesStyle, PriceVolume, VolumeColors, VOLUME_PRICE_SCALE_ID},
     sync::SyncOptions,
     text_watermark::{TextWatermarkLineOptions, TextWatermarkOptions},
     time_range::TimeRange,

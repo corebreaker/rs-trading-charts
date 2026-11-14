@@ -614,7 +614,7 @@ export class TradingChart {
     }
 
     applySeriesPriceScaleOptions(seriesId, options) {
-        this._getSeries(seriesId).getApi().priceScale().applyOptions(options);
+        this._getSeries(seriesId).applyPriceScaleOptions(options);
     }
 
     getSeriesPriceScaleVisibleRange(seriesId) {
