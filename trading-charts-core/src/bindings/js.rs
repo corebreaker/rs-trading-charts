@@ -17,6 +17,17 @@ extern "C" {
 
     pub(crate) fn unregisterMarkerStyle(id: &str) -> bool;
 
+    pub(crate) fn listMarkerStyleIds(prefix: &str) -> Vec<String>;
+
+    pub(crate) fn getMarkerStyle(id: &str) -> JsValue;
+
+    pub(crate) fn getMarkerStyles(prefix: &str) -> JsValue;
+
+    #[wasm_bindgen(catch)]
+    pub(crate) fn unregisterMarkerStylesWithPrefix(prefix: &str) -> Result<u32, JsValue>;
+
+    pub(crate) fn clearMarkerStyles();
+
     pub(crate) type TradingChart;
 
     #[wasm_bindgen(constructor)]

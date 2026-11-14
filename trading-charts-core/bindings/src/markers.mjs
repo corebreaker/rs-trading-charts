@@ -77,6 +77,55 @@ export function unregisterMarkerStyle(id) {
     return styles.delete(id);
 }
 
+/** Identifiers of the registered styles starting with a prefix (all of them with an empty prefix), sorted. */
+export function listMarkerStyleIds(prefix = '') {
+    return [...styles.keys()].filter(id => id.startsWith(prefix || '')).sort();
+}
+
+/** The style registered under an identifier, or `null`. */
+export function getMarkerStyle(id) {
+    return styles.get(id) ?? null;
+}
+
+/** The styles whose identifier starts with a prefix, as an object indexed by identifier. */
+export function getMarkerStyles(prefix = '') {
+    return Object.fromEntries(listMarkerStyleIds(prefix).map(id => [id, styles.get(id)]));
+}
+
+/**
+ * Remove the styles whose identifier starts with a non-empty prefix, and return how many were removed.
+ *
+ * The built-in `buy` and `sell` styles matching the prefix are restored, and counted when they were overridden.
+ */
+export function unregisterMarkerStylesWithPrefix(prefix) {
+    if (!prefix) {
+        throw new Error('The prefix of the marker styles to remove must not be empty');
+    }
+
+    let count = 0;
+    for (const id of listMarkerStyleIds(prefix)) {
+        if (id in builtInStyles) {
+            if (styles.get(id) !== builtInStyles[id]) {
+                styles.set(id, builtInStyles[id]);
+                count += 1;
+            }
+        } else {
+            styles.delete(id);
+            count += 1;
+        }
+    }
+
+    return count;
+}
+
+/** Remove all the custom styles and restore the built-in `buy` and `sell` styles. */
+export function clearMarkerStyles() {
+    styles.clear();
+    for (const [id, style] of Object.entries(builtInStyles)) {
+        styles.set(id, style);
+    }
+}
+
 /** Return `true` when the marker description is a removal request. */
 export function isRemoval(markerDesc) {
     return markerDesc.type === 'remove';

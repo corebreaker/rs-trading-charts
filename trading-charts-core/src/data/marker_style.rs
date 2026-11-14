@@ -1,6 +1,10 @@
-use crate::{bindings::js, JsError};
+use crate::{
+    bindings::{js, optional_value},
+    JsError,
+};
 use serde::{Deserialize, Serialize};
-use serde_wasm_bindgen::to_value;
+use serde_wasm_bindgen::{from_value, to_value};
+use std::collections::BTreeMap;
 
 /// Position of a marker.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -122,7 +126,8 @@ impl MarkerStyle {
 /// Register a marker style under an identifier, used by the markers of type `MarkerType::Custom(id)`.
 ///
 /// Registering a style with an existing identifier replaces it; the `buy` and `sell` styles can be overridden this
-/// way. The styles are global to the page, and applied when the markers are set on a series.
+/// way. The styles are global to the page, and applied when the markers are set on a series: prefixing their
+/// identifiers (`"my-chart:flag"`) groups them by chart or by feature, to list or unregister them by prefix.
 pub fn register_marker_style(id: &str, style: &MarkerStyle) -> Result<(), JsError> {
     Ok(js::registerMarkerStyle(id, to_value(style)?)?)
 }
@@ -131,6 +136,42 @@ pub fn register_marker_style(id: &str, style: &MarkerStyle) -> Result<(), JsErro
 /// style was registered.
 pub fn unregister_marker_style(id: &str) -> bool {
     js::unregisterMarkerStyle(id)
+}
+
+/// Identifiers of all the registered marker styles, sorted, including the built-in `buy` and `sell` styles.
+pub fn marker_style_ids() -> Vec<String> {
+    js::listMarkerStyleIds("")
+}
+
+/// Identifiers of the registered marker styles starting with `prefix`, sorted.
+///
+/// The styles are global to the page: prefixing their identifiers (`"my-chart:flag"`) groups them by chart or by
+/// feature.
+pub fn marker_style_ids_with_prefix(prefix: &str) -> Vec<String> {
+    js::listMarkerStyleIds(prefix)
+}
+
+/// The marker style registered under `id`, `None` when there is none.
+pub fn marker_style(id: &str) -> Result<Option<MarkerStyle>, JsError> {
+    optional_value(js::getMarkerStyle(id))
+}
+
+/// The marker styles whose identifier starts with `prefix`, indexed by identifier. An empty prefix returns all the
+/// styles.
+pub fn marker_styles_with_prefix(prefix: &str) -> Result<BTreeMap<String, MarkerStyle>, JsError> {
+    Ok(from_value(js::getMarkerStyles(prefix))?)
+}
+
+/// Unregister the marker styles whose identifier starts with `prefix`, which must not be empty, and return how many
+/// were removed. The built-in `buy` and `sell` styles matching the prefix are restored to their default, and counted
+/// when they were overridden.
+pub fn unregister_marker_styles_with_prefix(prefix: &str) -> Result<usize, JsError> {
+    Ok(js::unregisterMarkerStylesWithPrefix(prefix)? as usize)
+}
+
+/// Unregister all the custom marker styles and restore the default `buy` and `sell` styles.
+pub fn clear_marker_styles() {
+    js::clearMarkerStyles()
 }
 
 /// Order in which the markers are drawn, relatively to the series.

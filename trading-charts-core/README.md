@@ -61,6 +61,9 @@ Lightweight Charts takes JS functions to format prices and times. The `data::for
 ## Other features
 
 - **Markers**: `register_marker_style` registers a style used by the markers of type `MarkerType::Custom(id)`.
+  The styles are global to the page: prefixed identifiers group them, to list them (`marker_style_ids_with_prefix`),
+  get them (`marker_style`, `marker_styles_with_prefix`) or unregister them (`unregister_marker_styles_with_prefix`),
+  and `clear_marker_styles` restores the built-in styles only.
 - **Events**: `ChartHandle::on_crosshair_move`, `on_click`... call Rust callbacks with the event parameters,
   until the returned `Subscription` is dropped.
 - **Time zones**: `ChartHandle::set_time_zone` displays the times in an IANA time zone,
