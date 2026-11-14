@@ -54,7 +54,7 @@ pub fn MultiChartsDemo() -> Element {
                 options: base_options(),
                 class: "chart half",
                 sync_group: SYNC_GROUP,
-                sync_options: sync.clone(),
+                sync_options: sync,
                 CandleStickSeries { data: data.0.clone(), options: CandlestickOptions::new().with_title("ACME") }
                 Tooltip { mode: TooltipMode::Magnifier, class: "tooltip small", PriceTooltip {} }
             }

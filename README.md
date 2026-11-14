@@ -120,9 +120,10 @@ Run `cargo make` from the workspace root to list them, for instance:
 
 - `cargo make fmt`: format the workspace (requires the nightly toolchain).
 - `cargo make check-wasm`: check the workspace on the `wasm32-unknown-unknown` target.
+- `cargo make clippy`: lint the workspace with clippy on the `wasm32-unknown-unknown` target.
 - `cargo make test`: run the tests of the core crate.
 - `cargo make serve-example` / `cargo make serve-example-dioxus`: serve an example with Trunk.
-- `cargo make verify`: format, check, test and build both examples.
+- `cargo make verify`: format, check, lint, test and build both examples.
 
 ## Updating Lightweight Charts
 

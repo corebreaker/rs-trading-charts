@@ -74,9 +74,9 @@ command = "cargo"
 args = ["clippy", "--workspace", "--target", "${WASM_TARGET}"]
 
 [tasks.verify]
-description = "Run fmt, check, check-wasm, test, and build both examples."
+description = "Run fmt, check, check-wasm, clippy, test, and build both examples."
 category = "Development"
-dependencies = ["fmt", "check", "check-wasm", "test", "build-examples"]
+dependencies = ["fmt", "check", "check-wasm", "clippy", "test", "build-examples"]
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Examples
