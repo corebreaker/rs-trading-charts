@@ -58,6 +58,9 @@ extern "C" {
     pub(crate) fn getTimeZone(this: &TradingChart) -> Option<String>;
 
     #[wasm_bindgen(method, catch)]
+    pub(crate) fn showRange(this: &TradingChart, preset: JsValue) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
     pub(crate) fn refitContent(this: &TradingChart) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]

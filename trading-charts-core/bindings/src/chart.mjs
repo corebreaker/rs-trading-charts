@@ -362,6 +362,66 @@ export class TradingChart {
         return this._timeShift.timeZone;
     }
 
+    /** Sorted real UTC times of all the data items of the series. */
+    _dataTimes() {
+        const times = new Set();
+        for (const series of Object.values(this._series)) {
+            for (const item of series.params.data || []) {
+                times.add(item.time);
+            }
+        }
+
+        return [...times].sort((a, b) => a - b);
+    }
+
+    /**
+     * Show a range of the data, relative to the last data item: `{ kind, count }` where the kind is `days`,
+     * `weeks`, `months`, `years` or `bars`, or `{ kind: 'yearToDate' }`, or `{ kind: 'all' }`.
+     */
+    showRange(preset) {
+        const timeScale = this._getChart().timeScale();
+        if (preset.kind === 'all') {
+            timeScale.fitContent();
+            return;
+        }
+
+        const times = this._dataTimes();
+        if (times.length === 0) {
+            return;
+        }
+
+        if (preset.kind === 'bars') {
+            timeScale.setVisibleLogicalRange({ from: times.length - preset.count, to: times.length - 1 });
+            return;
+        }
+
+        const last = times[times.length - 1];
+        const date = new Date(last * 1000);
+        switch (preset.kind) {
+            case 'days':
+                date.setUTCDate(date.getUTCDate() - preset.count);
+                break;
+            case 'weeks':
+                date.setUTCDate(date.getUTCDate() - 7 * preset.count);
+                break;
+            case 'months':
+                date.setUTCMonth(date.getUTCMonth() - preset.count);
+                break;
+            case 'years':
+                date.setUTCFullYear(date.getUTCFullYear() - preset.count);
+                break;
+            case 'yearToDate':
+                date.setUTCMonth(0, 1);
+                date.setUTCHours(0, 0, 0, 0);
+                break;
+            default:
+                throw new Error(`Unknown range preset: '${preset.kind}'`);
+        }
+
+        const from = Math.max(times[0], date.getTime() / 1000);
+        this.setVisibleRange({ from, to: last });
+    }
+
     refitContent() {
         this._getChart().timeScale().fitContent();
     }

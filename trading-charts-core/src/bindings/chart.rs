@@ -17,6 +17,7 @@ use crate::{
         SyncOptions,
         PriceLineOptions,
         PriceRange,
+        RangePreset,
         TextWatermarkOptions,
         TimeRange,
         UTCTimestamp,
@@ -237,6 +238,11 @@ impl ChartHandle {
     /// The time zone of the chart, `None` when the times are displayed in UTC.
     pub fn time_zone(&self) -> Option<String> {
         self.js().getTimeZone()
+    }
+
+    /// Show a range of the data relative to the last data item, such as the last 3 months or the last 100 bars.
+    pub fn show_range(&self, preset: RangePreset) -> Result<(), JsError> {
+        Ok(self.js().showRange(to_value(&preset)?)?)
     }
 
     /// Scale the time axis so that all the data fits in the chart.
