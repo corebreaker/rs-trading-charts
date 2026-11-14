@@ -3,8 +3,8 @@
 
 # Leptos example of Trading Charts
 
-A gallery of demos of the [`trading-charts`](../../trading-charts) crate, the [Leptos] components
-for [Lightweight Charts], one tab per group of features:
+A gallery of demos of the [`trading-charts`](../../leptos) crate, the [Leptos] components for [Lightweight Charts],
+one tab per group of features:
 
 - **Series**: the six series types, markers (built-in, custom and price-positioned), price lines, whitespace data.
 - **Price & volume**: the price and volume component, with the price style, the bar interval and range presets.

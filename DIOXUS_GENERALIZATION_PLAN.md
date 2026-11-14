@@ -4,9 +4,10 @@
 
 The plan is implemented as of version 1.0:
 
-- `trading-charts-core` holds the JS binding, the data types and the runtime handles: `ChartHandle`, `PanelId`
-  and `SeriesHandle`.
-- `trading-charts` (Leptos) and `trading-charts-dioxus` (Dioxus web) are thin adapters on the core.
+- `trading-charts-core`, in the `core` directory, holds the JS binding, the data types and the runtime handles:
+  `ChartHandle`, `PanelId` and `SeriesHandle`.
+- `trading-charts` (Leptos) and `trading-charts-dioxus` (Dioxus web), in the `leptos` and `dioxus` directories,
+  are thin adapters on the core.
   The panels are explicit `PanelId` contexts, the series are created once and removed when their component is
   unmounted, and the Dioxus series update the chart only when a prop value changes.
 - `examples/leptos` and `examples/dioxus` are the same gallery of demos, and each crate has its own README.

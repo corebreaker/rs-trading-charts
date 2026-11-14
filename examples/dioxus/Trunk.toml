@@ -5,14 +5,14 @@ target = "./index.html"
 watch = [
     ".",
     "../style.css",
-    "../../trading-charts-core/src",
-    "../../trading-charts-core/build.rs",
-    "../../trading-charts-core/Cargo.toml",
-    "../../trading-charts-core/bindings/src",
-    "../../trading-charts-core/bindings/builder",
-    "../../trading-charts-core/bindings/package.json",
-    "../../trading-charts-dioxus/src",
-    "../../trading-charts-dioxus/Cargo.toml",
+    "../../core/src",
+    "../../core/build.rs",
+    "../../core/Cargo.toml",
+    "../../core/bindings/src",
+    "../../core/bindings/builder",
+    "../../core/bindings/package.json",
+    "../../dioxus/src",
+    "../../dioxus/Cargo.toml",
 ]
 
 ignores = [
