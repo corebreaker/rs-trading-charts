@@ -12,7 +12,7 @@ members = [
 default-members = ["trading-charts-core", "trading-charts", "trading-charts-dioxus", "wasmbind-macro"]
 
 [workspace.package]
-version = "0.2.0"
+version = "1.0.0"
 edition = "2021"
 authors = ["Frédéric Meyer <frederic.meyer.77@gmail.com>"]
 description = "Rust bindings of Lightweight Charts with Leptos and Dioxus adapters"
@@ -23,6 +23,9 @@ license = "MIT"
 keywords = [
     "leptos",
     "dioxus",
+    "charts",
+    "trading",
+    "lightweight-charts",
 ]
 
 categories = [
@@ -44,3 +47,10 @@ serde = { version = "1.0", features = ["derive"] }
 serde-wasm-bindgen = "0.6"
 wasm-bindgen = "0.2"
 web-sys = { version = "0.3", features = ["Document", "Element", "HtmlCanvasElement", "HtmlDivElement", "HtmlElement", "Node", "Window"] }
+
+# Size-optimized release builds, used by the examples.
+[profile.release]
+opt-level = 'z'
+lto = true
+codegen-units = 1
+panic = "abort"

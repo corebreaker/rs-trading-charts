@@ -15,4 +15,4 @@ categories.workspace = true
 emitix = { workspace = true }
 leptos = { workspace = true }
 serde = { workspace = true }
-trading-charts-core = { path = "../trading-charts-core", version = "0.2", package = "trading-charts-core" }
+trading-charts-core = { path = "../trading-charts-core", version = "1.0", package = "trading-charts-core" }
