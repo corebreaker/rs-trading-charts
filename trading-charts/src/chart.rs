@@ -64,6 +64,8 @@ fn keep_subscription(subscription: Result<Subscription, JsError>, event: &str) {
 /// option to follow it.
 ///
 /// The children can access the chart with [`use_chart`] and the crosshair state with [`use_crosshair`].
+///
+/// The event props take closures, such as `on_click=move |params: MouseEventParams| ...`.
 #[component]
 pub fn Chart(
     /// Options of the chart, applied again when they change.
@@ -88,12 +90,12 @@ pub fn Chart(
     refit: Option<LeptosEventChannels>,
     /// Called once with the chart handle, when the chart is created, to control the chart from outside.
     #[prop(optional, into)]
-    on_ready: Option<Callback<ChartHandle>>,
-    #[prop(optional, into)] on_crosshair_move: Option<Callback<MouseEventParams>>,
-    #[prop(optional, into)] on_click: Option<Callback<MouseEventParams>>,
-    #[prop(optional, into)] on_dbl_click: Option<Callback<MouseEventParams>>,
-    #[prop(optional, into)] on_visible_time_range_change: Option<Callback<Option<TimeRange>>>,
-    #[prop(optional, into)] on_visible_logical_range_change: Option<Callback<Option<LogicalRange>>>,
+    on_ready: Option<Callback<(ChartHandle,)>>,
+    #[prop(optional, into)] on_crosshair_move: Option<Callback<(MouseEventParams,)>>,
+    #[prop(optional, into)] on_click: Option<Callback<(MouseEventParams,)>>,
+    #[prop(optional, into)] on_dbl_click: Option<Callback<(MouseEventParams,)>>,
+    #[prop(optional, into)] on_visible_time_range_change: Option<Callback<(Option<TimeRange>,)>>,
+    #[prop(optional, into)] on_visible_logical_range_change: Option<Callback<(Option<LogicalRange>,)>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let chart = match make_chart(options) {
@@ -106,14 +108,14 @@ pub fn Chart(
     };
 
     if let Some(on_ready) = on_ready {
-        on_ready.run(chart.clone());
+        on_ready.run((chart.clone(),));
     }
 
     let crosshair = RwSignal::new(None::<MouseEventParams>);
     keep_subscription(
         chart.on_crosshair_move(move |params| {
             if let Some(callback) = on_crosshair_move {
-                callback.run(params.clone());
+                callback.run((params.clone(),));
             }
 
             crosshair.set(Some(params));
@@ -122,23 +124,26 @@ pub fn Chart(
     );
 
     if let Some(callback) = on_click {
-        keep_subscription(chart.on_click(move |params| callback.run(params)), "click");
+        keep_subscription(chart.on_click(move |params| callback.run((params,))), "click");
     }
 
     if let Some(callback) = on_dbl_click {
-        keep_subscription(chart.on_dbl_click(move |params| callback.run(params)), "double click");
+        keep_subscription(
+            chart.on_dbl_click(move |params| callback.run((params,))),
+            "double click",
+        );
     }
 
     if let Some(callback) = on_visible_time_range_change {
         keep_subscription(
-            chart.on_visible_time_range_change(move |range| callback.run(range)),
+            chart.on_visible_time_range_change(move |range| callback.run((range,))),
             "visible time range change",
         );
     }
 
     if let Some(callback) = on_visible_logical_range_change {
         keep_subscription(
-            chart.on_visible_logical_range_change(move |range| callback.run(range)),
+            chart.on_visible_logical_range_change(move |range| callback.run((range,))),
             "visible logical range change",
         );
     }
