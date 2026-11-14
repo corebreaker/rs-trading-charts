@@ -31,11 +31,6 @@ categories = [
     "wasm",
 ]
 
-# Pour exécuter ces commandes avec `cargo run-script`, il faut d'abord l'installer : `cargo install cargo-run-script`
-[workspace.metadata.scripts]
-fmt = "cargo +nightly fmt --all"
-gc = "cargo sweep -r -t 10 ."
-
 [workspace.dependencies]
 console_error_panic_hook = "0.1"
 console_log = "1.0"
