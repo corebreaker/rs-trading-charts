@@ -1,526 +1,611 @@
+use crate::data::options::ConflationPriority;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone, PartialEq)]
+/// Extended time scale options for time-based horizontal scale
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct TimeScaleOptions {
-    #[serde(rename = "rightOffset", default = "defaults::right_offset")]
-    right_offset: f64,
-
-    #[serde(rename = "barSpacing", default = "defaults::bar_spacing")]
-    bar_spacing: f64,
-
-    #[serde(rename = "minBarSpacing", default = "defaults::min_bar_spacing")]
-    min_bar_spacing: f64,
-
-    #[serde(rename = "maxBarSpacing", default = "defaults::max_bar_spacing")]
-    max_bar_spacing: f64,
-
-    #[serde(rename = "fixLeftEdge", default = "defaults::fix_left_edge")]
-    fix_left_edge: bool,
-
-    #[serde(rename = "fixRightEdge", default = "defaults::fix_right_edge")]
-    fix_right_edge: bool,
-
-    #[serde(
-        rename = "lockVisibleTimeRangeOnResize",
-        default = "defaults::lock_visible_time_range_on_resize"
-    )]
-    lock_visible_time_range_on_resize: bool,
-
-    #[serde(rename = "rightBarStaysOnScroll", default = "defaults::right_bar_stays_on_scroll")]
-    right_bar_stays_on_scroll: bool,
-
-    #[serde(rename = "borderVisible", default = "defaults::border_visible")]
-    border_visible: bool,
-
-    #[serde(rename = "borderColor", default = "defaults::border_color")]
-    border_color: String,
-
-    #[serde(rename = "visible", default = "defaults::visible")]
-    visible: bool,
-
-    #[serde(rename = "timeVisible", default = "defaults::time_visible")]
-    time_visible: bool,
-
-    #[serde(rename = "secondsVisible", default = "defaults::seconds_visible")]
-    seconds_visible: bool,
-
-    #[serde(
-        rename = "shiftVisibleRangeOnNewBar",
-        default = "defaults::shift_visible_range_on_new_bar"
-    )]
-    shift_visible_range_on_new_bar: bool,
-
-    #[serde(
-        rename = "allowShiftVisibleRangeOnWhitespaceReplacement",
-        default = "defaults::allow_shift_visible_etc"
-    )]
-    allow_shift_visible_range_on_whitespace_replacement: bool,
-
-    #[serde(rename = "ticksVisible", default = "defaults::ticks_visible")]
-    ticks_visible: bool,
-
-    #[serde(
-        rename = "tickMarkMaxCharacterLength",
-        skip_serializing_if = "Option::is_none",
-        default
-    )]
-    tick_mark_max_character_length: Option<usize>,
-
-    #[serde(rename = "uniformDistribution", default = "defaults::uniform_distribution")]
-    uniform_distribution: bool,
-
-    #[serde(rename = "minimumHeight", default = "defaults::minimum_height")]
-    minimum_height: f64,
-
-    #[serde(rename = "allowBoldLabels", default = "defaults::allow_bold_labels")]
-    allow_bold_labels: bool,
-
-    #[serde(rename = "ignoreWhitespaceIndices", default = "defaults::ignore_whitespace_indices")]
-    ignore_whitespace_indices: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    right_offset: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    right_offset_pixels: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    bar_spacing: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    min_bar_spacing: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    max_bar_spacing: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    fix_left_edge: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    fix_right_edge: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    lock_visible_time_range_on_resize: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    right_bar_stays_on_scroll: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    border_visible: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    border_color: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    visible: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    time_visible: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    seconds_visible: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    shift_visible_range_on_new_bar: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    allow_shift_visible_range_on_whitespace_replacement: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    ticks_visible: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    tick_mark_max_character_length: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    uniform_distribution: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    minimum_height: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    allow_bold_labels: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    ignore_whitespace_indices: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    enable_conflation: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    conflation_threshold_factor: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    precompute_conflation_on_init: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    precompute_conflation_priority: Option<ConflationPriority>,
 }
 
 impl TimeScaleOptions {
+    /// Create options where every option keeps its default value.
     pub fn new() -> Self {
         Self::default()
     }
 
-    pub fn with_right_offset(self, right_offset: f64) -> Self {
+    /// The margin space in bars from the right side of the chart.
+    ///
+    /// Default: `0`.
+    pub fn with_right_offset(self, right_offset: impl Into<f64>) -> Self {
         Self {
-            right_offset,
+            right_offset: Some(right_offset.into()),
             ..self
         }
     }
 
-    pub fn with_bar_spacing(self, bar_spacing: f64) -> Self {
+    pub fn right_offset(&self) -> Option<f64> {
+        self.right_offset
+    }
+
+    /// Set or reset (with `None`) the `rightOffset` option.
+    pub fn set_right_offset(&mut self, right_offset: Option<f64>) {
+        self.right_offset = right_offset;
+    }
+
+    /// The margin space in pixels from the right side of the chart. This option has priority over `rightOffset`.
+    ///
+    /// Default: `undefined`.
+    pub fn with_right_offset_pixels(self, right_offset_pixels: impl Into<f64>) -> Self {
         Self {
-            bar_spacing,
+            right_offset_pixels: Some(right_offset_pixels.into()),
             ..self
         }
     }
 
-    pub fn with_min_bar_spacing(self, min_bar_spacing: f64) -> Self {
+    pub fn right_offset_pixels(&self) -> Option<f64> {
+        self.right_offset_pixels
+    }
+
+    /// Set or reset (with `None`) the `rightOffsetPixels` option.
+    pub fn set_right_offset_pixels(&mut self, right_offset_pixels: Option<f64>) {
+        self.right_offset_pixels = right_offset_pixels;
+    }
+
+    /// The space between bars in pixels.
+    ///
+    /// Default: `6`.
+    pub fn with_bar_spacing(self, bar_spacing: impl Into<f64>) -> Self {
         Self {
-            min_bar_spacing,
+            bar_spacing: Some(bar_spacing.into()),
             ..self
         }
     }
 
-    pub fn with_max_bar_spacing(self, max_bar_spacing: f64) -> Self {
+    pub fn bar_spacing(&self) -> Option<f64> {
+        self.bar_spacing
+    }
+
+    /// Set or reset (with `None`) the `barSpacing` option.
+    pub fn set_bar_spacing(&mut self, bar_spacing: Option<f64>) {
+        self.bar_spacing = bar_spacing;
+    }
+
+    /// The minimum space between bars in pixels.
+    ///
+    /// Default: `0.5`.
+    pub fn with_min_bar_spacing(self, min_bar_spacing: impl Into<f64>) -> Self {
         Self {
-            max_bar_spacing,
+            min_bar_spacing: Some(min_bar_spacing.into()),
             ..self
         }
     }
 
+    pub fn min_bar_spacing(&self) -> Option<f64> {
+        self.min_bar_spacing
+    }
+
+    /// Set or reset (with `None`) the `minBarSpacing` option.
+    pub fn set_min_bar_spacing(&mut self, min_bar_spacing: Option<f64>) {
+        self.min_bar_spacing = min_bar_spacing;
+    }
+
+    /// The maximum space between bars in pixels.
+    ///
+    /// Has no effect if value is set to `0`.
+    ///
+    /// Default: `0`.
+    pub fn with_max_bar_spacing(self, max_bar_spacing: impl Into<f64>) -> Self {
+        Self {
+            max_bar_spacing: Some(max_bar_spacing.into()),
+            ..self
+        }
+    }
+
+    pub fn max_bar_spacing(&self) -> Option<f64> {
+        self.max_bar_spacing
+    }
+
+    /// Set or reset (with `None`) the `maxBarSpacing` option.
+    pub fn set_max_bar_spacing(&mut self, max_bar_spacing: Option<f64>) {
+        self.max_bar_spacing = max_bar_spacing;
+    }
+
+    /// Prevent scrolling to the left of the first bar.
+    ///
+    /// Default: `false`.
     pub fn with_fix_left_edge(self, fix_left_edge: bool) -> Self {
         Self {
-            fix_left_edge,
+            fix_left_edge: Some(fix_left_edge),
             ..self
         }
     }
 
+    pub fn fix_left_edge(&self) -> Option<bool> {
+        self.fix_left_edge
+    }
+
+    /// Set or reset (with `None`) the `fixLeftEdge` option.
+    pub fn set_fix_left_edge(&mut self, fix_left_edge: Option<bool>) {
+        self.fix_left_edge = fix_left_edge;
+    }
+
+    /// Prevent scrolling to the right of the most recent bar.
+    ///
+    /// Default: `false`.
     pub fn with_fix_right_edge(self, fix_right_edge: bool) -> Self {
         Self {
-            fix_right_edge,
+            fix_right_edge: Some(fix_right_edge),
             ..self
         }
     }
 
+    pub fn fix_right_edge(&self) -> Option<bool> {
+        self.fix_right_edge
+    }
+
+    /// Set or reset (with `None`) the `fixRightEdge` option.
+    pub fn set_fix_right_edge(&mut self, fix_right_edge: Option<bool>) {
+        self.fix_right_edge = fix_right_edge;
+    }
+
+    /// Prevent changing the visible time range during chart resizing.
+    ///
+    /// Default: `false`.
     pub fn with_lock_visible_time_range_on_resize(self, lock_visible_time_range_on_resize: bool) -> Self {
         Self {
-            lock_visible_time_range_on_resize,
+            lock_visible_time_range_on_resize: Some(lock_visible_time_range_on_resize),
             ..self
         }
     }
 
+    pub fn lock_visible_time_range_on_resize(&self) -> Option<bool> {
+        self.lock_visible_time_range_on_resize
+    }
+
+    /// Set or reset (with `None`) the `lockVisibleTimeRangeOnResize` option.
+    pub fn set_lock_visible_time_range_on_resize(&mut self, lock_visible_time_range_on_resize: Option<bool>) {
+        self.lock_visible_time_range_on_resize = lock_visible_time_range_on_resize;
+    }
+
+    /// Prevent the hovered bar from moving when scrolling.
+    ///
+    /// Default: `false`.
     pub fn with_right_bar_stays_on_scroll(self, right_bar_stays_on_scroll: bool) -> Self {
         Self {
-            right_bar_stays_on_scroll,
+            right_bar_stays_on_scroll: Some(right_bar_stays_on_scroll),
             ..self
         }
     }
 
+    pub fn right_bar_stays_on_scroll(&self) -> Option<bool> {
+        self.right_bar_stays_on_scroll
+    }
+
+    /// Set or reset (with `None`) the `rightBarStaysOnScroll` option.
+    pub fn set_right_bar_stays_on_scroll(&mut self, right_bar_stays_on_scroll: Option<bool>) {
+        self.right_bar_stays_on_scroll = right_bar_stays_on_scroll;
+    }
+
+    /// Show the time scale border.
+    ///
+    /// Default: `true`.
     pub fn with_border_visible(self, border_visible: bool) -> Self {
         Self {
-            border_visible,
+            border_visible: Some(border_visible),
             ..self
         }
     }
 
-    pub fn with_border_color(self, border_color: String) -> Self {
+    pub fn border_visible(&self) -> Option<bool> {
+        self.border_visible
+    }
+
+    /// Set or reset (with `None`) the `borderVisible` option.
+    pub fn set_border_visible(&mut self, border_visible: Option<bool>) {
+        self.border_visible = border_visible;
+    }
+
+    /// The time scale border color.
+    ///
+    /// Default: `"#2B2B43"`.
+    pub fn with_border_color(self, border_color: impl Into<String>) -> Self {
         Self {
-            border_color,
+            border_color: Some(border_color.into()),
             ..self
         }
     }
 
+    pub fn border_color(&self) -> Option<&str> {
+        self.border_color.as_deref()
+    }
+
+    /// Set or reset (with `None`) the `borderColor` option.
+    pub fn set_border_color(&mut self, border_color: Option<String>) {
+        self.border_color = border_color;
+    }
+
+    /// Show the time scale.
+    ///
+    /// Default: `true`.
     pub fn with_visible(self, visible: bool) -> Self {
         Self {
-            visible,
+            visible: Some(visible),
             ..self
         }
     }
 
+    pub fn visible(&self) -> Option<bool> {
+        self.visible
+    }
+
+    /// Set or reset (with `None`) the `visible` option.
+    pub fn set_visible(&mut self, visible: Option<bool>) {
+        self.visible = visible;
+    }
+
+    /// Show the time, not just the date, in the time scale and vertical crosshair label.
+    ///
+    /// Default: `false`.
     pub fn with_time_visible(self, time_visible: bool) -> Self {
         Self {
-            time_visible,
+            time_visible: Some(time_visible),
             ..self
         }
     }
 
+    pub fn time_visible(&self) -> Option<bool> {
+        self.time_visible
+    }
+
+    /// Set or reset (with `None`) the `timeVisible` option.
+    pub fn set_time_visible(&mut self, time_visible: Option<bool>) {
+        self.time_visible = time_visible;
+    }
+
+    /// Show seconds in the time scale and vertical crosshair label in `hh:mm:ss` format for intraday data.
+    ///
+    /// Default: `true`.
     pub fn with_seconds_visible(self, seconds_visible: bool) -> Self {
         Self {
-            seconds_visible,
+            seconds_visible: Some(seconds_visible),
             ..self
         }
     }
 
+    pub fn seconds_visible(&self) -> Option<bool> {
+        self.seconds_visible
+    }
+
+    /// Set or reset (with `None`) the `secondsVisible` option.
+    pub fn set_seconds_visible(&mut self, seconds_visible: Option<bool>) {
+        self.seconds_visible = seconds_visible;
+    }
+
+    /// Shift the visible range to the right (into the future) by the number of new bars when new data is added.
+    ///
+    /// Note that this only applies when the last bar is visible.
+    ///
+    /// Default: `true`.
     pub fn with_shift_visible_range_on_new_bar(self, shift_visible_range_on_new_bar: bool) -> Self {
         Self {
-            shift_visible_range_on_new_bar,
+            shift_visible_range_on_new_bar: Some(shift_visible_range_on_new_bar),
             ..self
         }
     }
 
+    pub fn shift_visible_range_on_new_bar(&self) -> Option<bool> {
+        self.shift_visible_range_on_new_bar
+    }
+
+    /// Set or reset (with `None`) the `shiftVisibleRangeOnNewBar` option.
+    pub fn set_shift_visible_range_on_new_bar(&mut self, shift_visible_range_on_new_bar: Option<bool>) {
+        self.shift_visible_range_on_new_bar = shift_visible_range_on_new_bar;
+    }
+
+    /// Allow the visible range to be shifted to the right when a new bar is added which is replacing an existing
+    /// whitespace time point on the chart.
+    ///
+    /// Note that this only applies when the last bar is visible & `shiftVisibleRangeOnNewBar` is enabled.
+    ///
+    /// Default: `false`.
     pub fn with_allow_shift_visible_range_on_whitespace_replacement(
         self,
         allow_shift_visible_range_on_whitespace_replacement: bool,
     ) -> Self {
         Self {
-            allow_shift_visible_range_on_whitespace_replacement,
+            allow_shift_visible_range_on_whitespace_replacement: Some(
+                allow_shift_visible_range_on_whitespace_replacement,
+            ),
             ..self
         }
     }
 
-    pub fn with_ticks_visible(self, ticks_visible: bool) -> Self {
-        Self {
-            ticks_visible,
-            ..self
-        }
-    }
-
-    pub fn with_tick_mark_max_character_length(self, tick_mark_max_character_length: Option<usize>) -> Self {
-        Self {
-            tick_mark_max_character_length,
-            ..self
-        }
-    }
-
-    pub fn with_uniform_distribution(self, uniform_distribution: bool) -> Self {
-        Self {
-            uniform_distribution,
-            ..self
-        }
-    }
-
-    pub fn with_minimum_height(self, minimum_height: f64) -> Self {
-        Self {
-            minimum_height,
-            ..self
-        }
-    }
-
-    pub fn with_allow_bold_labels(self, allow_bold_labels: bool) -> Self {
-        Self {
-            allow_bold_labels,
-            ..self
-        }
-    }
-
-    pub fn with_ignore_whitespace_indices(self, ignore_whitespace_indices: bool) -> Self {
-        Self {
-            ignore_whitespace_indices,
-            ..self
-        }
-    }
-
-    pub fn right_offset(&self) -> f64 {
-        self.right_offset
-    }
-
-    pub fn set_right_offset(&mut self, right_offset: f64) {
-        self.right_offset = right_offset;
-    }
-
-    pub fn bar_spacing(&self) -> f64 {
-        self.bar_spacing
-    }
-
-    pub fn set_bar_spacing(&mut self, bar_spacing: f64) {
-        self.bar_spacing = bar_spacing;
-    }
-
-    pub fn min_bar_spacing(&self) -> f64 {
-        self.min_bar_spacing
-    }
-
-    pub fn set_min_bar_spacing(&mut self, min_bar_spacing: f64) {
-        self.min_bar_spacing = min_bar_spacing;
-    }
-
-    pub fn max_bar_spacing(&self) -> f64 {
-        self.max_bar_spacing
-    }
-
-    pub fn set_max_bar_spacing(&mut self, max_bar_spacing: f64) {
-        self.max_bar_spacing = max_bar_spacing;
-    }
-
-    pub fn fix_left_edge(&self) -> bool {
-        self.fix_left_edge
-    }
-
-    pub fn set_fix_left_edge(&mut self, fix_left_edge: bool) {
-        self.fix_left_edge = fix_left_edge;
-    }
-
-    pub fn fix_right_edge(&self) -> bool {
-        self.fix_right_edge
-    }
-
-    pub fn set_fix_right_edge(&mut self, fix_right_edge: bool) {
-        self.fix_right_edge = fix_right_edge;
-    }
-
-    pub fn lock_visible_time_range_on_resize(&self) -> bool {
-        self.lock_visible_time_range_on_resize
-    }
-
-    pub fn set_lock_visible_time_range_on_resize(&mut self, lock_visible_time_range_on_resize: bool) {
-        self.lock_visible_time_range_on_resize = lock_visible_time_range_on_resize;
-    }
-
-    pub fn right_bar_stays_on_scroll(&self) -> bool {
-        self.right_bar_stays_on_scroll
-    }
-
-    pub fn set_right_bar_stays_on_scroll(&mut self, right_bar_stays_on_scroll: bool) {
-        self.right_bar_stays_on_scroll = right_bar_stays_on_scroll;
-    }
-
-    pub fn border_visible(&self) -> bool {
-        self.border_visible
-    }
-
-    pub fn set_border_visible(&mut self, border_visible: bool) {
-        self.border_visible = border_visible;
-    }
-
-    pub fn border_color(&self) -> &str {
-        &self.border_color
-    }
-
-    pub fn set_border_color(&mut self, border_color: String) {
-        self.border_color = border_color;
-    }
-
-    pub fn visible(&self) -> bool {
-        self.visible
-    }
-
-    pub fn set_visible(&mut self, visible: bool) {
-        self.visible = visible;
-    }
-
-    pub fn time_visible(&self) -> bool {
-        self.time_visible
-    }
-
-    pub fn set_time_visible(&mut self, time_visible: bool) {
-        self.time_visible = time_visible;
-    }
-
-    pub fn seconds_visible(&self) -> bool {
-        self.seconds_visible
-    }
-
-    pub fn set_seconds_visible(&mut self, seconds_visible: bool) {
-        self.seconds_visible = seconds_visible;
-    }
-
-    pub fn shift_visible_range_on_new_bar(&self) -> bool {
-        self.shift_visible_range_on_new_bar
-    }
-
-    pub fn set_shift_visible_range_on_new_bar(&mut self, shift_visible_range_on_new_bar: bool) {
-        self.shift_visible_range_on_new_bar = shift_visible_range_on_new_bar;
-    }
-
-    pub fn allow_shift_visible_range_on_whitespace_replacement(&self) -> bool {
+    pub fn allow_shift_visible_range_on_whitespace_replacement(&self) -> Option<bool> {
         self.allow_shift_visible_range_on_whitespace_replacement
     }
 
+    /// Set or reset (with `None`) the `allowShiftVisibleRangeOnWhitespaceReplacement` option.
     pub fn set_allow_shift_visible_range_on_whitespace_replacement(
         &mut self,
-        allow_shift_visible_range_on_whitespace_replacement: bool,
+        allow_shift_visible_range_on_whitespace_replacement: Option<bool>,
     ) {
         self.allow_shift_visible_range_on_whitespace_replacement = allow_shift_visible_range_on_whitespace_replacement;
     }
 
-    pub fn ticks_visible(&self) -> bool {
+    /// Draw small vertical line on time axis labels.
+    ///
+    /// Default: `false`.
+    pub fn with_ticks_visible(self, ticks_visible: bool) -> Self {
+        Self {
+            ticks_visible: Some(ticks_visible),
+            ..self
+        }
+    }
+
+    pub fn ticks_visible(&self) -> Option<bool> {
         self.ticks_visible
     }
 
-    pub fn set_ticks_visible(&mut self, ticks_visible: bool) {
+    /// Set or reset (with `None`) the `ticksVisible` option.
+    pub fn set_ticks_visible(&mut self, ticks_visible: Option<bool>) {
         self.ticks_visible = ticks_visible;
     }
 
-    pub fn tick_mark_max_character_length(&self) -> Option<usize> {
+    /// Maximum tick mark label length. Used to override the default 8 character maximum length.
+    ///
+    /// Default: `undefined`.
+    pub fn with_tick_mark_max_character_length(self, tick_mark_max_character_length: impl Into<f64>) -> Self {
+        Self {
+            tick_mark_max_character_length: Some(tick_mark_max_character_length.into()),
+            ..self
+        }
+    }
+
+    pub fn tick_mark_max_character_length(&self) -> Option<f64> {
         self.tick_mark_max_character_length
     }
 
-    pub fn set_tick_mark_max_character_length_value(&mut self, tick_mark_max_character_length: Option<usize>) {
+    /// Set or reset (with `None`) the `tickMarkMaxCharacterLength` option.
+    pub fn set_tick_mark_max_character_length(&mut self, tick_mark_max_character_length: Option<f64>) {
         self.tick_mark_max_character_length = tick_mark_max_character_length;
     }
 
-    pub fn set_tick_mark_max_character_length(&mut self, tick_mark_max_character_length: usize) {
-        self.tick_mark_max_character_length
-            .replace(tick_mark_max_character_length);
+    /// Changes horizontal scale marks generation. With this flag equal to `true`,
+    /// marks of the same weight are either all drawn or none are drawn at all.
+    pub fn with_uniform_distribution(self, uniform_distribution: bool) -> Self {
+        Self {
+            uniform_distribution: Some(uniform_distribution),
+            ..self
+        }
     }
 
-    pub fn reset_tick_mark_max_character_length(&mut self) {
-        self.tick_mark_max_character_length = None;
-    }
-
-    pub fn uniform_distribution(&self) -> bool {
+    pub fn uniform_distribution(&self) -> Option<bool> {
         self.uniform_distribution
     }
 
-    pub fn set_uniform_distribution(&mut self, uniform_distribution: bool) {
+    /// Set or reset (with `None`) the `uniformDistribution` option.
+    pub fn set_uniform_distribution(&mut self, uniform_distribution: Option<bool>) {
         self.uniform_distribution = uniform_distribution;
     }
 
-    pub fn minimum_height(&self) -> f64 {
+    /// Define a minimum height for the time scale. Note: This value will be exceeded if the time scale needs more space
+    /// to display it's contents.
+    ///
+    /// Setting a minimum height could be useful for ensuring that multiple charts positioned in a horizontal stack each
+    /// have an identical time scale height, or for plugins which require a bit more space within the time scale pane.
+    ///
+    /// Default: `0`.
+    pub fn with_minimum_height(self, minimum_height: impl Into<f64>) -> Self {
+        Self {
+            minimum_height: Some(minimum_height.into()),
+            ..self
+        }
+    }
+
+    pub fn minimum_height(&self) -> Option<f64> {
         self.minimum_height
     }
 
-    pub fn set_minimum_height(&mut self, minimum_height: f64) {
+    /// Set or reset (with `None`) the `minimumHeight` option.
+    pub fn set_minimum_height(&mut self, minimum_height: Option<f64>) {
         self.minimum_height = minimum_height;
     }
 
-    pub fn allow_bold_labels(&self) -> bool {
+    /// Allow major time scale labels to be rendered in a bolder font weight.
+    ///
+    /// Default: `true`.
+    pub fn with_allow_bold_labels(self, allow_bold_labels: bool) -> Self {
+        Self {
+            allow_bold_labels: Some(allow_bold_labels),
+            ..self
+        }
+    }
+
+    pub fn allow_bold_labels(&self) -> Option<bool> {
         self.allow_bold_labels
     }
 
-    pub fn set_allow_bold_labels(&mut self, allow_bold_labels: bool) {
+    /// Set or reset (with `None`) the `allowBoldLabels` option.
+    pub fn set_allow_bold_labels(&mut self, allow_bold_labels: Option<bool>) {
         self.allow_bold_labels = allow_bold_labels;
     }
 
-    pub fn ignore_whitespace_indices(&self) -> bool {
+    /// Ignore time scale points containing only whitespace (for all series) when drawing grid lines, tick marks,
+    /// and snapping the crosshair to time scale points.
+    ///
+    /// For the yield curve chart type it defaults to `true`.
+    ///
+    /// Default: `false`.
+    pub fn with_ignore_whitespace_indices(self, ignore_whitespace_indices: bool) -> Self {
+        Self {
+            ignore_whitespace_indices: Some(ignore_whitespace_indices),
+            ..self
+        }
+    }
+
+    pub fn ignore_whitespace_indices(&self) -> Option<bool> {
         self.ignore_whitespace_indices
     }
 
-    pub fn set_ignore_whitespace_indices(&mut self, ignore_whitespace_indices: bool) {
+    /// Set or reset (with `None`) the `ignoreWhitespaceIndices` option.
+    pub fn set_ignore_whitespace_indices(&mut self, ignore_whitespace_indices: Option<bool>) {
         self.ignore_whitespace_indices = ignore_whitespace_indices;
     }
-}
 
-impl Default for TimeScaleOptions {
-    fn default() -> Self {
+    /// Enable data conflation for performance optimization when bar spacing is very small. When enabled,
+    /// multiple data points are automatically combined into single points when they would be rendered in less than 0.5
+    /// pixels of screen space. This significantly improves rendering performance for large datasets when zoomed out.
+    ///
+    /// Default: `false`.
+    pub fn with_enable_conflation(self, enable_conflation: bool) -> Self {
         Self {
-            right_offset: defaults::right_offset(),
-            bar_spacing: defaults::bar_spacing(),
-            min_bar_spacing: defaults::min_bar_spacing(),
-            max_bar_spacing: defaults::max_bar_spacing(),
-            fix_left_edge: defaults::fix_left_edge(),
-            fix_right_edge: defaults::fix_right_edge(),
-            lock_visible_time_range_on_resize: defaults::lock_visible_time_range_on_resize(),
-            right_bar_stays_on_scroll: defaults::right_bar_stays_on_scroll(),
-            border_visible: defaults::border_visible(),
-            border_color: defaults::border_color(),
-            visible: defaults::visible(),
-            time_visible: defaults::time_visible(),
-            seconds_visible: defaults::seconds_visible(),
-            shift_visible_range_on_new_bar: defaults::shift_visible_range_on_new_bar(),
-            allow_shift_visible_range_on_whitespace_replacement: defaults::allow_shift_visible_etc(),
-            ticks_visible: defaults::ticks_visible(),
-            tick_mark_max_character_length: None,
-            uniform_distribution: defaults::uniform_distribution(),
-            minimum_height: defaults::minimum_height(),
-            allow_bold_labels: defaults::allow_bold_labels(),
-            ignore_whitespace_indices: defaults::ignore_whitespace_indices(),
+            enable_conflation: Some(enable_conflation),
+            ..self
         }
     }
-}
 
-mod defaults {
-    pub(super) fn right_offset() -> f64 {
-        0.
+    pub fn enable_conflation(&self) -> Option<bool> {
+        self.enable_conflation
     }
 
-    pub(super) fn bar_spacing() -> f64 {
-        6.
+    /// Set or reset (with `None`) the `enableConflation` option.
+    pub fn set_enable_conflation(&mut self, enable_conflation: Option<bool>) {
+        self.enable_conflation = enable_conflation;
     }
 
-    pub(super) fn min_bar_spacing() -> f64 {
-        0.5
+    /// Smoothing factor for conflation thresholds. Controls how aggressively conflation is applied.
+    /// This can be used to create smoother-looking charts, especially useful for sparklines and small charts.
+    ///
+    /// - 1.0 = conflate only when display can't show detail (default, performance-focused)
+    /// - 2.0 = conflate at 2x the display threshold (moderate smoothing)
+    /// - 4.0 = conflate at 4x the display threshold (strong smoothing)
+    /// - 8.0+ = very aggressive smoothing for very small charts
+    ///
+    /// Higher values result in fewer data points being displayed, creating smoother but less detailed charts.
+    /// This is particularly useful for sparklines and small charts where smooth appearance is prioritized over showing
+    /// every data point.
+    ///
+    /// Note: Should be used with continuous series types (line, area, baseline) for best visual results.
+    /// Candlestick and bar series may look less natural with high smoothing factors.
+    ///
+    /// Default: `1.0`.
+    pub fn with_conflation_threshold_factor(self, conflation_threshold_factor: impl Into<f64>) -> Self {
+        Self {
+            conflation_threshold_factor: Some(conflation_threshold_factor.into()),
+            ..self
+        }
     }
 
-    pub(super) fn max_bar_spacing() -> f64 {
-        0.
+    pub fn conflation_threshold_factor(&self) -> Option<f64> {
+        self.conflation_threshold_factor
     }
 
-    pub(super) fn fix_left_edge() -> bool {
-        false
+    /// Set or reset (with `None`) the `conflationThresholdFactor` option.
+    pub fn set_conflation_threshold_factor(&mut self, conflation_threshold_factor: Option<f64>) {
+        self.conflation_threshold_factor = conflation_threshold_factor;
     }
 
-    pub(super) fn fix_right_edge() -> bool {
-        false
+    /// Precompute conflation chunks for common levels right after data load. When enabled,
+    /// the system will precompute conflation data in the background,
+    /// which improves performance when zooming out but increases initial load time and memory usage.
+    ///
+    /// Performance impact: - Initial load: +100-500ms depending on dataset size - Memory usage:
+    /// +20-50% of original dataset size - Zoom performance: Significant improvement (10-100x faster)
+    ///
+    /// Recommended for: Large datasets (\>10K points) on machines with sufficient memory
+    ///
+    /// Default: `false`.
+    pub fn with_precompute_conflation_on_init(self, precompute_conflation_on_init: bool) -> Self {
+        Self {
+            precompute_conflation_on_init: Some(precompute_conflation_on_init),
+            ..self
+        }
     }
 
-    pub(super) fn lock_visible_time_range_on_resize() -> bool {
-        false
+    pub fn precompute_conflation_on_init(&self) -> Option<bool> {
+        self.precompute_conflation_on_init
     }
 
-    pub(super) fn right_bar_stays_on_scroll() -> bool {
-        false
+    /// Set or reset (with `None`) the `precomputeConflationOnInit` option.
+    pub fn set_precompute_conflation_on_init(&mut self, precompute_conflation_on_init: Option<bool>) {
+        self.precompute_conflation_on_init = precompute_conflation_on_init;
     }
 
-    pub(super) fn border_visible() -> bool {
-        true
+    /// Priority used for background precompute tasks when the Prioritized Task Scheduling API is available.
+    ///
+    /// Options: - 'background': Lowest priority, tasks run only when the browser is idle - 'user-visible':
+    /// Medium priority, tasks run when they might affect visible content - 'user-blocking': Highest priority,
+    /// tasks run immediately and may block user interaction
+    ///
+    /// Recommendation: Use 'background' for most cases to avoid impacting user experience.
+    /// Only use higher priorities if conflation is critical for your application's functionality.
+    ///
+    /// Default: `"background"`.
+    pub fn with_precompute_conflation_priority(self, precompute_conflation_priority: ConflationPriority) -> Self {
+        Self {
+            precompute_conflation_priority: Some(precompute_conflation_priority),
+            ..self
+        }
     }
 
-    pub(super) fn border_color() -> String {
-        String::from("#2B2B43")
+    pub fn precompute_conflation_priority(&self) -> Option<ConflationPriority> {
+        self.precompute_conflation_priority
     }
 
-    pub(super) fn visible() -> bool {
-        true
-    }
-
-    pub(super) fn time_visible() -> bool {
-        false
-    }
-
-    pub(super) fn seconds_visible() -> bool {
-        true
-    }
-
-    pub(super) fn shift_visible_range_on_new_bar() -> bool {
-        true
-    }
-
-    pub(super) fn allow_shift_visible_etc() -> bool {
-        false
-    }
-
-    pub(super) fn ticks_visible() -> bool {
-        false
-    }
-
-    pub(super) fn uniform_distribution() -> bool {
-        false
-    }
-
-    pub(super) fn minimum_height() -> f64 {
-        0.
-    }
-
-    pub(super) fn allow_bold_labels() -> bool {
-        true
-    }
-
-    pub(super) fn ignore_whitespace_indices() -> bool {
-        false
+    /// Set or reset (with `None`) the `precomputeConflationPriority` option.
+    pub fn set_precompute_conflation_priority(&mut self, precompute_conflation_priority: Option<ConflationPriority>) {
+        self.precompute_conflation_priority = precompute_conflation_priority;
     }
 }

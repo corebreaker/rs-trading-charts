@@ -1,6 +1,6 @@
 use serde::{de::Error, Deserialize, Serialize, Deserializer, Serializer};
 
-#[derive(Default, Copy, Clone, PartialEq)]
+#[derive(Default, Copy, Clone, PartialEq, Debug)]
 pub enum LineWidth {
     #[default]
     W1 = 1,

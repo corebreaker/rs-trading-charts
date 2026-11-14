@@ -4,7 +4,7 @@ use serde_wasm_bindgen::to_value;
 use crate::PanelId;
 
 /// Description of a series to add to a chart with [`ChartHandle::add_series`](crate::ChartHandle::add_series).
-#[derive(Serialize, Deserialize, PartialEq)]
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct Series<Dat: Serialize + Clone, Opt: Serialize + Clone> {
     r#type:  String,
     data:    Vec<Dat>,

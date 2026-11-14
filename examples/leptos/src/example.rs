@@ -5,8 +5,10 @@ use charts::{
         LegendOptions,
         PriceLineOptions,
         options::{
+            HorzAlign,
+            VertAlign,
             background::Background,
-            cross_hair::{CrossHairOptions, CrosshairLineOptions},
+            crosshair::{CrosshairOptions, CrosshairLineOptions},
             layout::{LayoutOptions, LayoutPanesOptions},
             ChartOptions,
             LastPriceAnimationMode,
@@ -49,8 +51,8 @@ use web_sys::window;
 pub fn App() -> impl IntoView {
     let chart_options = ChartOptions::new()
         .with_time_scale(TimeScaleOptions::new().with_time_visible(true))
-        .with_cross_hair(
-            CrossHairOptions::new().with_vert_line(
+        .with_crosshair(
+            CrosshairOptions::new().with_vert_line(
                 CrosshairLineOptions::new()
                     .with_color(String::from("#0f172a"))
                     .with_label_background_color(String::from("#0f172a")),
@@ -808,8 +810,8 @@ fn schedule_watermark_init(
         }
 
         let text_options = charts::data::TextWatermarkOptions::new()
-            .with_horz_align("center")
-            .with_vert_align("center")
+            .with_horz_align(HorzAlign::Center)
+            .with_vert_align(VertAlign::Center)
             .with_lines(vec![
                 charts::data::TextWatermarkLineOptions::new("rs-trading-charts")
                     .with_color("rgba(29, 78, 216, 0.20)")
@@ -870,8 +872,8 @@ fn schedule_watermark_update(
         };
 
         let text_options = charts::data::TextWatermarkOptions::new()
-            .with_horz_align("left")
-            .with_vert_align("top")
+            .with_horz_align(HorzAlign::Left)
+            .with_vert_align(VertAlign::Top)
             .with_lines(vec![
                 charts::data::TextWatermarkLineOptions::new("Watermarks updated")
                     .with_color("rgba(15, 23, 42, 0.22)")

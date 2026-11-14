@@ -1,88 +1,77 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone, PartialEq)]
+/// Represents panes customizations.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct LayoutPanesOptions {
-    #[serde(rename = "enableResize", default = "defaults::enable_resize")]
-    pub enable_resize: bool,
-
-    #[serde(rename = "separatorColor", default = "defaults::separator_color")]
-    pub separator_color: String,
-
-    #[serde(rename = "separatorHoverColor", default = "defaults::separator_hover_color")]
-    pub separator_hover_color: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    enable_resize:         Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    separator_color:       Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    separator_hover_color: Option<String>,
 }
 
 impl LayoutPanesOptions {
+    /// Create options where every option keeps its default value.
     pub fn new() -> Self {
         Self::default()
     }
 
+    /// Enable panes resizing
+    ///
+    /// Default: `true`.
     pub fn with_enable_resize(self, enable_resize: bool) -> Self {
         Self {
-            enable_resize,
+            enable_resize: Some(enable_resize),
             ..self
         }
     }
 
-    pub fn with_separator_color(self, separator_color: String) -> Self {
-        Self {
-            separator_color,
-            ..self
-        }
-    }
-
-    pub fn with_separator_hover_color(self, separator_hover_color: String) -> Self {
-        Self {
-            separator_hover_color,
-            ..self
-        }
-    }
-
-    pub fn enable_resize(&self) -> bool {
+    pub fn enable_resize(&self) -> Option<bool> {
         self.enable_resize
     }
 
-    pub fn set_enable_resize(&mut self, enable_resize: bool) {
+    /// Set or reset (with `None`) the `enableResize` option.
+    pub fn set_enable_resize(&mut self, enable_resize: Option<bool>) {
         self.enable_resize = enable_resize;
     }
 
-    pub fn separator_color(&self) -> &str {
-        &self.separator_color
+    /// Color of pane separator
+    ///
+    /// Default: `#2B2B43`.
+    pub fn with_separator_color(self, separator_color: impl Into<String>) -> Self {
+        Self {
+            separator_color: Some(separator_color.into()),
+            ..self
+        }
     }
 
-    pub fn set_separator_color(&mut self, separator_color: String) {
+    pub fn separator_color(&self) -> Option<&str> {
+        self.separator_color.as_deref()
+    }
+
+    /// Set or reset (with `None`) the `separatorColor` option.
+    pub fn set_separator_color(&mut self, separator_color: Option<String>) {
         self.separator_color = separator_color;
     }
 
-    pub fn separator_hover_color(&self) -> &str {
-        &self.separator_hover_color
-    }
-
-    pub fn set_separator_hover_color(&mut self, separator_hover_color: String) {
-        self.separator_hover_color = separator_hover_color;
-    }
-}
-
-impl Default for LayoutPanesOptions {
-    fn default() -> Self {
+    /// Color of pane separator background applied on hover
+    ///
+    /// Default: `rgba(178, 181, 189, 0.2)`.
+    pub fn with_separator_hover_color(self, separator_hover_color: impl Into<String>) -> Self {
         Self {
-            enable_resize:         defaults::enable_resize(),
-            separator_color:       defaults::separator_color(),
-            separator_hover_color: defaults::separator_hover_color(),
+            separator_hover_color: Some(separator_hover_color.into()),
+            ..self
         }
     }
-}
 
-mod defaults {
-    pub(super) fn enable_resize() -> bool {
-        true
+    pub fn separator_hover_color(&self) -> Option<&str> {
+        self.separator_hover_color.as_deref()
     }
 
-    pub(super) fn separator_color() -> String {
-        String::from("#2B2B43")
-    }
-
-    pub(super) fn separator_hover_color() -> String {
-        String::from("rgba(178, 181, 189, 0.2)")
+    /// Set or reset (with `None`) the `separatorHoverColor` option.
+    pub fn set_separator_hover_color(&mut self, separator_hover_color: Option<String>) {
+        self.separator_hover_color = separator_hover_color;
     }
 }

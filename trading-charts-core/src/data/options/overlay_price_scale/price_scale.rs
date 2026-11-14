@@ -1,258 +1,276 @@
-use super::{OverlayPriceScaleMode, OverlayPriceScaleMargins};
+use {crate::data::options::price_scale::PriceScaleMargins, crate::data::options::price_scale::PriceScaleMode};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone, PartialEq)]
+/// Options of the overlay price scales, which are the price scales which are neither the left nor the right price
+/// scale.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct OverlayPriceScaleOptions {
-    #[serde(default)]
-    mode: OverlayPriceScaleMode,
-
-    #[serde(rename = "invertScale", default = "defaults::invert_scale")]
-    invert_scale: bool,
-
-    #[serde(rename = "alignLabels", default = "defaults::align_labels")]
-    align_labels: bool,
-
-    #[serde(rename = "scaleMargins", default)]
-    scale_margins: OverlayPriceScaleMargins,
-
-    #[serde(rename = "borderVisible", default = "defaults::border_visible")]
-    border_visible: bool,
-
-    #[serde(rename = "borderColor", default = "defaults::border_color")]
-    border_color: String,
-
-    #[serde(
-        rename = "textColor",
-        default = "defaults::text_color",
-        skip_serializing_if = "String::is_empty"
-    )]
-    text_color: String,
-
-    #[serde(rename = "entireTextOnly", default = "defaults::entire_text_only")]
-    entire_text_only: bool,
-
-    #[serde(rename = "ticksVisible", default = "defaults::ticks_visible")]
-    ticks_visible: bool,
-
-    #[serde(rename = "minimumWidth", default = "defaults::minimum_width")]
-    minimum_width: f64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    mode:                           Option<PriceScaleMode>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    invert_scale:                   Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    align_labels:                   Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    scale_margins:                  Option<PriceScaleMargins>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    border_visible:                 Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    border_color:                   Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    text_color:                     Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    entire_text_only:               Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    ticks_visible:                  Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    minimum_width:                  Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    ensure_edge_tick_marks_visible: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    tick_mark_density:              Option<f64>,
 }
 
 impl OverlayPriceScaleOptions {
+    /// Create options where every option keeps its default value.
     pub fn new() -> Self {
         Self::default()
     }
 
-    pub fn with_mode(self, mode: OverlayPriceScaleMode) -> Self {
+    /// Price scale mode.
+    ///
+    /// Default: `PriceScaleMode.Normal`.
+    pub fn with_mode(self, mode: PriceScaleMode) -> Self {
         Self {
-            mode,
+            mode: Some(mode),
             ..self
         }
     }
 
-    pub fn with_invert_scale(self, invert_scale: bool) -> Self {
-        Self {
-            invert_scale,
-            ..self
-        }
+    pub fn mode(&self) -> Option<PriceScaleMode> {
+        self.mode
     }
 
-    pub fn with_align_labels(self, align_labels: bool) -> Self {
-        Self {
-            align_labels,
-            ..self
-        }
-    }
-
-    pub fn with_scale_margins(self, scale_margins: OverlayPriceScaleMargins) -> Self {
-        Self {
-            scale_margins,
-            ..self
-        }
-    }
-
-    pub fn with_border_visible(self, border_visible: bool) -> Self {
-        Self {
-            border_visible,
-            ..self
-        }
-    }
-
-    pub fn with_border_color(self, border_color: String) -> Self {
-        Self {
-            border_color,
-            ..self
-        }
-    }
-
-    pub fn with_text_color(self, text_color: String) -> Self {
-        Self {
-            text_color,
-            ..self
-        }
-    }
-
-    pub fn with_entire_text_only(self, entire_text_only: bool) -> Self {
-        Self {
-            entire_text_only,
-            ..self
-        }
-    }
-
-    pub fn with_ticks_visible(self, ticks_visible: bool) -> Self {
-        Self {
-            ticks_visible,
-            ..self
-        }
-    }
-
-    pub fn with_minimum_size(self, minimum_size: f64) -> Self {
-        Self {
-            minimum_width: minimum_size,
-            ..self
-        }
-    }
-
-    pub fn mode(&self) -> &OverlayPriceScaleMode {
-        &self.mode
-    }
-
-    pub fn mode_mut(&mut self) -> &mut OverlayPriceScaleMode {
-        &mut self.mode
-    }
-
-    pub fn set_mode(&mut self, mode: OverlayPriceScaleMode) {
+    /// Set or reset (with `None`) the `mode` option.
+    pub fn set_mode(&mut self, mode: Option<PriceScaleMode>) {
         self.mode = mode;
     }
 
-    pub fn invert_scale(&self) -> bool {
+    /// Invert the price scale, so that a upwards trend is shown as a downwards trend and vice versa.
+    /// Affects both the price scale and the data on the chart.
+    ///
+    /// Default: `false`.
+    pub fn with_invert_scale(self, invert_scale: bool) -> Self {
+        Self {
+            invert_scale: Some(invert_scale),
+            ..self
+        }
+    }
+
+    pub fn invert_scale(&self) -> Option<bool> {
         self.invert_scale
     }
 
-    pub fn set_invert_scale(&mut self, invert_scale: bool) {
+    /// Set or reset (with `None`) the `invertScale` option.
+    pub fn set_invert_scale(&mut self, invert_scale: Option<bool>) {
         self.invert_scale = invert_scale;
     }
 
-    pub fn align_labels(&self) -> bool {
+    /// Align price scale labels to prevent them from overlapping.
+    ///
+    /// Default: `true`.
+    pub fn with_align_labels(self, align_labels: bool) -> Self {
+        Self {
+            align_labels: Some(align_labels),
+            ..self
+        }
+    }
+
+    pub fn align_labels(&self) -> Option<bool> {
         self.align_labels
     }
 
-    pub fn set_align_labels(&mut self, align_labels: bool) {
+    /// Set or reset (with `None`) the `alignLabels` option.
+    pub fn set_align_labels(&mut self, align_labels: Option<bool>) {
         self.align_labels = align_labels;
     }
 
-    pub fn scale_margins(&self) -> &OverlayPriceScaleMargins {
-        &self.scale_margins
+    /// Price scale margins.
+    ///
+    /// Default: `{ bottom: 0.1, top: 0.2 }`.
+    pub fn with_scale_margins(self, scale_margins: PriceScaleMargins) -> Self {
+        Self {
+            scale_margins: Some(scale_margins),
+            ..self
+        }
     }
 
-    pub fn scale_margins_mut(&mut self) -> &mut OverlayPriceScaleMargins {
-        &mut self.scale_margins
+    pub fn scale_margins(&self) -> Option<&PriceScaleMargins> {
+        self.scale_margins.as_ref()
     }
 
-    pub fn set_scale_margins(&mut self, scale_margins: OverlayPriceScaleMargins) {
+    /// Set or reset (with `None`) the `scaleMargins` option.
+    pub fn set_scale_margins(&mut self, scale_margins: Option<PriceScaleMargins>) {
         self.scale_margins = scale_margins;
     }
 
-    pub fn border_visible(&self) -> bool {
+    /// Set true to draw a border between the price scale and the chart area.
+    ///
+    /// Default: `true`.
+    pub fn with_border_visible(self, border_visible: bool) -> Self {
+        Self {
+            border_visible: Some(border_visible),
+            ..self
+        }
+    }
+
+    pub fn border_visible(&self) -> Option<bool> {
         self.border_visible
     }
 
-    pub fn set_border_visible(&mut self, border_visible: bool) {
+    /// Set or reset (with `None`) the `borderVisible` option.
+    pub fn set_border_visible(&mut self, border_visible: Option<bool>) {
         self.border_visible = border_visible;
     }
 
-    pub fn border_color(&self) -> &str {
-        &self.border_color
+    /// Price scale border color.
+    ///
+    /// Default: `"#2B2B43"`.
+    pub fn with_border_color(self, border_color: impl Into<String>) -> Self {
+        Self {
+            border_color: Some(border_color.into()),
+            ..self
+        }
     }
 
-    pub fn set_border_color(&mut self, border_color: String) {
+    pub fn border_color(&self) -> Option<&str> {
+        self.border_color.as_deref()
+    }
+
+    /// Set or reset (with `None`) the `borderColor` option.
+    pub fn set_border_color(&mut self, border_color: Option<String>) {
         self.border_color = border_color;
     }
 
-    pub fn text_color(&self) -> &str {
-        &self.text_color
+    /// Price scale text color. If not provided `textColor` is used.
+    ///
+    /// Default: `undefined`.
+    pub fn with_text_color(self, text_color: impl Into<String>) -> Self {
+        Self {
+            text_color: Some(text_color.into()),
+            ..self
+        }
     }
 
-    pub fn text_color_mut(&mut self) -> &mut String {
-        &mut self.text_color
+    pub fn text_color(&self) -> Option<&str> {
+        self.text_color.as_deref()
     }
 
-    pub fn set_text_color(&mut self, text_color: String) {
+    /// Set or reset (with `None`) the `textColor` option.
+    pub fn set_text_color(&mut self, text_color: Option<String>) {
         self.text_color = text_color;
     }
 
-    pub fn entire_text_only(&self) -> bool {
+    /// Show top and bottom corner labels only if entire text is visible.
+    ///
+    /// Default: `false`.
+    pub fn with_entire_text_only(self, entire_text_only: bool) -> Self {
+        Self {
+            entire_text_only: Some(entire_text_only),
+            ..self
+        }
+    }
+
+    pub fn entire_text_only(&self) -> Option<bool> {
         self.entire_text_only
     }
 
-    pub fn set_entire_text_only(&mut self, entire_text_only: bool) {
+    /// Set or reset (with `None`) the `entireTextOnly` option.
+    pub fn set_entire_text_only(&mut self, entire_text_only: Option<bool>) {
         self.entire_text_only = entire_text_only;
     }
 
-    pub fn ticks_visible(&self) -> bool {
+    /// Draw small horizontal line on price axis labels.
+    ///
+    /// Default: `false`.
+    pub fn with_ticks_visible(self, ticks_visible: bool) -> Self {
+        Self {
+            ticks_visible: Some(ticks_visible),
+            ..self
+        }
+    }
+
+    pub fn ticks_visible(&self) -> Option<bool> {
         self.ticks_visible
     }
 
-    pub fn set_ticks_visible(&mut self, ticks_visible: bool) {
+    /// Set or reset (with `None`) the `ticksVisible` option.
+    pub fn set_ticks_visible(&mut self, ticks_visible: Option<bool>) {
         self.ticks_visible = ticks_visible;
     }
 
-    pub fn minimum_width(&self) -> f64 {
+    /// Define a minimum width for the price scale. Note: This value will be exceeded if the price scale needs more
+    /// space to display it's contents.
+    ///
+    /// Setting a minimum width could be useful for ensuring that multiple charts positioned in a vertical stack each
+    /// have an identical price scale width, or for plugins which require a bit more space within the price scale pane.
+    ///
+    /// Default: `0`.
+    pub fn with_minimum_width(self, minimum_width: impl Into<f64>) -> Self {
+        Self {
+            minimum_width: Some(minimum_width.into()),
+            ..self
+        }
+    }
+
+    pub fn minimum_width(&self) -> Option<f64> {
         self.minimum_width
     }
 
-    pub fn set_minimum_width(&mut self, minimum_size: f64) {
-        self.minimum_width = minimum_size;
+    /// Set or reset (with `None`) the `minimumWidth` option.
+    pub fn set_minimum_width(&mut self, minimum_width: Option<f64>) {
+        self.minimum_width = minimum_width;
     }
-}
 
-impl Default for OverlayPriceScaleOptions {
-    fn default() -> Self {
+    /// Ensures that tick marks are always visible at the very top and bottom of the price scale,
+    /// regardless of the data range. When enabled, a tick mark will be drawn at both edges of the scale,
+    /// providing clear boundary indicators.
+    ///
+    /// Default: `false`.
+    pub fn with_ensure_edge_tick_marks_visible(self, ensure_edge_tick_marks_visible: bool) -> Self {
         Self {
-            mode:             OverlayPriceScaleMode::default(),
-            invert_scale:     defaults::invert_scale(),
-            align_labels:     defaults::align_labels(),
-            scale_margins:    OverlayPriceScaleMargins::default(),
-            border_visible:   defaults::border_visible(),
-            border_color:     defaults::border_color(),
-            text_color:       defaults::text_color(),
-            entire_text_only: defaults::entire_text_only(),
-            ticks_visible:    defaults::ticks_visible(),
-            minimum_width:    defaults::minimum_width(),
+            ensure_edge_tick_marks_visible: Some(ensure_edge_tick_marks_visible),
+            ..self
         }
     }
-}
 
-mod defaults {
-    pub(super) fn invert_scale() -> bool {
-        false
+    pub fn ensure_edge_tick_marks_visible(&self) -> Option<bool> {
+        self.ensure_edge_tick_marks_visible
     }
 
-    pub(super) fn align_labels() -> bool {
-        true
+    /// Set or reset (with `None`) the `ensureEdgeTickMarksVisible` option.
+    pub fn set_ensure_edge_tick_marks_visible(&mut self, ensure_edge_tick_marks_visible: Option<bool>) {
+        self.ensure_edge_tick_marks_visible = ensure_edge_tick_marks_visible;
     }
 
-    pub(super) fn border_visible() -> bool {
-        true
+    /// Tick mark label density on the price scale. A higher value results in more spacing between tick marks,
+    /// and thus fewer tick marks. A lower value results in less spacing and more tick marks.
+    ///
+    /// Default: `2.5`.
+    pub fn with_tick_mark_density(self, tick_mark_density: impl Into<f64>) -> Self {
+        Self {
+            tick_mark_density: Some(tick_mark_density.into()),
+            ..self
+        }
     }
 
-    pub(super) fn border_color() -> String {
-        String::from("#2B2B43")
+    pub fn tick_mark_density(&self) -> Option<f64> {
+        self.tick_mark_density
     }
 
-    pub(super) fn text_color() -> String {
-        String::new()
-    }
-
-    pub(super) fn entire_text_only() -> bool {
-        false
-    }
-
-    pub(super) fn ticks_visible() -> bool {
-        false
-    }
-
-    pub(super) fn minimum_width() -> f64 {
-        0.
+    /// Set or reset (with `None`) the `tickMarkDensity` option.
+    pub fn set_tick_mark_density(&mut self, tick_mark_density: Option<f64>) {
+        self.tick_mark_density = tick_mark_density;
     }
 }

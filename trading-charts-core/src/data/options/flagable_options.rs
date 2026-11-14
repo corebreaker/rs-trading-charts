@@ -1,78 +1,60 @@
-use serde::{
-    de::{Visitor, Error},
-    Deserialize,
-    Serialize,
-    Deserializer,
-    Serializer,
+use super::{
+    handle_scale::{AxisDoubleClickOptions, AxisPressedMouseMoveOptions, HandleScaleOptions},
+    HandleScrollOptions,
 };
-use std::fmt::{Formatter, Result as FmtResult};
+use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Default, PartialEq)]
-pub enum FlagableOptions<T: Serialize + for<'de> Deserialize<'de> + Clone + Default> {
-    #[default]
-    None,
-    False,
-    True,
+/// Option which is either a flag enabling or disabling a whole feature, or the detailed options of the feature.
+///
+/// It converts from a `bool` and from the detailed options, so that builders accept both.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum FlagableOptions<T> {
+    /// Enable (`true`) or disable (`false`) the whole feature.
+    Flag(bool),
+
+    /// Detailed options of the feature.
     Options(T),
 }
 
-impl<T: Serialize + for<'de> Deserialize<'de> + Clone + Default> FlagableOptions<T> {
-    pub fn new() -> Self {
-        Self::default()
+impl<T> FlagableOptions<T> {
+    pub fn enabled() -> Self {
+        Self::Flag(true)
     }
 
-    pub fn new_options(options: T) -> Self {
-        Self::Options(options)
+    pub fn disabled() -> Self {
+        Self::Flag(false)
     }
 
-    pub fn is_none(&self) -> bool {
-        matches!(self, Self::None)
-    }
-}
-
-impl<T: Serialize + for<'de> Deserialize<'de> + Clone + Default> Serialize for FlagableOptions<T> {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+    pub fn options(&self) -> Option<&T> {
         match self {
-            FlagableOptions::None => serializer.serialize_none(),
-            FlagableOptions::False => serializer.serialize_bool(false),
-            FlagableOptions::True => serializer.serialize_bool(true),
-            FlagableOptions::Options(options) => options.serialize(serializer),
+            Self::Flag(_) => None,
+            Self::Options(options) => Some(options),
         }
     }
 }
 
-impl<'de, T: Serialize + for<'x> Deserialize<'x> + Clone + Default> Deserialize<'de> for FlagableOptions<T> {
-    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        deserializer.deserialize_any(FlagableOptionsVisitor::<T> {
-            _marker: std::marker::PhantomData,
-        })
+impl<T> From<bool> for FlagableOptions<T> {
+    fn from(flag: bool) -> Self {
+        Self::Flag(flag)
     }
 }
 
-struct FlagableOptionsVisitor<T: Serialize + for<'de> Deserialize<'de> + Clone + Default> {
-    _marker: std::marker::PhantomData<T>,
+macro_rules! from_options {
+    ($($options:ty),+) => {
+        $(
+            impl From<$options> for FlagableOptions<$options> {
+                fn from(options: $options) -> Self {
+                    Self::Options(options)
+                }
+            }
+        )+
+    };
 }
 
-impl<'de, T: Serialize + for<'x> Deserialize<'x> + Clone + Default> Visitor<'de> for FlagableOptionsVisitor<T> {
-    type Value = FlagableOptions<T>;
-
-    fn expecting(&self, formatter: &mut Formatter) -> FmtResult {
-        formatter.write_str("a boolean or an object")
-    }
-
-    fn visit_bool<E: Error>(self, v: bool) -> Result<Self::Value, E> {
-        Ok(if v {
-            FlagableOptions::True
-        } else {
-            FlagableOptions::False
-        })
-    }
-
-    fn visit_none<E: Error>(self) -> Result<Self::Value, E> {
-        Ok(FlagableOptions::None)
-    }
-
-    fn visit_some<D: Deserializer<'de>>(self, deserializer: D) -> Result<Self::Value, D::Error> {
-        Ok(FlagableOptions::Options(T::deserialize(deserializer)?))
-    }
-}
+from_options!(
+    HandleScrollOptions,
+    HandleScaleOptions,
+    AxisPressedMouseMoveOptions,
+    AxisDoubleClickOptions
+);

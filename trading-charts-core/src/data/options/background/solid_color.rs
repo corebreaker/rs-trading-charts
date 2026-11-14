@@ -1,15 +1,15 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone, Eq, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Eq, PartialEq, Debug)]
 pub struct SolidColor {
     #[serde(default = "defaults::color")]
     color: String,
 }
 
 impl SolidColor {
-    pub fn new(color: String) -> Self {
+    pub fn new(color: impl Into<String>) -> Self {
         Self {
-            color,
+            color: color.into()
         }
     }
 

@@ -1,111 +1,102 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone, PartialEq)]
+/// Represents options for how the chart is scrolled by the mouse and touch gestures.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct HandleScrollOptions {
-    #[serde(rename = "mouseWheel", default = "defaults::mouse_wheel")]
-    mouse_wheel: bool,
-
-    #[serde(rename = "pressedMouseMove", default = "defaults::pressed_mouse_move")]
-    pressed_mouse_move: bool,
-
-    #[serde(rename = "horzTouchDrag", default = "defaults::horz_touch_drag")]
-    horz_touch_drag: bool,
-
-    #[serde(rename = "vertTouchDrag", default = "defaults::vert_touch_drag")]
-    vert_touch_drag: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    mouse_wheel:        Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pressed_mouse_move: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    horz_touch_drag:    Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    vert_touch_drag:    Option<bool>,
 }
 
 impl HandleScrollOptions {
+    /// Create options where every option keeps its default value.
     pub fn new() -> Self {
         Self::default()
     }
 
+    /// Enable scrolling with the mouse wheel.
+    ///
+    /// Default: `true`.
     pub fn with_mouse_wheel(self, mouse_wheel: bool) -> Self {
         Self {
-            mouse_wheel,
+            mouse_wheel: Some(mouse_wheel),
             ..self
         }
     }
 
-    pub fn with_pressed_mouse_move(self, pressed_mouse_move: bool) -> Self {
-        Self {
-            pressed_mouse_move,
-            ..self
-        }
-    }
-
-    pub fn with_horz_touch_drag(self, horz_touch_drag: bool) -> Self {
-        Self {
-            horz_touch_drag,
-            ..self
-        }
-    }
-
-    pub fn with_vert_touch_drag(self, vert_touch_drag: bool) -> Self {
-        Self {
-            vert_touch_drag,
-            ..self
-        }
-    }
-
-    pub fn mouse_wheel(&self) -> bool {
+    pub fn mouse_wheel(&self) -> Option<bool> {
         self.mouse_wheel
     }
 
-    pub fn set_mouse_wheel(&mut self, mouse_wheel: bool) {
+    /// Set or reset (with `None`) the `mouseWheel` option.
+    pub fn set_mouse_wheel(&mut self, mouse_wheel: Option<bool>) {
         self.mouse_wheel = mouse_wheel;
     }
 
-    pub fn pressed_mouse_move(&self) -> bool {
+    /// Enable scrolling by holding down the left mouse button and moving the mouse.
+    ///
+    /// Default: `true`.
+    pub fn with_pressed_mouse_move(self, pressed_mouse_move: bool) -> Self {
+        Self {
+            pressed_mouse_move: Some(pressed_mouse_move),
+            ..self
+        }
+    }
+
+    pub fn pressed_mouse_move(&self) -> Option<bool> {
         self.pressed_mouse_move
     }
 
-    pub fn set_pressed_mouse_move(&mut self, pressed_mouse_move: bool) {
+    /// Set or reset (with `None`) the `pressedMouseMove` option.
+    pub fn set_pressed_mouse_move(&mut self, pressed_mouse_move: Option<bool>) {
         self.pressed_mouse_move = pressed_mouse_move;
     }
 
-    pub fn horz_touch_drag(&self) -> bool {
+    /// Enable horizontal touch scrolling.
+    ///
+    /// When enabled the chart handles touch gestures that would normally scroll the webpage horizontally.
+    ///
+    /// Default: `true`.
+    pub fn with_horz_touch_drag(self, horz_touch_drag: bool) -> Self {
+        Self {
+            horz_touch_drag: Some(horz_touch_drag),
+            ..self
+        }
+    }
+
+    pub fn horz_touch_drag(&self) -> Option<bool> {
         self.horz_touch_drag
     }
 
-    pub fn set_horz_touch_drag(&mut self, horz_touch_drag: bool) {
+    /// Set or reset (with `None`) the `horzTouchDrag` option.
+    pub fn set_horz_touch_drag(&mut self, horz_touch_drag: Option<bool>) {
         self.horz_touch_drag = horz_touch_drag;
     }
 
-    pub fn vert_touch_drag(&self) -> bool {
+    /// Enable vertical touch scrolling.
+    ///
+    /// When enabled the chart handles touch gestures that would normally scroll the webpage vertically.
+    ///
+    /// Default: `true`.
+    pub fn with_vert_touch_drag(self, vert_touch_drag: bool) -> Self {
+        Self {
+            vert_touch_drag: Some(vert_touch_drag),
+            ..self
+        }
+    }
+
+    pub fn vert_touch_drag(&self) -> Option<bool> {
         self.vert_touch_drag
     }
 
-    pub fn set_vert_touch_drag(&mut self, vert_touch_drag: bool) {
+    /// Set or reset (with `None`) the `vertTouchDrag` option.
+    pub fn set_vert_touch_drag(&mut self, vert_touch_drag: Option<bool>) {
         self.vert_touch_drag = vert_touch_drag;
-    }
-}
-
-impl Default for HandleScrollOptions {
-    fn default() -> Self {
-        Self {
-            mouse_wheel:        defaults::mouse_wheel(),
-            pressed_mouse_move: defaults::pressed_mouse_move(),
-            horz_touch_drag:    defaults::horz_touch_drag(),
-            vert_touch_drag:    defaults::vert_touch_drag(),
-        }
-    }
-}
-
-mod defaults {
-    pub(super) fn mouse_wheel() -> bool {
-        true
-    }
-
-    pub(super) fn pressed_mouse_move() -> bool {
-        true
-    }
-
-    pub(super) fn horz_touch_drag() -> bool {
-        true
-    }
-
-    pub(super) fn vert_touch_drag() -> bool {
-        true
     }
 }

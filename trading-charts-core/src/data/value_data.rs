@@ -1,7 +1,7 @@
 use super::UTCTimestamp;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
 pub struct ValueData {
     time:  UTCTimestamp,
     value: f64,

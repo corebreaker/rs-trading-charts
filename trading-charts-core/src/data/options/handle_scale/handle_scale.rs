@@ -1,105 +1,111 @@
-use super::{super::FlagableOptions, AxisDoubleClickOptions, AxisPressedMouseMoveOptions};
+use {
+    crate::data::options::FlagableOptions,
+    crate::data::options::handle_scale::AxisDoubleClickOptions,
+    crate::data::options::handle_scale::AxisPressedMouseMoveOptions,
+};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone, PartialEq)]
+/// Represents options for how the chart is scaled by the mouse and touch gestures.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct HandleScaleOptions {
-    mouse_wheel: bool,
-
-    #[serde(default = "defaults::pinch")]
-    pinch: bool,
-
-    #[serde(
-        rename = "axisPressedMouseMove",
-        skip_serializing_if = "FlagableOptions::is_none",
-        default
-    )]
-    axis_pressed_mouse_move: FlagableOptions<AxisPressedMouseMoveOptions>,
-
-    #[serde(
-        rename = "axisDoubleClickReset",
-        skip_serializing_if = "FlagableOptions::is_none",
-        default
-    )]
-    axis_double_click_reset: FlagableOptions<AxisDoubleClickOptions>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    mouse_wheel:             Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pinch:                   Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    axis_pressed_mouse_move: Option<FlagableOptions<AxisPressedMouseMoveOptions>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    axis_double_click_reset: Option<FlagableOptions<AxisDoubleClickOptions>>,
 }
 
 impl HandleScaleOptions {
+    /// Create options where every option keeps its default value.
     pub fn new() -> Self {
         Self::default()
     }
 
-    pub fn new_with_options(
-        mouse_wheel: bool,
-        pinch: bool,
-        axis_pressed_mouse_move: FlagableOptions<AxisPressedMouseMoveOptions>,
-        axis_double_click_reset: FlagableOptions<AxisDoubleClickOptions>,
-    ) -> Self {
+    /// Enable scaling with the mouse wheel.
+    ///
+    /// Default: `true`.
+    pub fn with_mouse_wheel(self, mouse_wheel: bool) -> Self {
         Self {
-            mouse_wheel,
-            pinch,
-            axis_pressed_mouse_move,
-            axis_double_click_reset,
+            mouse_wheel: Some(mouse_wheel),
+            ..self
         }
     }
 
-    pub fn mouse_wheel(&self) -> bool {
+    pub fn mouse_wheel(&self) -> Option<bool> {
         self.mouse_wheel
     }
 
-    pub fn set_mouse_wheel(&mut self, value: bool) {
-        self.mouse_wheel = value;
+    /// Set or reset (with `None`) the `mouseWheel` option.
+    pub fn set_mouse_wheel(&mut self, mouse_wheel: Option<bool>) {
+        self.mouse_wheel = mouse_wheel;
     }
 
-    pub fn pinch(&self) -> bool {
+    /// Enable scaling with pinch/zoom gestures.
+    ///
+    /// Default: `true`.
+    pub fn with_pinch(self, pinch: bool) -> Self {
+        Self {
+            pinch: Some(pinch),
+            ..self
+        }
+    }
+
+    pub fn pinch(&self) -> Option<bool> {
         self.pinch
     }
 
-    pub fn set_pinch(&mut self, value: bool) {
-        self.pinch = value;
+    /// Set or reset (with `None`) the `pinch` option.
+    pub fn set_pinch(&mut self, pinch: Option<bool>) {
+        self.pinch = pinch;
     }
 
-    pub fn axis_pressed_mouse_move(&self) -> &FlagableOptions<AxisPressedMouseMoveOptions> {
-        &self.axis_pressed_mouse_move
-    }
-
-    pub fn axis_pressed_mouse_move_mut(&mut self) -> &mut FlagableOptions<AxisPressedMouseMoveOptions> {
-        &mut self.axis_pressed_mouse_move
-    }
-
-    pub fn set_axis_pressed_mouse_move(&mut self, value: FlagableOptions<AxisPressedMouseMoveOptions>) {
-        self.axis_pressed_mouse_move = value;
-    }
-
-    pub fn axis_double_click_reset(&self) -> &FlagableOptions<AxisDoubleClickOptions> {
-        &self.axis_double_click_reset
-    }
-
-    pub fn axis_double_click_reset_mut(&mut self) -> &mut FlagableOptions<AxisDoubleClickOptions> {
-        &mut self.axis_double_click_reset
-    }
-
-    pub fn set_axis_double_click_reset(&mut self, value: FlagableOptions<AxisDoubleClickOptions>) {
-        self.axis_double_click_reset = value;
-    }
-}
-
-impl Default for HandleScaleOptions {
-    fn default() -> Self {
+    /// Enable scaling the price and/or time scales by holding down the left mouse button and moving the mouse.
+    pub fn with_axis_pressed_mouse_move(
+        self,
+        axis_pressed_mouse_move: impl Into<FlagableOptions<AxisPressedMouseMoveOptions>>,
+    ) -> Self {
         Self {
-            mouse_wheel:             defaults::mouse_wheel(),
-            pinch:                   defaults::pinch(),
-            axis_pressed_mouse_move: FlagableOptions::default(),
-            axis_double_click_reset: FlagableOptions::default(),
+            axis_pressed_mouse_move: Some(axis_pressed_mouse_move.into()),
+            ..self
         }
     }
-}
 
-mod defaults {
-    pub(super) fn mouse_wheel() -> bool {
-        true
+    pub fn axis_pressed_mouse_move(&self) -> Option<&FlagableOptions<AxisPressedMouseMoveOptions>> {
+        self.axis_pressed_mouse_move.as_ref()
     }
 
-    pub(super) fn pinch() -> bool {
-        true
+    /// Set or reset (with `None`) the `axisPressedMouseMove` option.
+    pub fn set_axis_pressed_mouse_move(
+        &mut self,
+        axis_pressed_mouse_move: Option<FlagableOptions<AxisPressedMouseMoveOptions>>,
+    ) {
+        self.axis_pressed_mouse_move = axis_pressed_mouse_move;
+    }
+
+    /// Enable resetting scaling by double-clicking the left mouse button.
+    pub fn with_axis_double_click_reset(
+        self,
+        axis_double_click_reset: impl Into<FlagableOptions<AxisDoubleClickOptions>>,
+    ) -> Self {
+        Self {
+            axis_double_click_reset: Some(axis_double_click_reset.into()),
+            ..self
+        }
+    }
+
+    pub fn axis_double_click_reset(&self) -> Option<&FlagableOptions<AxisDoubleClickOptions>> {
+        self.axis_double_click_reset.as_ref()
+    }
+
+    /// Set or reset (with `None`) the `axisDoubleClickReset` option.
+    pub fn set_axis_double_click_reset(
+        &mut self,
+        axis_double_click_reset: Option<FlagableOptions<AxisDoubleClickOptions>>,
+    ) {
+        self.axis_double_click_reset = axis_double_click_reset;
     }
 }

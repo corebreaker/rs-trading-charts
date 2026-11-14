@@ -1,7 +1,7 @@
 use super::{MarkerType, UTCTimestamp};
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
 pub struct Marker {
     time: UTCTimestamp,
     text: String,

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Default, Serialize, Deserialize, Clone, Copy, PartialEq)]
+#[derive(Default, Serialize, Deserialize, Clone, Copy, PartialEq, Debug)]
 #[serde(rename_all = "lowercase")]
 pub enum PriceFormatType {
     #[default]
@@ -9,7 +9,7 @@ pub enum PriceFormatType {
     Percent,
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
 pub struct PriceFormatOptions {
     #[serde(rename = "type")]
     kind:      PriceFormatType,
@@ -17,6 +17,8 @@ pub struct PriceFormatOptions {
     precision: Option<usize>,
     #[serde(rename = "minMove", skip_serializing_if = "Option::is_none")]
     min_move:  Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    base:      Option<f64>,
 }
 
 impl PriceFormatOptions {
@@ -37,6 +39,7 @@ impl PriceFormatOptions {
             kind,
             precision: None,
             min_move: None,
+            base: None,
         }
     }
 
@@ -47,9 +50,18 @@ impl PriceFormatOptions {
         }
     }
 
+    /// Minimal step of the price, used to round the prices. Default: `0.01`.
     pub fn with_min_move(self, min_move: f64) -> Self {
         Self {
             min_move: Some(min_move),
+            ..self
+        }
+    }
+
+    /// Base of the prices, the inverse of `min_move`, which takes precedence over `min_move` when both are set.
+    pub fn with_base(self, base: f64) -> Self {
+        Self {
+            base: Some(base),
             ..self
         }
     }
