@@ -1,0 +1,314 @@
+name: Claude PR Review
+
+# Triggered by a comment on a PR. Two distinct commands:
+#
+#   /claude review              -> review posted as a comment, no approval
+#   /claude review and approve  -> review posted, plus approval if the PR is deemed mergeable
+#
+# The two jobs are mutually exclusive thanks to the `if` conditions below: the approval command
+# contains the substring "and approve" and is therefore excluded from the "review only" job.
+#
+# Only the repository owner may trigger these commands (comparison of
+# `github.event.comment.user.login` with `github.repository_owner`). A comment posted by any
+# other contributor is ignored, even if it contains `/claude review`.
+#
+# Required secrets: `CLAUDE_CODE_OAUTH_TOKEN` (Claude Code authentication), and `BOT_APP_ID` and
+# `BOT_APP_KEY` (GitHub App posting the reviews, installed on the repository: a pull request
+# cannot be approved by its own author).
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  # =============================================================================================
+  # Informative review: no approval, whatever the analysis concludes.
+  # =============================================================================================
+  review:
+    name: Review only
+    if: >-
+      github.event.issue.pull_request != null &&
+      github.event.comment.user.login == github.repository_owner &&
+      startsWith(github.event.comment.body, '/claude review') &&
+      !contains(github.event.comment.body, 'and approve')
+
+    runs-on: ubuntu-latest
+    # Serialize reviews on the same PR: two successive commands do not spawn two runners in
+    # parallel. The review already in progress is cancelled in favour of the most recent one,
+    # which prevents a stale comment from arriving after the up-to-date one.
+    concurrency:
+      group: claude-review-${{ github.event.issue.number }}
+      cancel-in-progress: true
+    steps:
+      - name: Generate installation token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.BOT_APP_ID }}
+          private-key: ${{ secrets.BOT_APP_KEY }}
+
+      - name: Checkout PR head
+        uses: actions/checkout@v4
+        with:
+          ref: refs/pull/${{ github.event.issue.number }}/head
+          fetch-depth: 0
+
+      - name: Run Claude review
+        uses: anthropics/claude-code-action@beta
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ steps.app-token.outputs.token }}
+          model: "claude-sonnet-5"
+          trigger_phrase: "/claude review"
+          direct_prompt: |
+            You are a code-review expert. Before any analysis, read `CLAUDE.md` at the repository
+            root when it exists, the root `README.md` and the READMEs of the crates (`core`,
+            `leptos` and `dioxus` directories), and strictly apply the project conventions:
+            English-only code, identifiers, comments, doc-strings and test names; formatting with
+            `cargo +nightly fmt` only (never stable fmt) within the 120 columns of `.rustfmt.toml`,
+            including inside the `view!` and `rsx!` macros, which rustfmt does not reformat;
+            documentation and Markdown lines of at most 120 columns, wrapped preferably at
+            punctuation; errors returned as `Result<_, JsError>` and logged by the adapters, no
+            `unwrap` in library code where an error can occur; option structs mirroring the
+            Lightweight Charts typings (every field an `Option` skipped when `None`, serialized in
+            camelCase, with `with_*` builders, getters and setters); every JS method or export used
+            from Rust declared in `core/src/bindings/js.rs`; the core crate kept framework-agnostic,
+            and the component features provided by both the Leptos and the Dioxus adapters.
+
+            Review PR #${{ github.event.issue.number }}:
+
+            1. Fetch the full diff via `gh pr diff ${{ github.event.issue.number }}` and the
+               description via `gh pr view ${{ github.event.issue.number }}`.
+            2. Fetch the HEAD commit SHA:
+               `gh pr view ${{ github.event.issue.number }} --json headRefOid --jq .headRefOid`
+            3. Fetch the history of previous reviews and exchanges:
+               - Past reviews:
+                 `gh api repos/${{ github.repository }}/pulls/${{ github.event.issue.number }}/reviews`
+               - Inline comments and their replies:
+                 `gh api repos/${{ github.repository }}/pulls/${{ github.event.issue.number }}/comments`
+               - General PR comments:
+                 `gh api repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments`
+               For every point raised in a previous review, determine its status:
+               - **Resolved**: a reply indicates it was handled (e.g. "Fixed", "Done") or the diff
+                 shows the code changed accordingly.
+               - **Open**: no reply, or the problem still stands in the current diff.
+               Do not re-raise a resolved point. Mark "(already reported, still open)" for open
+               points carried over from the previous review.
+            4. Identify linked issues via
+               `gh pr view ${{ github.event.issue.number }} --json closingIssuesReferences`.
+               For each issue found, fetch its description via `gh issue view <num>`.
+               A linked issue's description clarifies the PR's **original goal**. However, some
+               commits may legitimately do things **beyond** that goal: do not treat scope
+               overrun as a defect unless the PR or issue description explicitly forbids such
+               additions.
+            5. Analyse the changes along these axes: correctness (logic, lifetimes, `unsafe`
+               safety, error handling), consistency between the Rust types, the JS binding and the
+               Lightweight Charts API (JSON shapes, `extern "C"` declarations, times exchanged in
+               UTC), adherence to the project conventions, performance, security, test coverage
+               (the pure Rust helpers and the JSON shapes are unit-tested, the browser behaviour
+               cannot be tested in CI). To inspect code beyond the diff, use the `Read`, `Grep`
+               and `Glob` tools (do not run `grep`, `cat` or `python3` via Bash: they are not
+               allowed).
+            6. Rank the points found by severity: **Critical** (bug/UB/security), **Important**
+               (likely regression, ambiguous contract, debt that will soon block), **Minor**
+               (readability, redundancy, dead code).
+            7. Write a structured review in English including:
+               - if a previous review existed: a **Follow-up** section listing the points resolved
+                 since the last review,
+               - a summary of the positive aspects,
+               - a table of points by severity (new and open).
+            8. Post the review via the GitHub API in a single request that includes both the
+               overall summary AND the inline comments on the exact diff lines. First create the
+               `review.json` file at the repository root with the `Write` tool (never write this
+               file via a Bash redirection `cat >`/`tee`: only `gh` commands are allowed in Bash),
+               then post it:
+
+               ```bash
+               gh api repos/${{ github.repository }}/pulls/${{ github.event.issue.number }}/reviews \
+                 --method POST \
+                 --input review.json
+               ```
+
+               Format of `review.json`:
+               ```json
+               {
+                 "commit_id": "<SHA obtained in step 2>",
+                 "body": "<overall review summary in markdown>",
+                 "event": "COMMENT",
+                 "comments": [
+                   {
+                     "path": "core/src/...",
+                     "line": 42,
+                     "side": "RIGHT",
+                     "body": "**[Important]** Explanation of the problem on this line."
+                   }
+                 ]
+               }
+               ```
+
+               Rules for inline comments:
+               - Only add an inline comment on a line actually present in the diff (added lines `+`
+                 or context). For an added line, `"side": "RIGHT"`.
+               - `"line"` is the line number in the final file (as shown in the diff's
+                 `@@ -X,Y +START,COUNT @@` header).
+               - Prefix each comment with its severity in brackets: `[Critical]`, `[Important]`
+                 or `[Minor]`.
+               - Do not repeat inline a point already commented inline in a previous review and
+                 still unresolved: it is already visible in that line's discussion thread.
+               - If no point deserves an inline comment, `"comments"` may be an empty array.
+
+            **Do NOT attempt to approve the PR.** This command is purely informative, whatever
+            your analysis concludes.
+          allowed_tools: "Read,Glob,Grep,Write,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh issue view:*),Bash(gh api:*)"
+
+  # =============================================================================================
+  # Review + conditional approval. Approval is granted only in the absence of any Critical or
+  # Important point. Otherwise the review is posted as a comment with the justification for refusal.
+  # =============================================================================================
+  review-and-approve:
+    name: Review and approve if satisfactory
+    if: >-
+      github.event.issue.pull_request != null &&
+      github.event.comment.user.login == github.repository_owner &&
+      contains(github.event.comment.body, '/claude review and approve')
+    runs-on: ubuntu-latest
+    # Same serialization rules as the `review` job. Both jobs deliberately share the same
+    # `group` so that an approval command cancels an informative review in progress (and vice
+    # versa) on the same PR.
+    concurrency:
+      group: claude-review-${{ github.event.issue.number }}
+      cancel-in-progress: true
+    steps:
+      - name: Generate installation token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.BOT_APP_ID }}
+          private-key: ${{ secrets.BOT_APP_KEY }}
+
+      - name: Checkout PR head
+        uses: actions/checkout@v4
+        with:
+          ref: refs/pull/${{ github.event.issue.number }}/head
+          fetch-depth: 0
+
+      - name: Run Claude review with conditional approval
+        uses: anthropics/claude-code-action@beta
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ steps.app-token.outputs.token }}
+          model: "claude-sonnet-5"
+          trigger_phrase: "/claude review and approve"
+          direct_prompt: |
+            You are a code-review expert. Before any analysis, read `CLAUDE.md` at the repository
+            root when it exists, the root `README.md` and the READMEs of the crates (`core`,
+            `leptos` and `dioxus` directories), and strictly apply the project conventions:
+            English-only code, identifiers, comments, doc-strings and test names; formatting with
+            `cargo +nightly fmt` only (never stable fmt) within the 120 columns of `.rustfmt.toml`,
+            including inside the `view!` and `rsx!` macros, which rustfmt does not reformat;
+            documentation and Markdown lines of at most 120 columns, wrapped preferably at
+            punctuation; errors returned as `Result<_, JsError>` and logged by the adapters, no
+            `unwrap` in library code where an error can occur; option structs mirroring the
+            Lightweight Charts typings (every field an `Option` skipped when `None`, serialized in
+            camelCase, with `with_*` builders, getters and setters); every JS method or export used
+            from Rust declared in `core/src/bindings/js.rs`; the core crate kept framework-agnostic,
+            and the component features provided by both the Leptos and the Dioxus adapters.
+
+            Review PR #${{ github.event.issue.number }}:
+
+            1. Fetch the full diff via `gh pr diff ${{ github.event.issue.number }}` and the
+               description via `gh pr view ${{ github.event.issue.number }}`.
+            2. Fetch the HEAD commit SHA:
+               `gh pr view ${{ github.event.issue.number }} --json headRefOid --jq .headRefOid`
+            3. Fetch the history of previous reviews and exchanges:
+               - Past reviews:
+                 `gh api repos/${{ github.repository }}/pulls/${{ github.event.issue.number }}/reviews`
+               - Inline comments and their replies:
+                 `gh api repos/${{ github.repository }}/pulls/${{ github.event.issue.number }}/comments`
+               - General PR comments:
+                 `gh api repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments`
+               For every point raised in a previous review, determine its status:
+               - **Resolved**: a reply indicates it was handled (e.g. "Fixed", "Done") or the diff
+                 shows the code changed accordingly.
+               - **Open**: no reply, or the problem still stands in the current diff.
+               Do not re-raise a resolved point. Mark "(already reported, still open)" for open
+               points carried over from the previous review.
+            4. Identify linked issues via
+               `gh pr view ${{ github.event.issue.number }} --json closingIssuesReferences`.
+               For each issue found, fetch its description via `gh issue view <num>`.
+               A linked issue's description clarifies the PR's **original goal**. However, some
+               commits may legitimately do things **beyond** that goal: do not treat scope
+               overrun as a defect unless the PR or issue description explicitly forbids such
+               additions.
+            5. Analyse the changes along these axes: correctness (logic, lifetimes, `unsafe`
+               safety, error handling), consistency between the Rust types, the JS binding and the
+               Lightweight Charts API (JSON shapes, `extern "C"` declarations, times exchanged in
+               UTC), adherence to the project conventions, performance, security, test coverage
+               (the pure Rust helpers and the JSON shapes are unit-tested, the browser behaviour
+               cannot be tested in CI). To inspect code beyond the diff, use the `Read`, `Grep`
+               and `Glob` tools (do not run `grep`, `cat` or `python3` via Bash: they are not
+               allowed).
+            6. Rank the points found by severity: **Critical** (bug/UB/security), **Important**
+               (likely regression, ambiguous contract, debt that will soon block), **Minor**
+               (readability, redundancy, dead code).
+            7. Decide:
+               - **Approve** if and only if no Critical nor Important point is found.
+               - **Request changes** in any other case.
+            8. Write a structured review in English including:
+               - if a previous review existed: a **Follow-up** section listing the points resolved
+                 since the last review,
+               - the positive aspects first,
+               - the table of points by severity (new and open),
+               - a final **Decision** section explicitly stating "Approved" or "Changes requested"
+                 with the justification.
+            9. Post the review via the GitHub API in a single request that includes both the
+               overall summary AND the inline comments on the exact diff lines. First create the
+               `review.json` file at the repository root with the `Write` tool (never write this
+               file via a Bash redirection `cat >`/`tee`: only `gh` commands are allowed in Bash),
+               then post it:
+
+               ```bash
+               gh api repos/${{ github.repository }}/pulls/${{ github.event.issue.number }}/reviews \
+                 --method POST \
+                 --input review.json
+               ```
+
+               Format of `review.json` (adapt `"event"` to the decision):
+               ```json
+               {
+                 "commit_id": "<SHA obtained in step 2>",
+                 "body": "<overall review summary in markdown>",
+                 "event": "APPROVE",
+                 "comments": [
+                   {
+                     "path": "core/src/...",
+                     "line": 42,
+                     "side": "RIGHT",
+                     "body": "**[Minor]** Explanation."
+                   }
+                 ]
+               }
+               ```
+
+               Possible values for `"event"`:
+               - `"APPROVE"` — no Critical nor Important point
+               - `"REQUEST_CHANGES"` — at least one Critical or Important point
+
+               Rules for inline comments:
+               - Only add an inline comment on a line actually present in the diff (added lines `+`
+                 or context). For an added line, `"side": "RIGHT"`.
+               - `"line"` is the line number in the final file (as shown in the diff's
+                 `@@ -X,Y +START,COUNT @@` header).
+               - Prefix each comment with its severity in brackets: `[Critical]`, `[Important]`
+                 or `[Minor]`.
+               - Do not repeat inline a point already commented inline in a previous review and
+                 still unresolved: it is already visible in that line's discussion thread.
+               - If no point deserves an inline comment, `"comments"` may be an empty array.
+
+            Never bypass the criteria: a single Critical or Important point is enough to force
+            `"REQUEST_CHANGES"` and forbids `"APPROVE"`.
+          allowed_tools: "Read,Glob,Grep,Write,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh issue view:*),Bash(gh api:*)"

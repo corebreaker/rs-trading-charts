@@ -1,0 +1,59 @@
+name: Update milestone on release
+
+# When a release is published, the open milestone of its version (`X.Y.Z` in the milestone title, such as
+# `v1.0.0`) gets a link to the release in its description, and is closed for a final release.
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  update-milestone:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Update matching milestone
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event.release.tag_name }}
+          URL: ${{ github.event.release.html_url }}
+          PRERELEASE: ${{ github.event.release.prerelease }}
+        run: |
+          REPO="${{ github.repository }}"
+          REVISION=$(echo "$TAG" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n1)
+
+          if [ -z "$REVISION" ]; then
+            echo "Unable to extract an X.Y.Z revision from tag $TAG"
+            exit 0
+          fi
+
+          # The milestone title must contain the revision as a whole version: `0.1.1` must not match `v0.1.12`.
+          ESCAPED=$(echo "$REVISION" | sed 's/\./\\./g')
+          NUM=$(gh api repos/$REPO/milestones --jq '.[] | "\(.number) \(.title)"' \
+            | grep -E "^[0-9]+ (.*[^0-9.])?${ESCAPED}([^0-9.].*)?\$" | head -n1 | cut -d' ' -f1)
+
+          if [ -z "$NUM" ]; then
+            echo "No open milestone matches revision $REVISION"
+            exit 0
+          fi
+
+          CURRENT_DESC=$(gh api repos/$REPO/milestones/$NUM --jq '.description // ""')
+
+          if [ "$PRERELEASE" = "true" ]; then
+            NEW_LINE="Pre-release: [$TAG]($URL)"
+            CLOSE=false
+          else
+            NEW_LINE="Release: [$TAG]($URL)"
+            CLOSE=true
+          fi
+
+          if [ -n "$CURRENT_DESC" ]; then
+            NEW_DESC=$(printf '%s\n\n---\n%s' "$CURRENT_DESC" "$NEW_LINE")
+          else
+            NEW_DESC="$NEW_LINE"
+          fi
+
+          jq -n --arg desc "$NEW_DESC" --argjson close "$CLOSE" \
+            '{description: $desc} + (if $close then {state: "closed"} else {} end)' \
+          | gh api repos/$REPO/milestones/$NUM -X PATCH --input -
