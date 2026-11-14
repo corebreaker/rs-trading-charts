@@ -1,58 +1,90 @@
-use super::data::{LegendOptions, options::ChartOptions};
-use crate::{ChartHandle, JsError, REFIT_EVENT_KIND};
-use emitix::{leptos::LeptosEventChannels, EventManager};
-use leptos::{
-    tachys::{
-        html::{
-            attribute::global::{StyleAttribute, ClassAttribute},
-            node_ref::NodeRefAttribute,
-        },
-        view::any_view::IntoAny,
-        reactive_graph::node_ref::NodeRef,
-    },
-    reactive::{
-        effect::Effect,
-        traits::{Get, With, WithUntracked},
-        wrappers::read::{MaybeProp, Signal},
-    },
-    children::Children,
-    context::Provider,
-    html::Div,
-    IntoView,
-    component,
-    view,
+use crate::{
+    data::{options::ChartOptions, LegendOptions, LogicalRange, MouseEventParams, TimeRange},
+    ChartHandle,
+    JsError,
+    Subscription,
+    REFIT_EVENT_KIND,
 };
 
-fn make_chart(options: Option<Signal<ChartOptions>>) -> Result<ChartHandle, JsError> {
-    Ok(match options {
-        None => ChartHandle::new(None)?,
-        Some(options) => {
-            let chart = options.with_untracked(|options| ChartHandle::new(Some(options)))?;
-            let _ = Effect::new({
-                let chart = chart.clone();
+use emitix::{leptos::LeptosEventChannels, EventManager};
+use leptos::{html::Div, prelude::*};
 
-                move || {
-                    options.with(|options| {
-                        if let Err(err) = chart.apply_chart_options(options) {
-                            err.with_prefix("Failed to apply chart options").log();
-                        }
-                    })
-                }
-            });
+/// Crosshair state of a chart, provided to the children of [`Chart`].
+#[derive(Clone, Copy)]
+struct CrosshairState(Signal<Option<MouseEventParams>>);
 
-            chart
-        }
-    })
+/// Reactive state of the crosshair of the enclosing [`Chart`], updated each time the crosshair moves.
+///
+/// It is `None` before the first move. Outside of a `Chart`, the returned signal is always `None`.
+pub fn use_crosshair() -> Signal<Option<MouseEventParams>> {
+    use_context::<CrosshairState>()
+        .map(|state| state.0)
+        .unwrap_or_else(|| Signal::stored(None))
 }
 
+/// The chart handle of the enclosing [`Chart`], `None` outside of a chart.
+pub fn use_chart() -> Option<ChartHandle> {
+    use_context::<ChartHandle>()
+}
+
+fn make_chart(options: Option<Signal<ChartOptions>>) -> Result<ChartHandle, JsError> {
+    let Some(options) = options else {
+        return ChartHandle::new(None);
+    };
+
+    let chart = options.with_untracked(|options| ChartHandle::new(Some(options)))?;
+    Effect::new({
+        let chart = chart.clone();
+
+        move || {
+            options.with(|options| {
+                if let Err(err) = chart.apply_chart_options(options) {
+                    err.with_prefix("Failed to apply chart options").log();
+                }
+            })
+        }
+    });
+
+    Ok(chart)
+}
+
+fn keep_subscription(subscription: Result<Subscription, JsError>, event: &str) {
+    match subscription {
+        Ok(subscription) => on_cleanup(move || drop(subscription)),
+        Err(err) => err
+            .with_prefix(format!("Failed to subscribe to the {event} event"))
+            .log(),
+    }
+}
+
+/// Chart, which renders its series, panes, tooltips and overlays given as children.
+///
+/// The chart fills a `div` sized by the `style` and `class` props, which is also the positioning context of the
+/// overlays: give it a size, for instance with `style="width:100%;height:400px"`, and set the `autoSize` chart
+/// option to follow it.
+///
+/// The children can access the chart with [`use_chart`] and the crosshair state with [`use_crosshair`].
 #[component]
 pub fn Chart(
-    #[prop(optional, into)] options: Option<Signal<ChartOptions>>,
-    #[prop(optional, into)] legend: Option<Signal<Option<LegendOptions>>>,
-    #[prop(optional, into)] time_zone: MaybeProp<String>,
+    /// Options of the chart, applied again when they change.
+    #[prop(optional, into)]
+    options: Option<Signal<ChartOptions>>,
+    /// Options of the built-in legend, which is removed with `None`.
+    #[prop(optional, into)]
+    legend: Option<Signal<Option<LegendOptions>>>,
+    /// IANA time zone in which the times are displayed, such as `Europe/Paris`; UTC by default.
+    #[prop(optional, into)]
+    time_zone: MaybeProp<String>,
     #[prop(optional, into)] style: Option<String>,
     #[prop(optional, into)] class: Option<String>,
-    #[prop(optional)] refit: Option<LeptosEventChannels>,
+    /// Event channels on which a `REFIT_EVENT_KIND` event scales the time axis to fit the data.
+    #[prop(optional)]
+    refit: Option<LeptosEventChannels>,
+    #[prop(optional, into)] on_crosshair_move: Option<Callback<MouseEventParams>>,
+    #[prop(optional, into)] on_click: Option<Callback<MouseEventParams>>,
+    #[prop(optional, into)] on_dbl_click: Option<Callback<MouseEventParams>>,
+    #[prop(optional, into)] on_visible_time_range_change: Option<Callback<Option<TimeRange>>>,
+    #[prop(optional, into)] on_visible_logical_range_change: Option<Callback<Option<LogicalRange>>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let chart = match make_chart(options) {
@@ -60,11 +92,45 @@ pub fn Chart(
         Err(err) => {
             err.with_prefix("Failed to create chart").log();
 
-            return view!().into_any();
+            return ().into_any();
         }
     };
 
-    let _ = Effect::new({
+    let crosshair = RwSignal::new(None::<MouseEventParams>);
+    keep_subscription(
+        chart.on_crosshair_move(move |params| {
+            if let Some(callback) = on_crosshair_move {
+                callback.run(params.clone());
+            }
+
+            crosshair.set(Some(params));
+        }),
+        "crosshair move",
+    );
+
+    if let Some(callback) = on_click {
+        keep_subscription(chart.on_click(move |params| callback.run(params)), "click");
+    }
+
+    if let Some(callback) = on_dbl_click {
+        keep_subscription(chart.on_dbl_click(move |params| callback.run(params)), "double click");
+    }
+
+    if let Some(callback) = on_visible_time_range_change {
+        keep_subscription(
+            chart.on_visible_time_range_change(move |range| callback.run(range)),
+            "visible time range change",
+        );
+    }
+
+    if let Some(callback) = on_visible_logical_range_change {
+        keep_subscription(
+            chart.on_visible_logical_range_change(move |range| callback.run(range)),
+            "visible logical range change",
+        );
+    }
+
+    Effect::new({
         let chart = chart.clone();
 
         move || {
@@ -76,7 +142,6 @@ pub fn Chart(
 
     if let Some(refit) = refit.as_ref() {
         let chart = chart.clone();
-
         let res = refit.add_listener(REFIT_EVENT_KIND, move |_| {
             if let Err(err) = chart.refit_content() {
                 err.with_prefix("Failed to refit chart content").log();
@@ -91,7 +156,7 @@ pub fn Chart(
     }
 
     let node_ref = NodeRef::<Div>::new();
-    let _ = Effect::new({
+    Effect::new({
         let chart = chart.clone();
 
         move || {
@@ -105,37 +170,32 @@ pub fn Chart(
 
     if let Some(legend) = legend {
         let chart = chart.clone();
-        let _ = Effect::new(move || {
-            legend.with(|legend| match legend {
-                Some(legend) => {
-                    if let Err(err) = chart.apply_legend_options(legend) {
-                        err.with_prefix("Failed to apply legend options").log();
-                    }
-                }
-                None => {
-                    if let Err(err) = chart.remove_legend() {
-                        err.with_prefix("Failed to remove legend").log();
-                    }
+
+        Effect::new(move || {
+            legend.with(|legend| {
+                let res = match legend {
+                    Some(legend) => chart.apply_legend_options(legend),
+                    None => chart.remove_legend(),
+                };
+
+                if let Err(err) = res {
+                    err.with_prefix("Failed to update the legend").log();
                 }
             })
         });
     }
 
-    let style = style.map_or_else(String::new, |s| s.to_string());
-    let class = class.map_or_else(String::new, |s| s.to_string());
-    match children {
-        Some(children) => view! {
-            <Provider value=chart>
-                <div style=style class=class node_ref={node_ref}/>
-                {children()}
-            </Provider>
-        }
-        .into_any(),
-        None => view! {
-            <Provider value=chart>
-                <div style=style class=class node_ref={node_ref}/>
-            </Provider>
-        }
-        .into_any(),
+    let style = format!("position:relative;{}", style.unwrap_or_default());
+    let class = class.unwrap_or_default();
+
+    provide_context(chart);
+    provide_context(CrosshairState(crosshair.into()));
+
+    view! {
+        <div style=style class=class>
+            <div style="position:absolute;inset:0" node_ref=node_ref />
+            {children.map(|children| children())}
+        </div>
     }
+    .into_any()
 }

@@ -1,6 +1,7 @@
 import { createChart } from 'lightweight-charts';
 import { trackChart, untrackChart } from './fonts.mjs';
 import { resolveOptions } from './formatters.mjs';
+import { eventKinds } from './events.mjs';
 import { Legend } from './legend.mjs';
 import { SeriesEntry } from './series.mjs';
 import { shiftRange, TimeZoneShift, utcShift } from './timezone.mjs';
@@ -20,6 +21,7 @@ export class TradingChart {
         this._series = {};
         this._watermarks = new Watermarks(this);
         this._legend = new Legend(this);
+        this._subscriptions = new Map();
         this._timeShift = utcShift;
         this._timeContext = {
             toUtc: time => this._timeShift.toUtc(time),
@@ -108,8 +110,22 @@ export class TradingChart {
         this._legend.update();
     }
 
+    _attachSubscription(subscription) {
+        subscription.detach = eventKinds[subscription.kind](this, this._chart, subscription.callback);
+    }
+
+    _detachSubscription(subscription) {
+        if (subscription.detach) {
+            subscription.detach();
+            subscription.detach = null;
+        }
+    }
+
     _unbindAll() {
         this._legend.clear();
+        for (const subscription of this._subscriptions.values()) {
+            this._detachSubscription(subscription);
+        }
 
         if (this._chart) {
             this._chart.remove();
@@ -129,6 +145,7 @@ export class TradingChart {
         untrackChart(this);
         this._unbindAll();
         this._watermarks.destroy();
+        this._subscriptions.clear();
         this._series = {};
         this._node = null;
     }
@@ -145,6 +162,47 @@ export class TradingChart {
 
         this._watermarks.bindAll();
         this._legend.mount();
+        for (const subscription of this._subscriptions.values()) {
+            this._attachSubscription(subscription);
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    // Events
+    // -----------------------------------------------------------------------------------------------------------------
+
+    /**
+     * Subscribe to an event of the chart (see `eventKinds`), and return the identifier of the subscription.
+     *
+     * Subscriptions made before the chart is bound are attached on binding, and they survive the rebinding.
+     */
+    subscribe(kind, callback) {
+        if (!(kind in eventKinds)) {
+            throw new Error(`Unknown event kind: '${kind}'`);
+        }
+
+        const id = newId();
+        const subscription = { kind, callback, detach: null };
+
+        this._subscriptions.set(id, subscription);
+        if (this._chart) {
+            this._attachSubscription(subscription);
+        }
+
+        return id;
+    }
+
+    /** Remove a subscription. Returns `true` when it existed. */
+    unsubscribe(subscriptionId) {
+        const subscription = this._subscriptions.get(subscriptionId);
+        if (!subscription) {
+            return false;
+        }
+
+        this._detachSubscription(subscription);
+        this._subscriptions.delete(subscriptionId);
+
+        return true;
     }
 
     // -----------------------------------------------------------------------------------------------------------------

@@ -4,5 +4,5 @@ mod error;
 pub mod data;
 pub mod series;
 
-pub use bindings::{ChartHandle, PanelId, SeriesHandle};
+pub use bindings::{ChartHandle, PanelId, SeriesHandle, Subscription};
 pub use error::JsError;

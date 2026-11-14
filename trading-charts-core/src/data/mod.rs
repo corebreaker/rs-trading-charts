@@ -1,4 +1,5 @@
 mod candlestick;
+mod events;
 mod histogram_data;
 mod image_watermark;
 mod legend;
@@ -12,6 +13,7 @@ mod price_range;
 mod text_watermark;
 mod time_range;
 mod timestamp;
+mod tooltip;
 mod value_data;
 
 pub mod format;
@@ -20,6 +22,7 @@ pub mod series;
 
 pub use self::{
     candlestick::Candlestick,
+    events::{EventDataItem, MouseEventParams, Point, SeriesEventData, Size},
     histogram_data::HistogramData,
     image_watermark::ImageWatermarkOptions,
     legend::LegendOptions,
@@ -40,6 +43,7 @@ pub use self::{
     price_range::PriceRange,
     text_watermark::{TextWatermarkLineOptions, TextWatermarkOptions},
     time_range::TimeRange,
+    tooltip::{TooltipMode, TooltipPlacement},
     timestamp::UTCTimestamp,
     value_data::ValueData,
 };

@@ -43,6 +43,12 @@ extern "C" {
     pub(crate) fn bindChart(this: &TradingChart, node: HtmlDivElement, options: JsValue) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
+    pub(crate) fn subscribe(this: &TradingChart, kind: &str, callback: &JsValue) -> Result<String, JsValue>;
+
+    #[wasm_bindgen(method)]
+    pub(crate) fn unsubscribe(this: &TradingChart, subscriptionId: &str) -> bool;
+
+    #[wasm_bindgen(method, catch)]
     pub(crate) fn setTimeZone(this: &TradingChart, timeZone: Option<String>) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method)]

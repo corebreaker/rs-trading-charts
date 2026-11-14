@@ -1,4 +1,4 @@
-use super::{js::TradingChart as JsChart, SeriesHandle};
+use super::{js::TradingChart as JsChart, SeriesHandle, Subscription};
 use crate::{
     data::{
         options::{ChartOptions, PriceScaleOptions, TimeScaleOptions},
@@ -9,8 +9,10 @@ use crate::{
         LegendOptions,
         LogicalRange,
         Marker,
+        MouseEventParams,
         PaneSize,
         SeriesMarkersOptions,
+        Size,
         PriceLineOptions,
         PriceRange,
         TextWatermarkOptions,
@@ -31,7 +33,7 @@ use crate::{
 
 use serde::{de::DeserializeOwned, Serialize};
 use serde_wasm_bindgen::{from_value, to_value};
-use wasm_bindgen::JsValue;
+use wasm_bindgen::{closure::Closure, JsValue};
 use web_sys::HtmlDivElement;
 use std::{
     cell::{Cell, RefCell},
@@ -41,11 +43,11 @@ use std::{
 /// Identifier of a pane (panel) of a chart, which is its index in the chart.
 pub type PanelId = u32;
 
-struct ChartInner {
-    js:         JsChart,
-    options:    RefCell<JsValue>,
-    bound:      Cell<bool>,
-    next_panel: Cell<PanelId>,
+pub(super) struct ChartInner {
+    pub(super) js: JsChart,
+    options:       RefCell<JsValue>,
+    bound:         Cell<bool>,
+    next_panel:    Cell<PanelId>,
 }
 
 impl Drop for ChartInner {
@@ -126,6 +128,61 @@ impl ChartHandle {
         self.inner.bound.set(true);
 
         Ok(())
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    // Events
+    // -----------------------------------------------------------------------------------------------------------------
+
+    fn subscribe<T: DeserializeOwned + 'static>(
+        &self,
+        kind: &'static str,
+        mut callback: impl FnMut(T) + 'static,
+    ) -> Result<Subscription, JsError> {
+        let closure = Closure::<dyn FnMut(JsValue)>::new(move |value: JsValue| match from_value::<T>(value) {
+            Ok(event) => callback(event),
+            Err(err) => JsError::from(err).with_prefix(format!("Invalid '{kind}' event")).log(),
+        });
+
+        let id = self.js().subscribe(kind, closure.as_ref())?;
+
+        Ok(Subscription::new(Arc::downgrade(&self.inner), id, closure))
+    }
+
+    /// Call `callback` when the crosshair moves, including when it leaves the chart.
+    pub fn on_crosshair_move(&self, callback: impl FnMut(MouseEventParams) + 'static) -> Result<Subscription, JsError> {
+        self.subscribe("crosshairMove", callback)
+    }
+
+    /// Call `callback` when the chart is clicked.
+    pub fn on_click(&self, callback: impl FnMut(MouseEventParams) + 'static) -> Result<Subscription, JsError> {
+        self.subscribe("click", callback)
+    }
+
+    /// Call `callback` when the chart is double-clicked.
+    pub fn on_dbl_click(&self, callback: impl FnMut(MouseEventParams) + 'static) -> Result<Subscription, JsError> {
+        self.subscribe("dblClick", callback)
+    }
+
+    /// Call `callback` when the visible time range changes, with `None` when there is no data.
+    pub fn on_visible_time_range_change(
+        &self,
+        callback: impl FnMut(Option<TimeRange>) + 'static,
+    ) -> Result<Subscription, JsError> {
+        self.subscribe("visibleTimeRangeChange", callback)
+    }
+
+    /// Call `callback` when the visible logical range changes, with `None` when there is no data.
+    pub fn on_visible_logical_range_change(
+        &self,
+        callback: impl FnMut(Option<LogicalRange>) + 'static,
+    ) -> Result<Subscription, JsError> {
+        self.subscribe("visibleLogicalRangeChange", callback)
+    }
+
+    /// Call `callback` when the size of the time scale changes.
+    pub fn on_size_change(&self, callback: impl FnMut(Size) + 'static) -> Result<Subscription, JsError> {
+        self.subscribe("sizeChange", callback)
     }
 
     // -----------------------------------------------------------------------------------------------------------------
