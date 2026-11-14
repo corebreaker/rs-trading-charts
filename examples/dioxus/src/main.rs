@@ -1,9 +1,9 @@
-use trading_charts_example_dioxus::example::app;
+use trading_charts_example_dioxus::app::App;
 
 fn main() {
     #[cfg(debug_assertions)]
     console_log::init_with_level(log::Level::Debug).unwrap();
     console_error_panic_hook::set_once();
 
-    dioxus::launch(app);
+    dioxus::launch(App);
 }
