@@ -23,7 +23,6 @@ impl TrackingModeOptions {
     pub fn with_exit_mode(self, exit_mode: TrackingModeExitMode) -> Self {
         Self {
             exit_mode: Some(exit_mode),
-            ..self
         }
     }
 

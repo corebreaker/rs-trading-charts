@@ -71,6 +71,4 @@ pub fn PriceVolumeSeries(
             }
         });
     }
-
-    view!()
 }

@@ -64,7 +64,7 @@ impl FromStr for UTCTimestamp {
     type Err = JsError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let dt = parse_str(s.as_ref())?;
+        let dt = parse_str(s)?;
 
         Ok(Self::from_datetime(dt))
     }
@@ -84,9 +84,9 @@ impl From<DateTime<Utc>> for UTCTimestamp {
     }
 }
 
-impl Into<DateTime<Utc>> for UTCTimestamp {
-    fn into(self) -> DateTime<Utc> {
-        self.into_datetime()
+impl From<UTCTimestamp> for DateTime<Utc> {
+    fn from(timestamp: UTCTimestamp) -> Self {
+        timestamp.into_datetime()
     }
 }
 

@@ -100,13 +100,17 @@ impl ChartHandle {
             Some(options) => to_value(options)?,
         };
 
+        // The chart is only used from the browser main thread, see the `Send` and `Sync` implementations.
+        #[allow(clippy::arc_with_non_send_sync)]
+        let inner = Arc::new(ChartInner {
+            js:         JsChart::new(),
+            options:    RefCell::new(options),
+            bound:      Cell::new(false),
+            next_panel: Cell::new(0),
+        });
+
         Ok(Self {
-            inner: Arc::new(ChartInner {
-                js:         JsChart::new(),
-                options:    RefCell::new(options),
-                bound:      Cell::new(false),
-                next_panel: Cell::new(0),
-            }),
+            inner,
         })
     }
 

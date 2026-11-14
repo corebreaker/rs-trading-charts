@@ -4,7 +4,7 @@ use crate::{
     series::mount::{mount_series, SeriesInputs},
 };
 
-use leptos::{component, prelude::Signal, view, IntoView};
+use leptos::{component, prelude::Signal, IntoView};
 
 /// Add a histogram series to the enclosing `Chart`, in the enclosing `ChartPanel` if any.
 ///
@@ -28,6 +28,4 @@ pub fn HistogramSeries(
             price_lines,
         },
     );
-
-    view!()
 }
