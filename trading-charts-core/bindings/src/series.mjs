@@ -7,6 +7,7 @@ import {
     HistogramSeries,
     LineSeries,
 } from 'lightweight-charts';
+import { mergeOptions } from './formatters.mjs';
 import { resolveMarker } from './markers.mjs';
 import { shiftItem } from './timezone.mjs';
 import { isDefined, sortByTime } from './utils.mjs';
@@ -96,7 +97,7 @@ export class SeriesEntry {
         }
 
         if (this.priceScaleOptions) {
-            this.chartApi.priceScale().applyOptions(this.priceScaleOptions);
+            this.chartApi.priceScale().applyOptions(this._owner.resolveOptions(this.priceScaleOptions));
         }
 
         this.markerApi = createSeriesMarkers(this.chartApi, [], this.markersOptions);
@@ -125,11 +126,13 @@ export class SeriesEntry {
         chart.removeSeries(this.chartApi);
     }
 
+    /** Apply options, merged into the kept options like Lightweight Charts merges them. */
     applyOptions(options) {
-        this.params.options = options;
         if (this.chartApi) {
             this.chartApi.applyOptions(this._owner.resolveOptions(options));
         }
+
+        this.params.options = mergeOptions(this.params.options || {}, options);
     }
 
     setVisible(visible) {
@@ -259,10 +262,11 @@ export class SeriesEntry {
 
     /** Apply options to the price scale of the series, kept to be applied again when the series is bound. */
     applyPriceScaleOptions(options) {
-        this.priceScaleOptions = Object.assign({}, this.priceScaleOptions, options || {});
         if (this.chartApi) {
-            this.chartApi.priceScale().applyOptions(options || {});
+            this.chartApi.priceScale().applyOptions(this._owner.resolveOptions(options));
         }
+
+        this.priceScaleOptions = mergeOptions(this.priceScaleOptions || {}, options);
     }
 
     applyMarkersOptions(options) {

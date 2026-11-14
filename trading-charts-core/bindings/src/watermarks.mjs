@@ -82,10 +82,11 @@ export class Watermarks {
         });
     }
 
+    /** Apply options to a watermark, merged into its kept options like Lightweight Charts merges them. */
     update(watermarkId, options) {
         const watermark = this._get(watermarkId);
 
-        watermark.options = options || {};
+        watermark.options = Object.assign({}, watermark.options, options || {});
         if (watermark.api) {
             watermark.api.applyOptions(watermark.options);
         }
