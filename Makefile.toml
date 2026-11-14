@@ -62,10 +62,10 @@ command = "cargo"
 args = ["check", "--workspace", "--target", "${WASM_TARGET}"]
 
 [tasks.test]
-description = "Run the tests of the core crate, which do not need a browser."
+description = "Run the tests of the core crate and the README examples of the library crates."
 category = "Development"
 command = "cargo"
-args = ["test", "-p", "trading-charts-core"]
+args = ["test", "-p", "trading-charts-core", "-p", "trading-charts", "-p", "trading-charts-dioxus"]
 
 [tasks.clippy]
 description = "Run clippy for the workspace on the wasm32 target."

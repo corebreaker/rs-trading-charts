@@ -1,5 +1,4 @@
-//! Leptos components for [Lightweight Charts](https://github.com/tradingview/lightweight-charts), built on
-//! `trading-charts-core`.
+#![doc = include_str!("../README.md")]
 
 pub mod chart;
 pub mod overlay;
