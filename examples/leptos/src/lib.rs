@@ -1,3 +1,4 @@
-mod dataset;
+mod data;
+mod demos;
 
-pub mod example;
+pub mod app;

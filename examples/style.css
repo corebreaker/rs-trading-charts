@@ -1,0 +1,158 @@
+/* Style shared by the Leptos and Dioxus examples. */
+
+:root {
+    --accent: #2563eb;
+    --border: #cbd5e1;
+    --muted: #64748b;
+    --text: #0f172a;
+}
+
+body {
+    margin: 0;
+    color: var(--text);
+    background: #f8fafc;
+    font: 14px/1.5 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px 24px 48px;
+}
+
+h1 {
+    margin: 8px 0 16px;
+    font-size: 24px;
+}
+
+nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 12px;
+}
+
+nav button {
+    padding: 8px 14px;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: none;
+    color: var(--muted);
+    font: inherit;
+    cursor: pointer;
+}
+
+nav button.active {
+    border-bottom-color: var(--accent);
+    color: var(--text);
+    font-weight: 600;
+}
+
+.description {
+    margin: 0 0 12px;
+    color: var(--muted);
+}
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.toolbar .label {
+    min-width: 170px;
+    color: var(--muted);
+}
+
+.toolbar button {
+    padding: 3px 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: white;
+    font: inherit;
+    cursor: pointer;
+}
+
+.toolbar button.active {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: white;
+}
+
+.toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-right: 16px;
+}
+
+.chart {
+    height: 480px;
+    margin-top: 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    background: white;
+}
+
+.chart.tall {
+    height: 640px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    gap: 12px;
+}
+
+.chart.half {
+    height: 380px;
+}
+
+.tooltip {
+    min-width: 120px;
+    padding: 8px 10px;
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
+    font-size: 12px;
+}
+
+.tooltip.small {
+    min-width: 0;
+    padding: 2px 8px;
+    border: none;
+    background: var(--text);
+    color: white;
+}
+
+.tooltip table {
+    border-spacing: 8px 0;
+    margin-left: -8px;
+}
+
+.tooltip-title {
+    font-weight: 700;
+}
+
+.tooltip-date {
+    color: var(--muted);
+}
+
+.custom-legend {
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: rgba(37, 99, 235, 0.08);
+    font-size: 12px;
+}
+
+.preview {
+    display: block;
+    max-width: 480px;
+    margin-top: 12px;
+    border: 1px solid var(--border);
+}

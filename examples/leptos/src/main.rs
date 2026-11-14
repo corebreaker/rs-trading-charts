@@ -1,15 +1,10 @@
-use trading_charts_example_leptos::example::App;
-use leptos::{mount::mount_to_body, view};
+use leptos::mount::mount_to_body;
+use trading_charts_example_leptos::app::App;
 
 fn main() {
-    // set up logging
     #[cfg(debug_assertions)]
     console_log::init_with_level(log::Level::Debug).unwrap();
     console_error_panic_hook::set_once();
 
-    mount_to_body(|| {
-        view! {
-            <App/>
-        }
-    })
+    mount_to_body(App)
 }
