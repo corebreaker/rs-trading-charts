@@ -121,6 +121,31 @@ impl MarkerStyle {
     pub fn text(&self) -> Option<&str> {
         self.text.as_deref()
     }
+
+    /// Set or reset (with `None`) the `position` property.
+    pub fn set_position(&mut self, position: Option<MarkerPosition>) {
+        self.position = position;
+    }
+
+    /// Set or reset (with `None`) the `shape` property.
+    pub fn set_shape(&mut self, shape: Option<MarkerShape>) {
+        self.shape = shape;
+    }
+
+    /// Set or reset (with `None`) the `color` property.
+    pub fn set_color(&mut self, color: Option<String>) {
+        self.color = color;
+    }
+
+    /// Set or reset (with `None`) the `size` property.
+    pub fn set_size(&mut self, size: Option<f64>) {
+        self.size = size;
+    }
+
+    /// Set or reset (with `None`) the `text` property.
+    pub fn set_text(&mut self, text: Option<String>) {
+        self.text = text;
+    }
 }
 
 /// Register a marker style under an identifier, used by the markers of type `MarkerType::Custom(id)`.
@@ -226,5 +251,15 @@ impl SeriesMarkersOptions {
 
     pub fn z_order(&self) -> Option<MarkerZOrder> {
         self.z_order
+    }
+
+    /// Set or reset (with `None`) the `autoScale` option.
+    pub fn set_auto_scale(&mut self, auto_scale: Option<bool>) {
+        self.auto_scale = auto_scale;
+    }
+
+    /// Set or reset (with `None`) the `zOrder` option.
+    pub fn set_z_order(&mut self, z_order: Option<MarkerZOrder>) {
+        self.z_order = z_order;
     }
 }

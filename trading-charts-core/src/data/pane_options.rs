@@ -55,4 +55,19 @@ impl PaneOptions {
     pub fn preserve_empty(&self) -> Option<bool> {
         self.preserve_empty
     }
+
+    /// Set or reset (with `None`) the `stretchFactor` setting.
+    pub fn set_stretch_factor(&mut self, stretch_factor: Option<f64>) {
+        self.stretch_factor = stretch_factor;
+    }
+
+    /// Set or reset (with `None`) the `height` setting.
+    pub fn set_height(&mut self, height: Option<f64>) {
+        self.height = height;
+    }
+
+    /// Set or reset (with `None`) the `preserveEmpty` setting.
+    pub fn set_preserve_empty(&mut self, preserve_empty: Option<bool>) {
+        self.preserve_empty = preserve_empty;
+    }
 }

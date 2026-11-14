@@ -82,6 +82,21 @@ impl ScreenshotOptions {
     pub fn format(&self) -> ImageFormat {
         self.format
     }
+
+    pub fn set_top_layer(&mut self, add_top_layer: bool) {
+        self.add_top_layer = add_top_layer;
+    }
+
+    /// Include the crosshair or not.
+    /// Including it also includes the top layer, like [`with_crosshair`](Self::with_crosshair).
+    pub fn set_crosshair(&mut self, include_crosshair: bool) {
+        self.include_crosshair = include_crosshair;
+        self.add_top_layer |= include_crosshair;
+    }
+
+    pub fn set_format(&mut self, format: ImageFormat) {
+        self.format = format;
+    }
 }
 
 impl Serialize for ScreenshotOptions {

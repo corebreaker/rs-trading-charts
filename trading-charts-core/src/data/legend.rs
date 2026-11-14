@@ -203,6 +203,164 @@ impl LegendOptions {
             ..self
         }
     }
+
+    pub fn visible(&self) -> bool {
+        self.visible
+    }
+
+    pub fn show_ohlc(&self) -> bool {
+        self.show_ohlc
+    }
+
+    pub fn show_percent(&self) -> bool {
+        self.show_percent
+    }
+
+    pub fn show_series(&self) -> bool {
+        self.show_series
+    }
+
+    pub fn show_volume(&self) -> bool {
+        self.show_volume
+    }
+
+    pub fn toggle_series_visibility(&self) -> bool {
+        self.toggle_series_visibility
+    }
+
+    pub fn text(&self) -> &str {
+        &self.text
+    }
+
+    pub fn text_color(&self) -> &str {
+        &self.text_color
+    }
+
+    pub fn background_color(&self) -> &str {
+        &self.background_color
+    }
+
+    pub fn font_size(&self) -> f64 {
+        self.font_size
+    }
+
+    pub fn font_family(&self) -> &FontFamily {
+        &self.font_family
+    }
+
+    pub fn top(&self) -> f64 {
+        self.top
+    }
+
+    pub fn left(&self) -> f64 {
+        self.left
+    }
+
+    pub fn layout(&self) -> Option<LegendLayout> {
+        self.layout
+    }
+
+    pub fn position(&self) -> Option<LegendPosition> {
+        self.position
+    }
+
+    pub fn series_id(&self) -> Option<&str> {
+        self.series_id.as_deref()
+    }
+
+    pub fn time_format(&self) -> Option<&str> {
+        self.time_format.as_deref()
+    }
+
+    pub fn locale(&self) -> Option<&str> {
+        self.locale.as_deref()
+    }
+
+    pub fn price_font_size(&self) -> Option<f64> {
+        self.price_font_size
+    }
+
+    pub fn set_visible(&mut self, visible: bool) {
+        self.visible = visible;
+    }
+
+    pub fn set_show_ohlc(&mut self, show_ohlc: bool) {
+        self.show_ohlc = show_ohlc;
+    }
+
+    pub fn set_show_percent(&mut self, show_percent: bool) {
+        self.show_percent = show_percent;
+    }
+
+    pub fn set_show_series(&mut self, show_series: bool) {
+        self.show_series = show_series;
+    }
+
+    pub fn set_show_volume(&mut self, show_volume: bool) {
+        self.show_volume = show_volume;
+    }
+
+    pub fn set_toggle_series_visibility(&mut self, toggle_series_visibility: bool) {
+        self.toggle_series_visibility = toggle_series_visibility;
+    }
+
+    pub fn set_text(&mut self, text: impl Into<String>) {
+        self.text = text.into();
+    }
+
+    pub fn set_text_color(&mut self, text_color: impl Into<String>) {
+        self.text_color = text_color.into();
+    }
+
+    pub fn set_background_color(&mut self, background_color: impl Into<String>) {
+        self.background_color = background_color.into();
+    }
+
+    pub fn set_font_size(&mut self, font_size: f64) {
+        self.font_size = font_size;
+    }
+
+    pub fn set_font_family(&mut self, font_family: impl Into<FontFamily>) {
+        self.font_family = font_family.into();
+    }
+
+    pub fn set_top(&mut self, top: f64) {
+        self.top = top;
+    }
+
+    pub fn set_left(&mut self, left: f64) {
+        self.left = left;
+    }
+
+    /// Set or reset (with `None`) the `layout` option.
+    pub fn set_layout(&mut self, layout: Option<LegendLayout>) {
+        self.layout = layout;
+    }
+
+    /// Set or reset (with `None`) the `position` option.
+    pub fn set_position(&mut self, position: Option<LegendPosition>) {
+        self.position = position;
+    }
+
+    /// Set or reset (with `None`) the `seriesId` option.
+    pub fn set_series_id(&mut self, series_id: Option<String>) {
+        self.series_id = series_id;
+    }
+
+    /// Set or reset (with `None`) the `timeFormat` option.
+    pub fn set_time_format(&mut self, time_format: Option<String>) {
+        self.time_format = time_format;
+    }
+
+    /// Set or reset (with `None`) the `locale` option.
+    pub fn set_locale(&mut self, locale: Option<String>) {
+        self.locale = locale;
+    }
+
+    /// Set or reset (with `None`) the `priceFontSize` option.
+    pub fn set_price_font_size(&mut self, price_font_size: Option<f64>) {
+        self.price_font_size = price_font_size;
+    }
 }
 
 impl Default for LegendOptions {

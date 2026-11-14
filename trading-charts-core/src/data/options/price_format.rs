@@ -125,4 +125,33 @@ impl PriceFormatOptions {
     pub fn tickmarks_formatter(&self) -> Option<&PriceFormatter> {
         self.tickmarks_formatter.as_ref()
     }
+
+    pub fn set_kind(&mut self, kind: PriceFormatType) {
+        self.kind = kind;
+    }
+
+    /// Set or reset (with `None`) the `precision` option.
+    pub fn set_precision(&mut self, precision: Option<usize>) {
+        self.precision = precision;
+    }
+
+    /// Set or reset (with `None`) the `minMove` option.
+    pub fn set_min_move(&mut self, min_move: Option<f64>) {
+        self.min_move = min_move;
+    }
+
+    /// Set or reset (with `None`) the `base` option.
+    pub fn set_base(&mut self, base: Option<f64>) {
+        self.base = base;
+    }
+
+    /// Set or reset (with `None`) the `formatter` option, used by the [`PriceFormatType::Custom`] price format.
+    pub fn set_formatter(&mut self, formatter: Option<PriceFormatter>) {
+        self.formatter = formatter;
+    }
+
+    /// Set or reset (with `None`) the `tickmarksFormatter` option.
+    pub fn set_tickmarks_formatter(&mut self, tickmarks_formatter: Option<PriceFormatter>) {
+        self.tickmarks_formatter = tickmarks_formatter;
+    }
 }
