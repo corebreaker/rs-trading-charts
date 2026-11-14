@@ -1,14 +1,15 @@
 use super::LineSeriesOptions;
 use crate::{
-    PanelId,
-    chart::use_chart,
-    data::{Marker, PriceLineOptions, ValueData, series::Series},
+    data::{Marker, PriceLineOptions, ValueData},
+    series::mount::use_series,
 };
+
 use dioxus::prelude::*;
 
-#[derive(Clone, Props)]
+#[derive(Clone, PartialEq, Props)]
 pub struct LineSeriesProps {
     data:        Vec<ValueData>,
+    #[props(default)]
     markers:     Vec<Marker>,
     #[props(default)]
     price_lines: Vec<PriceLineOptions>,
@@ -16,95 +17,13 @@ pub struct LineSeriesProps {
     options:     Option<LineSeriesOptions>,
 }
 
-impl PartialEq for LineSeriesProps {
-    fn eq(&self, _other: &Self) -> bool {
-        false
-    }
-}
-
+/// Add a line series to the enclosing `Chart`, in the enclosing `ChartPanel` if any.
+///
+/// The series is updated when `options`, `data`, `markers` or `price_lines` change, and is removed from the chart
+/// when the component is dropped.
 #[allow(non_snake_case)]
 pub fn LineSeries(props: LineSeriesProps) -> Element {
-    let chart = use_chart();
-    let panel_id = try_use_context::<PanelId>();
-    let series_id = use_hook({
-        let chart = chart.clone();
-        let options = props.options.clone();
-        move || {
-            let mut series: Series<ValueData, LineSeriesOptions> = Series::new("line");
-            if let Some(panel_id) = panel_id {
-                series.set_panel(panel_id);
-            }
-            if let Some(options) = options.clone() {
-                series.set_options(options);
-            }
-
-            match chart.add_series(&mut series) {
-                Ok(()) => series.id().cloned(),
-                Err(err) => {
-                    err.with_prefix("Failed to add series").log();
-                    None
-                }
-            }
-        }
-    });
-
-    {
-        let chart = chart.clone();
-        let series_id = series_id.clone();
-        let options = props.options.clone();
-        use_effect(move || {
-            if let (Some(series_id), Some(options)) = (series_id.clone(), options.as_ref()) {
-                if let Err(err) = chart.update_series_options(series_id, options) {
-                    err.with_prefix("Failed to update series options").log();
-                }
-            }
-        });
-    }
-
-    {
-        let chart = chart.clone();
-        let series_id = series_id.clone();
-        let data = props.data.clone();
-        use_effect(move || {
-            if let Some(series_id) = series_id.clone() {
-                if let Err(err) = chart.update_data(series_id, &data) {
-                    err.with_prefix("Failed to update data")
-                        .with_serializable_data(&data)
-                        .log();
-                }
-            }
-        });
-    }
-
-    {
-        let chart = chart.clone();
-        let series_id = series_id.clone();
-        let markers = props.markers.clone();
-        use_effect(move || {
-            if let Some(series_id) = series_id.clone() {
-                if let Err(err) = chart.set_markers(series_id, &markers) {
-                    err.with_prefix("Failed to set markers")
-                        .with_serializable_data(&markers)
-                        .log();
-                }
-            }
-        });
-    }
-
-    {
-        let chart = chart.clone();
-        let series_id = series_id.clone();
-        let price_lines = props.price_lines.clone();
-        use_effect(move || {
-            if let Some(series_id) = series_id.clone() {
-                if let Err(err) = chart.set_price_lines(series_id, &price_lines) {
-                    err.with_prefix("Failed to set price lines")
-                        .with_serializable_data(&price_lines)
-                        .log();
-                }
-            }
-        });
-    }
+    use_series("line", props.options, props.data, props.markers, props.price_lines);
 
     rsx! {}
 }

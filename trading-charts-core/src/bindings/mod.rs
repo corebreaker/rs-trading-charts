@@ -1,4 +1,6 @@
-mod binding;
+mod chart;
 mod js;
+mod series;
 
-pub use binding::{ChartHandle, PanelId};
+pub use chart::{ChartHandle, PanelId};
+pub use series::SeriesHandle;

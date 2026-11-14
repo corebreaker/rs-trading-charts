@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Default, Serialize, Deserialize, Clone, Copy)]
+#[derive(Default, Serialize, Deserialize, Clone, Copy, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum PriceFormatType {
     #[default]
@@ -9,7 +9,7 @@ pub enum PriceFormatType {
     Percent,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct PriceFormatOptions {
     #[serde(rename = "type")]
     kind:      PriceFormatType,

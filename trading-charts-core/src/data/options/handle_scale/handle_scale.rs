@@ -1,7 +1,7 @@
 use super::{super::FlagableOptions, AxisDoubleClickOptions, AxisPressedMouseMoveOptions};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct HandleScaleOptions {
     mouse_wheel: bool,
 

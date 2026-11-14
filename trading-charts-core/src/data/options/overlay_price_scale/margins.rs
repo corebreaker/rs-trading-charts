@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct OverlayPriceScaleMargins {
     #[serde(rename = "top", default = "defaults::top")]
     top: f64,

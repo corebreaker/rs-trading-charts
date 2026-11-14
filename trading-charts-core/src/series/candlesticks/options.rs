@@ -1,7 +1,7 @@
 use crate::data::options::{LineWidth, LineStyle, PriceFormatOptions, PriceLineSource};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct CandlestickOptions {
     #[serde(default = "String::new")]
     title: String,

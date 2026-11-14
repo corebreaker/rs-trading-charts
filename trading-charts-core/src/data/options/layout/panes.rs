@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct LayoutPanesOptions {
     #[serde(rename = "enableResize", default = "defaults::enable_resize")]
     pub enable_resize: bool,

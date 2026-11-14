@@ -1,7 +1,7 @@
 use crate::data::options::{LineStyle, LineWidth, PriceFormatOptions, PriceLineSource};
 use serde::{Deserialize, Serialize};
 
-#[derive(Default, Serialize, Deserialize, Clone)]
+#[derive(Default, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct BarSeriesOptions {
     #[serde(skip_serializing_if = "Option::is_none")]

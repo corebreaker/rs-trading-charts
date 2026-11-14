@@ -1,7 +1,7 @@
 use crate::data::options::{LineStyle, LineWidth};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct PriceLineOptions {
     price:                 f64,

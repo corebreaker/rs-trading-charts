@@ -1,7 +1,7 @@
 use super::GridLineOptions;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Default, Clone)]
+#[derive(Serialize, Deserialize, Default, Clone, PartialEq)]
 pub struct GridOptions {
     #[serde(rename = "vertLines", default)]
     vert_lines: GridLineOptions,

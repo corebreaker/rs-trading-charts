@@ -1,7 +1,7 @@
 use super::{CrosshairMode, CrosshairLineOptions};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Default, Clone)]
+#[derive(Serialize, Deserialize, Default, Clone, PartialEq)]
 pub struct CrossHairOptions {
     #[serde(rename = "mode", default)]
     mode: CrosshairMode,

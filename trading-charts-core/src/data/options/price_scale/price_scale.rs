@@ -1,7 +1,7 @@
 use super::{PriceScaleMode, PriceScaleMargins};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct PriceScaleOptions {
     #[serde(rename = "autoScale", default = "defaults::auto_scale")]
     auto_scale: bool,

@@ -1,7 +1,7 @@
 use super::{super::background::Background, ColorSpace, LayoutPanesOptions};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct LayoutOptions {
     #[serde(default)]
     pub background: Background,

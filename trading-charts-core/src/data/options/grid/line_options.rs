@@ -1,7 +1,7 @@
 use super::super::LineStyle;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct GridLineOptions {
     #[serde(default = "defaults::color")]
     color: String,

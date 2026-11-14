@@ -1,7 +1,7 @@
 use crate::data::options::{LastPriceAnimationMode, LineStyle, LineType, LineWidth, PriceFormatOptions, PriceLineSource};
 use serde::{Deserialize, Serialize};
 
-#[derive(Default, Serialize, Deserialize, Clone)]
+#[derive(Default, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct LineSeriesOptions {
     #[serde(skip_serializing_if = "Option::is_none")]

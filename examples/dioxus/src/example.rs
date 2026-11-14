@@ -586,7 +586,7 @@ fn DirectSeriesProbe(props: DirectSeriesProbeProps) -> Element {
             last_add_request.set(add_request);
 
             if let Some(series_id) = series_id() {
-                if let Err(err) = chart.update_data(series_id.clone(), &data) {
+                if let Err(err) = chart.update_data(&series_id, &data) {
                     err.with_prefix("Failed to refresh direct line series").log();
                     direct_series_text.set(String::from("Direct series: refresh failed"));
                     return;
@@ -605,7 +605,8 @@ fn DirectSeriesProbe(props: DirectSeriesProbeProps) -> Element {
                 .with_price_line_visible(false);
 
             match chart.add_line_series(data.clone(), Some(options), Some(0)) {
-                Ok(new_series_id) => {
+                Ok(series) => {
+                    let new_series_id = series.id().to_string();
                     series_id.set(Some(new_series_id.clone()));
                     direct_series_text.set(format!("Direct series: added {}", new_series_id));
                 }
@@ -633,7 +634,7 @@ fn DirectSeriesProbe(props: DirectSeriesProbeProps) -> Element {
                 return;
             };
 
-            match chart.remove_series(current_series_id.clone()) {
+            match chart.remove_series(&current_series_id) {
                 Ok(()) => {
                     series_id.set(None);
                     direct_series_text.set(format!("Direct series: removed {}", current_series_id));
@@ -655,7 +656,7 @@ fn DirectSeriesProbe(props: DirectSeriesProbeProps) -> Element {
                 return;
             };
 
-            if let Err(err) = chart.update_data(current_series_id.clone(), &data) {
+            if let Err(err) = chart.update_data(&current_series_id, &data) {
                 err.with_prefix("Failed to update direct line series data").log();
                 direct_series_text.set(String::from("Direct series: data sync failed"));
                 return;
@@ -972,7 +973,7 @@ fn schedule_watermark_init(
             }
         };
 
-        let image_id = match chart.add_image_watermark(1, watermark_svg_data_url(), &image_options) {
+        let image_id = match chart.add_image_watermark(1, &watermark_svg_data_url(), &image_options) {
             Ok(id) => id,
             Err(err) => {
                 err.with_prefix("Failed to add image watermark").log();
@@ -1024,13 +1025,13 @@ fn schedule_watermark_update(
             .with_padding(8.0)
             .with_alpha(0.85);
 
-        if let Err(err) = chart.update_text_watermark(text_id, &text_options) {
+        if let Err(err) = chart.update_text_watermark(&text_id, &text_options) {
             err.with_prefix("Failed to update text watermark").log();
             watermark_text.set(String::from("Watermarks: text update failed"));
             return;
         }
 
-        if let Err(err) = chart.update_image_watermark(image_id, &image_options) {
+        if let Err(err) = chart.update_image_watermark(&image_id, &image_options) {
             err.with_prefix("Failed to update image watermark").log();
             watermark_text.set(String::from("Watermarks: image update failed"));
             return;

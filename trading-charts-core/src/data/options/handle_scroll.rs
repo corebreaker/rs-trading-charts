@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct HandleScrollOptions {
     #[serde(rename = "mouseWheel", default = "defaults::mouse_wheel")]
     mouse_wheel: bool,

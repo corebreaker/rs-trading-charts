@@ -14,6 +14,7 @@ categories.workspace = true
 [dependencies]
 dioxus = { workspace = true, features = ["lib", "web"] }
 dioxus-web = { workspace = true, features = ["mounted"] }
+serde = { workspace = true }
 trading-charts-core = { path = "../trading-charts-core", version = "0.2", package = "trading-charts-core" }
 wasm-bindgen = { workspace = true }
 web-sys = { workspace = true }

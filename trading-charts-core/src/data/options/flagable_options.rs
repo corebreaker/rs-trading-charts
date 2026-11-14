@@ -7,7 +7,7 @@ use serde::{
 };
 use std::fmt::{Formatter, Result as FmtResult};
 
-#[derive(Clone, Default)]
+#[derive(Clone, Default, PartialEq)]
 pub enum FlagableOptions<T: Serialize + for<'de> Deserialize<'de> + Clone + Default> {
     #[default]
     None,

@@ -1,7 +1,7 @@
 use super::super::{LineStyle, LineWidth};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct CrosshairLineOptions {
     #[serde(default = "defaults::color")]
     color: String,

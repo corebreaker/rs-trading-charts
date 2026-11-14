@@ -1,7 +1,7 @@
 use super::TrackingModeExitMode;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Default, Clone)]
+#[derive(Serialize, Deserialize, Default, Clone, PartialEq)]
 pub struct TrackingModeOptions {
     #[serde(rename = "exitMode", default)]
     exit_mode: TrackingModeExitMode,

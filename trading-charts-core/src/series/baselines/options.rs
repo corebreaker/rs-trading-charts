@@ -1,7 +1,7 @@
 use crate::data::options::{LastPriceAnimationMode, LineStyle, LineType, LineWidth, PriceFormatOptions, PriceLineSource};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct BaselineBaseValue {
     #[serde(rename = "type")]
     kind:  String,
@@ -23,7 +23,7 @@ impl Default for BaselineBaseValue {
     }
 }
 
-#[derive(Default, Serialize, Deserialize, Clone)]
+#[derive(Default, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct BaselineSeriesOptions {
     #[serde(skip_serializing_if = "Option::is_none")]

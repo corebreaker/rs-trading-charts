@@ -1,5 +1,4 @@
 mod component;
-mod options;
 
 pub use self::component::*;
-pub use options::CandlestickOptions;
+pub use trading_charts_core::series::candlesticks::CandlestickOptions;

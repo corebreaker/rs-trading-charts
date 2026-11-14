@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct AxisPressedMouseMoveOptions {
     #[serde(rename = "time", default = "defaults::time")]
     time: bool,

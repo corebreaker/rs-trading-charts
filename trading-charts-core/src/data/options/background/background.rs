@@ -1,7 +1,7 @@
 use super::{SolidColor, VerticalGradientColor};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 #[serde(tag = "type")]
 pub enum Background {
     #[serde(rename = "solid")]

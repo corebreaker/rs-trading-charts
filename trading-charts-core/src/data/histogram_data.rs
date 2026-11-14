@@ -1,7 +1,7 @@
 use super::UTCTimestamp;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct HistogramData {
     time:  UTCTimestamp,
     value: f64,

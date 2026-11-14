@@ -1,7 +1,7 @@
 use super::{OverlayPriceScaleMode, OverlayPriceScaleMargins};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct OverlayPriceScaleOptions {
     #[serde(default)]
     mode: OverlayPriceScaleMode,
