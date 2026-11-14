@@ -1,46 +1,45 @@
 // Synchronization of charts.
 //
-// Charts of the same synchronization group share their crosshair position and their visible range: moving the
-// crosshair or scrolling one chart updates the other charts of the group. A module flag prevents the updates made
-// by the synchronization from being propagated again.
+// Charts of the same synchronization group share their crosshair position and their visible range:
+// moving the crosshair or scrolling one chart updates the other charts of the group.
+// A flag of the group prevents the updates made by the synchronization from being propagated again in the group,
+// without blocking the synchronization of the other groups.
 
 const groups = new Map();
-let syncing = false;
 
-function withSyncing(fn) {
-    if (syncing) {
+/**
+ * Call `fn` with the other bound members of the synchronization group of a chart,
+ * unless the group is already propagating an update.
+ */
+function propagate(chart, fn) {
+    const group = chart.syncGroup ? groups.get(chart.syncGroup.name) : null;
+    if (!group || group.syncing) {
         return;
     }
 
-    syncing = true;
+    group.syncing = true;
     try {
-        fn();
+        fn([...group.members].filter(member => member !== chart && member.chart));
     } finally {
-        syncing = false;
+        group.syncing = false;
     }
-}
-
-function members(chart) {
-    const group = chart.syncGroup ? groups.get(chart.syncGroup.name) : null;
-
-    return group ? [...group].filter(member => member !== chart && member.chart) : [];
 }
 
 /** Add a chart to a synchronization group. */
 export function joinSyncGroup(chart, name) {
     if (!groups.has(name)) {
-        groups.set(name, new Set());
+        groups.set(name, { members: new Set(), syncing: false });
     }
 
-    groups.get(name).add(chart);
+    groups.get(name).members.add(chart);
 }
 
 /** Remove a chart from its synchronization group. */
 export function leaveSyncGroup(chart, name) {
     const group = groups.get(name);
     if (group) {
-        group.delete(chart);
-        if (group.size === 0) {
+        group.members.delete(chart);
+        if (group.members.size === 0) {
             groups.delete(name);
         }
     }
@@ -56,10 +55,10 @@ export function attachSync(chart) {
     const detachers = [];
 
     if (options.crosshair) {
-        const handler = param => withSyncing(() => {
+        const handler = param => propagate(chart, members => {
             const time = param.time === undefined || !param.point ? null : chart.timeShift.toUtc(param.time);
 
-            for (const member of members(chart)) {
+            for (const member of members) {
                 member.syncCrosshair(time);
             }
         });
@@ -69,9 +68,9 @@ export function attachSync(chart) {
     }
 
     if (options.logicalRange) {
-        const handler = range => withSyncing(() => {
+        const handler = range => propagate(chart, members => {
             if (range) {
-                for (const member of members(chart)) {
+                for (const member of members) {
                     member.chart.timeScale().setVisibleLogicalRange(range);
                 }
             }
@@ -82,10 +81,10 @@ export function attachSync(chart) {
     }
 
     if (options.timeRange) {
-        const handler = () => withSyncing(() => {
+        const handler = () => propagate(chart, members => {
             const range = chart.getVisibleRange();
             if (range) {
-                for (const member of members(chart)) {
+                for (const member of members) {
                     member.setVisibleRange(range);
                 }
             }
