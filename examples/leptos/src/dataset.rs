@@ -183,20 +183,24 @@ fn make_markers(data: &Vec<Candlestick>, delta: usize) -> Vec<Marker> {
 
 fn make_line_data(data: &Vec<Candlestick>) -> Vec<ValueData> {
     data.iter()
-        .map(|candle| ValueData::new(candle.time(), candle.close()))
+        .map(|candle| ValueData::new(candle.time(), candle.close().unwrap_or_default()))
         .collect()
 }
 
 fn make_area_data(data: &Vec<Candlestick>) -> Vec<ValueData> {
     data.iter()
-        .map(|candle| ValueData::new(candle.time(), (candle.high() + candle.low()) / 2.0))
+        .map(|candle| {
+            let mid = (candle.high().unwrap_or_default() + candle.low().unwrap_or_default()) / 2.0;
+
+            ValueData::new(candle.time(), mid)
+        })
         .collect()
 }
 
 fn make_histogram_data(data: &Vec<Candlestick>) -> Vec<HistogramData> {
     data.iter()
         .map(|candle| {
-            let delta = candle.close() - candle.open();
+            let delta = candle.close().unwrap_or_default() - candle.open().unwrap_or_default();
             let color = if delta >= 0.0 {
                 "rgba(38, 166, 154, 0.75)"
             } else {
