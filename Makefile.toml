@@ -145,19 +145,20 @@ category = "Maintenance"
 command = "cargo"
 args = ["sweep", "-r", "-t", "10", "."]
 
+# npm saves the dependency as a range of compatible versions (`^x.y.z`), and the lockfile keeps the bundled version.
 [tasks.update-lightweight-charts]
 description = "Update the JS binding package to LIGHTWEIGHT_CHARTS_VERSION (default: latest)."
 category = "Maintenance"
 cwd = "${CORE_BINDINGS_DIR}"
 script_runner = "@shell"
 script = '''
-npm install --package-lock-only --ignore-scripts --save-exact lightweight-charts@${LIGHTWEIGHT_CHARTS_VERSION}
+npm install --package-lock-only --ignore-scripts lightweight-charts@${LIGHTWEIGHT_CHARTS_VERSION}
 node -p "'Updated bindings to Lightweight Charts ' + require('./package-lock.json').packages['node_modules/lightweight-charts'].version"
 '''
 
 # On Windows, `npm` is a batch file: it must be invoked with `call`, otherwise the script stops right after it.
 [tasks.update-lightweight-charts.windows]
 script = '''
-call npm install --package-lock-only --ignore-scripts --save-exact lightweight-charts@%LIGHTWEIGHT_CHARTS_VERSION%
+call npm install --package-lock-only --ignore-scripts lightweight-charts@%LIGHTWEIGHT_CHARTS_VERSION%
 node -p "'Updated bindings to Lightweight Charts ' + require('./package-lock.json').packages['node_modules/lightweight-charts'].version"
 '''

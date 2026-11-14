@@ -131,7 +131,9 @@ Run `cargo make update-lightweight-charts` from the workspace root to refresh th
 to the latest npm release, and update its lockfile.
 
 Run `cargo make update-lightweight-charts -e LIGHTWEIGHT_CHARTS_VERSION=5.3.0`
-to pin a specific upstream version instead.
+to target a specific upstream version instead.
+
+The dependency is saved as a range of compatible versions, such as `^5.3.0`, and the lockfile keeps the bundled version.
 
 ## License
 
