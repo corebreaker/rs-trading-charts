@@ -10,6 +10,7 @@ use crate::{
         LogicalRange,
         Marker,
         PaneSize,
+        SeriesMarkersOptions,
         PriceLineOptions,
         PriceRange,
         TextWatermarkOptions,
@@ -454,12 +455,21 @@ impl ChartHandle {
         Ok(self.js().updateDataPoint(series_id, to_value(data)?)?)
     }
 
+    /// Add, replace or remove a single marker of a series.
+    ///
+    /// A marker with an identifier replaces the marker with the same identifier; a marker without identifier
+    /// replaces the markers without identifier at the same time. A [`Marker::remove`] removes them.
     pub fn set_marker(&self, series_id: &str, marker: &Marker) -> Result<(), JsError> {
         Ok(self.js().setMarker(series_id, to_value(marker)?)?)
     }
 
+    /// Replace all the markers of a series. Several markers can share the same time.
     pub fn set_markers(&self, series_id: &str, markers: &[Marker]) -> Result<(), JsError> {
         Ok(self.js().setMarkers(series_id, to_value(markers)?)?)
+    }
+
+    pub fn apply_series_markers_options(&self, series_id: &str, options: &SeriesMarkersOptions) -> Result<(), JsError> {
+        Ok(self.js().applySeriesMarkersOptions(series_id, to_value(options)?)?)
     }
 
     pub fn set_price_lines(&self, series_id: &str, price_lines: &[PriceLineOptions]) -> Result<(), JsError> {

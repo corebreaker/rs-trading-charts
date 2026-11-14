@@ -12,6 +12,11 @@ extern "C" {
     #[wasm_bindgen(catch)]
     pub(crate) fn loadWebFont(family: &str, source: &str, descriptors: JsValue) -> Result<js_sys::Promise, JsValue>;
 
+    #[wasm_bindgen(catch)]
+    pub(crate) fn registerMarkerStyle(id: &str, style: JsValue) -> Result<(), JsValue>;
+
+    pub(crate) fn unregisterMarkerStyle(id: &str) -> bool;
+
     pub(crate) type TradingChart;
 
     #[wasm_bindgen(constructor)]
@@ -229,6 +234,13 @@ extern "C" {
 
     #[wasm_bindgen(method, catch)]
     pub(crate) fn setMarkers(this: &TradingChart, seriesId: &str, markers: JsValue) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(crate) fn applySeriesMarkersOptions(
+        this: &TradingChart,
+        seriesId: &str,
+        options: JsValue,
+    ) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
     pub(crate) fn setPriceLines(this: &TradingChart, seriesId: &str, priceLines: JsValue) -> Result<(), JsValue>;

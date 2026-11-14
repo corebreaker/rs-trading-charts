@@ -4,6 +4,7 @@ mod image_watermark;
 mod legend;
 mod logical_range;
 mod marker;
+mod marker_style;
 mod marker_type;
 mod pane_size;
 mod price_line;
@@ -24,6 +25,15 @@ pub use self::{
     legend::LegendOptions,
     logical_range::LogicalRange,
     marker::Marker,
+    marker_style::{
+        register_marker_style,
+        unregister_marker_style,
+        MarkerPosition,
+        MarkerShape,
+        MarkerStyle,
+        MarkerZOrder,
+        SeriesMarkersOptions,
+    },
     marker_type::MarkerType,
     pane_size::PaneSize,
     price_line::PriceLineOptions,

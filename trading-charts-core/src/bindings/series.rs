@@ -1,6 +1,6 @@
 use super::{ChartHandle, PanelId};
 use crate::{
-    data::{options::PriceScaleOptions, Marker, PriceLineOptions, PriceRange},
+    data::{options::PriceScaleOptions, Marker, PriceLineOptions, PriceRange, SeriesMarkersOptions},
     JsError,
 };
 
@@ -77,6 +77,10 @@ impl<Dat: Serialize, Opt: Serialize> SeriesHandle<Dat, Opt> {
 
     pub fn set_markers(&self, markers: &[Marker]) -> Result<(), JsError> {
         self.chart.set_markers(&self.id, markers)
+    }
+
+    pub fn apply_markers_options(&self, options: &SeriesMarkersOptions) -> Result<(), JsError> {
+        self.chart.apply_series_markers_options(&self.id, options)
     }
 
     pub fn set_price_lines(&self, price_lines: &[PriceLineOptions]) -> Result<(), JsError> {

@@ -48,6 +48,7 @@ export class SeriesEntry {
         this.chartApi = null;
         this.markerApi = null;
         this.markerData = [];
+        this.markersOptions = {};
         this.priceLines = [];
         this.priceLineApis = [];
         this.sorted = false;
@@ -79,14 +80,6 @@ export class SeriesEntry {
         return this.chartApi;
     }
 
-    getMarkers() {
-        if (!this.markerApi) {
-            throw new Error('Markers is not bound to chart');
-        }
-
-        return this.markerApi;
-    }
-
     /** Create the Lightweight Charts series on the given chart. */
     bind(chart) {
         const params = this.params;
@@ -101,12 +94,8 @@ export class SeriesEntry {
             chart.timeScale().fitContent();
         }
 
-        if (this.markerApi) {
-            this.updateMarkers();
-        } else {
-            this.markerApi = createSeriesMarkers(this.chartApi, this.markerData || []);
-        }
-
+        this.markerApi = createSeriesMarkers(this.chartApi, [], this.markersOptions);
+        this.updateMarkers();
         this.rebuildPriceLines();
     }
 
@@ -197,12 +186,16 @@ export class SeriesEntry {
     }
 
     updateMarkers() {
+        if (!this.markerApi) {
+            return;
+        }
+
         if (!this.sorted) {
             this.sorted = true;
             this.markerData.sort((a, b) => a.time - b.time);
         }
 
-        const markers = this.getMarkers();
+        const markers = this.markerApi;
         const shift = this._owner.timeShift;
         const markerData = this.markerData.map(marker => shiftItem(marker, shift));
 
@@ -212,16 +205,19 @@ export class SeriesEntry {
         }, 1);
     }
 
+    /**
+     * Add, replace or remove a single marker.
+     *
+     * A marker with an identifier replaces the marker with the same identifier, other markers replace all the
+     * markers without identifier at the same time.
+     */
     setMarker(markerDesc) {
-        const { time } = markerDesc;
+        const { time, id } = markerDesc;
         if (!time) {
             throw new Error('Marker time is required');
         }
 
-        const idx = this.markerData.findIndex(m => m.time === time);
-        if (idx >= 0) {
-            this.markerData.splice(idx, 1);
-        }
+        this.markerData = this.markerData.filter(m => (id ? m.id !== id : m.id || m.time !== time));
 
         const marker = resolveMarker(markerDesc);
         if (marker) {
@@ -230,10 +226,16 @@ export class SeriesEntry {
         }
     }
 
+    /** Replace all the markers. Several markers can share the same time. */
     setMarkers(markers) {
-        this.markerData = [];
-        for (const marker of markers) {
-            this.setMarker(marker);
+        this.markerData = markers.map(resolveMarker).filter(marker => marker !== null);
+        this.sorted = false;
+    }
+
+    applyMarkersOptions(options) {
+        this.markersOptions = Object.assign({}, this.markersOptions, options || {});
+        if (this.markerApi) {
+            this.markerApi.applyOptions(this.markersOptions);
         }
     }
 

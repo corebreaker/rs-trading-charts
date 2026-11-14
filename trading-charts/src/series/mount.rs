@@ -1,5 +1,5 @@
 use crate::{
-    data::{series::Series, Marker, PriceLineOptions},
+    data::{series::Series, Marker, PriceLineOptions, SeriesMarkersOptions},
     ChartHandle,
     PanelId,
     SeriesHandle,
@@ -13,10 +13,11 @@ pub(crate) struct SeriesInputs<Dat, Opt>
 where
     Dat: Send + Sync + 'static,
     Opt: Send + Sync + 'static, {
-    pub(crate) options:     Option<Signal<Opt>>,
-    pub(crate) data:        Signal<Vec<Dat>>,
-    pub(crate) markers:     Signal<Vec<Marker>>,
-    pub(crate) price_lines: Signal<Vec<PriceLineOptions>>,
+    pub(crate) options:         Option<Signal<Opt>>,
+    pub(crate) data:            Signal<Vec<Dat>>,
+    pub(crate) markers:         Signal<Vec<Marker>>,
+    pub(crate) markers_options: Option<Signal<SeriesMarkersOptions>>,
+    pub(crate) price_lines:     Signal<Vec<PriceLineOptions>>,
 }
 
 /// Add a series to the chart of the context, in the pane of the context, and keep it in sync with the inputs.
@@ -35,6 +36,7 @@ where
         options,
         data,
         markers,
+        markers_options,
         price_lines,
     } = inputs;
 
@@ -96,6 +98,18 @@ where
             })
         }
     });
+
+    if let Some(markers_options) = markers_options {
+        let handle = handle.clone();
+
+        Effect::new(move || {
+            markers_options.with(|options| {
+                if let Err(err) = handle.apply_markers_options(options) {
+                    err.with_prefix("Failed to apply markers options").log();
+                }
+            })
+        });
+    }
 
     Effect::new({
         let handle = handle.clone();

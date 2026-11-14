@@ -457,6 +457,10 @@ export class TradingChart {
         series.updateMarkers();
     }
 
+    applySeriesMarkersOptions(seriesId, options) {
+        this._getSeries(seriesId).applyMarkersOptions(options);
+    }
+
     setPriceLines(seriesId, priceLines) {
         this._getSeries(seriesId).setPriceLines(priceLines);
     }

@@ -1,6 +1,6 @@
 use crate::{
     chart::use_chart,
-    data::{series::Series, Marker, PriceLineOptions},
+    data::{series::Series, Marker, PriceLineOptions, SeriesMarkersOptions},
     PanelId,
     SeriesHandle,
 };
@@ -18,6 +18,7 @@ pub(crate) fn use_series<Dat, Opt>(
     options: Option<Opt>,
     data: Vec<Dat>,
     markers: Vec<Marker>,
+    markers_options: Option<SeriesMarkersOptions>,
     price_lines: Vec<PriceLineOptions>,
 ) -> Option<SeriesHandle<Dat, Opt>>
 where
@@ -84,6 +85,18 @@ where
                     err.with_prefix("Failed to set markers")
                         .with_serializable_data(&markers)
                         .log();
+                }
+            }
+        }
+    }));
+
+    use_effect(use_reactive((&markers_options,), {
+        let handle = handle.clone();
+
+        move |(markers_options,)| {
+            if let (Some(handle), Some(options)) = (&handle, &markers_options) {
+                if let Err(err) = handle.apply_markers_options(options) {
+                    err.with_prefix("Failed to apply markers options").log();
                 }
             }
         }

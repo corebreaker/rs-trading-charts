@@ -5,3 +5,4 @@
 export { TradingChart } from './chart.mjs';
 export { loadWebFont } from './fonts.mjs';
 export { registerCustomFunction, unregisterCustomFunction } from './formatters.mjs';
+export { registerMarkerStyle, unregisterMarkerStyle } from './markers.mjs';
