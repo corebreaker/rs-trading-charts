@@ -13,7 +13,7 @@ use leptos::{
     reactive::{
         effect::Effect,
         traits::{Get, With, WithUntracked},
-        wrappers::read::Signal,
+        wrappers::read::{MaybeProp, Signal},
     },
     children::Children,
     context::Provider,
@@ -49,6 +49,7 @@ fn make_chart(options: Option<Signal<ChartOptions>>) -> Result<ChartHandle, JsEr
 pub fn Chart(
     #[prop(optional, into)] options: Option<Signal<ChartOptions>>,
     #[prop(optional, into)] legend: Option<Signal<Option<LegendOptions>>>,
+    #[prop(optional, into)] time_zone: MaybeProp<String>,
     #[prop(optional, into)] style: Option<String>,
     #[prop(optional, into)] class: Option<String>,
     #[prop(optional)] refit: Option<LeptosEventChannels>,
@@ -62,6 +63,16 @@ pub fn Chart(
             return view!().into_any();
         }
     };
+
+    let _ = Effect::new({
+        let chart = chart.clone();
+
+        move || {
+            if let Err(err) = chart.set_time_zone(time_zone.get().as_deref()) {
+                err.with_prefix("Failed to set the time zone").log();
+            }
+        }
+    });
 
     if let Some(refit) = refit.as_ref() {
         let chart = chart.clone();

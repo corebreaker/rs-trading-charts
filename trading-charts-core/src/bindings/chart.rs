@@ -154,6 +154,23 @@ impl ChartHandle {
         Ok(self.js().applyTimeScaleOptions(to_value(options)?)?)
     }
 
+    /// Set the time zone in which the times are displayed, an IANA name such as `Europe/Paris` or `America/New_York`,
+    /// or `None` to display the times in UTC, which is the default.
+    ///
+    /// The data and the times given to and returned by the handle stay real UTC times: the binding converts them to
+    /// the wall-clock time of the time zone for the display, so that the time scale, its tick marks and the crosshair
+    /// label follow the time zone, including its daylight saving time changes.
+    ///
+    /// Returns an error when the time zone is unknown.
+    pub fn set_time_zone(&self, time_zone: Option<&str>) -> Result<(), JsError> {
+        Ok(self.js().setTimeZone(time_zone.map(String::from))?)
+    }
+
+    /// The time zone of the chart, `None` when the times are displayed in UTC.
+    pub fn time_zone(&self) -> Option<String> {
+        self.js().getTimeZone()
+    }
+
     /// Scale the time axis so that all the data fits in the chart.
     pub fn refit_content(&self) -> Result<(), JsError> {
         Ok(self.js().refitContent()?)

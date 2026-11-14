@@ -3,6 +3,7 @@ import { trackChart, untrackChart } from './fonts.mjs';
 import { resolveOptions } from './formatters.mjs';
 import { Legend } from './legend.mjs';
 import { SeriesEntry } from './series.mjs';
+import { shiftRange, TimeZoneShift, utcShift } from './timezone.mjs';
 import { newId } from './utils.mjs';
 import { Watermarks } from './watermarks.mjs';
 
@@ -19,9 +20,15 @@ export class TradingChart {
         this._series = {};
         this._watermarks = new Watermarks(this);
         this._legend = new Legend(this);
+        this._timeShift = utcShift;
         this._timeContext = {
-            toUtc: time => time,
+            toUtc: time => this._timeShift.toUtc(time),
         };
+    }
+
+    /** Converter between the real UTC times and the displayed times of the time zone of the chart. */
+    get timeShift() {
+        return this._timeShift;
     }
 
     /** Replace the formatter descriptors of options sent by Rust by functions. */
@@ -167,16 +174,41 @@ export class TradingChart {
         this._getChartPriceScale(priceScaleId, paneIndex).applyOptions(options);
     }
 
+    /** Set the time zone of the chart (an IANA name such as `Europe/Paris`), or remove it with `null`. */
+    setTimeZone(timeZone) {
+        const shift = timeZone ? new TimeZoneShift(timeZone) : utcShift;
+        if (shift.timeZone === this._timeShift.timeZone) {
+            return;
+        }
+
+        const visibleRange = this._chart ? this.getVisibleRange() : null;
+
+        this._timeShift = shift;
+        for (const series of Object.values(this._series)) {
+            series.refreshTimes();
+        }
+
+        if (visibleRange) {
+            this.setVisibleRange(visibleRange);
+        }
+
+        this._legend.refresh();
+    }
+
+    getTimeZone() {
+        return this._timeShift.timeZone;
+    }
+
     refitContent() {
         this._getChart().timeScale().fitContent();
     }
 
     getVisibleRange() {
-        return this._getChart().timeScale().getVisibleRange();
+        return shiftRange(this._getChart().timeScale().getVisibleRange(), time => this._timeShift.toUtc(time));
     }
 
     setVisibleRange(range) {
-        this._getChart().timeScale().setVisibleRange(range);
+        this._getChart().timeScale().setVisibleRange(shiftRange(range, time => this._timeShift.toChart(time)));
     }
 
     getVisibleLogicalRange() {
@@ -196,11 +228,13 @@ export class TradingChart {
     }
 
     timeToCoordinate(time) {
-        return this._getChart().timeScale().timeToCoordinate(time);
+        return this._getChart().timeScale().timeToCoordinate(this._timeShift.toChart(time));
     }
 
     coordinateToTime(coordinate) {
-        return this._getChart().timeScale().coordinateToTime(coordinate);
+        const time = this._getChart().timeScale().coordinateToTime(coordinate);
+
+        return time === null ? null : this._timeShift.toUtc(time);
     }
 
     getPriceScaleVisibleRange(priceScaleId, paneIndex) {
@@ -317,7 +351,7 @@ export class TradingChart {
         }
 
         const id = newId();
-        this._series[id] = new SeriesEntry(id, seriesDesc, options => this.resolveOptions(options));
+        this._series[id] = new SeriesEntry(this, id, seriesDesc);
         this._bindSeries(id);
         this._legend.update();
 
@@ -434,7 +468,7 @@ export class TradingChart {
     setCrosshairPosition(seriesId, price, horizontalPosition) {
         const series = this._getSeries(seriesId);
 
-        this._getChart().setCrosshairPosition(price, horizontalPosition, series.getApi());
+        this._getChart().setCrosshairPosition(price, this._timeShift.toChart(horizontalPosition), series.getApi());
     }
 
     clearCrosshairPosition() {

@@ -11,15 +11,17 @@ use web_sys::HtmlDivElement;
 #[derive(Clone, Props)]
 pub struct ChartProps {
     #[props(default)]
-    options:  Option<ChartOptions>,
+    options:   Option<ChartOptions>,
     #[props(default)]
-    legend:   Option<LegendOptions>,
+    legend:    Option<LegendOptions>,
     #[props(default, into)]
-    style:    Option<String>,
+    time_zone: Option<String>,
     #[props(default, into)]
-    class:    Option<String>,
+    style:     Option<String>,
+    #[props(default, into)]
+    class:     Option<String>,
     #[props(default)]
-    children: Element,
+    children:  Element,
 }
 
 impl PartialEq for ChartProps {
@@ -68,6 +70,16 @@ pub fn Chart(props: ChartProps) -> Element {
             }
         });
     }
+
+    use_effect(use_reactive((&props.time_zone,), {
+        let chart = chart.clone();
+
+        move |(time_zone,)| {
+            if let Err(err) = chart.set_time_zone(time_zone.as_deref()) {
+                err.with_prefix("Failed to set the time zone").log();
+            }
+        }
+    }));
 
     {
         let chart = chart.clone();

@@ -38,6 +38,12 @@ extern "C" {
     pub(crate) fn bindChart(this: &TradingChart, node: HtmlDivElement, options: JsValue) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
+    pub(crate) fn setTimeZone(this: &TradingChart, timeZone: Option<String>) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method)]
+    pub(crate) fn getTimeZone(this: &TradingChart) -> Option<String>;
+
+    #[wasm_bindgen(method, catch)]
     pub(crate) fn refitContent(this: &TradingChart) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]

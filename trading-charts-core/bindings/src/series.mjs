@@ -8,6 +8,7 @@ import {
     LineSeries,
 } from 'lightweight-charts';
 import { resolveMarker } from './markers.mjs';
+import { shiftItem } from './timezone.mjs';
 import { isDefined, sortByTime } from './utils.mjs';
 
 const seriesTypes = {
@@ -32,15 +33,18 @@ function getSeriesType(type) {
  *
  * The entry outlives the Lightweight Charts series object (`chartApi`): it keeps the parameters, data, markers and
  * price lines so that the series can be recreated when the chart is bound again to a DOM node.
+ *
+ * The data and markers are kept with their real UTC times: they are converted to the displayed times of the time
+ * zone of the owner chart when they are given to Lightweight Charts.
  */
 export class SeriesEntry {
-    constructor(id, { type, data, options, panel }, resolveOptions = options => options) {
+    constructor(owner, id, { type, data, options, panel }) {
         if (Array.isArray(data)) {
             sortByTime(data);
         }
 
         this.id = id;
-        this._resolveOptions = resolveOptions;
+        this._owner = owner;
         this.chartApi = null;
         this.markerApi = null;
         this.markerData = [];
@@ -87,13 +91,13 @@ export class SeriesEntry {
     bind(chart) {
         const params = this.params;
 
-        this.chartApi = chart.addSeries(getSeriesType(params.type), this._resolveOptions(params.options));
+        this.chartApi = chart.addSeries(getSeriesType(params.type), this._owner.resolveOptions(params.options));
         if (isDefined(this.panel)) {
             this.chartApi.moveToPane(this.panel);
         }
 
         if (params.data) {
-            this.chartApi.setData(params.data);
+            this.chartApi.setData(this._chartData(params.data));
             chart.timeScale().fitContent();
         }
 
@@ -130,7 +134,7 @@ export class SeriesEntry {
     applyOptions(options) {
         this.params.options = options;
         if (this.chartApi) {
-            this.chartApi.applyOptions(this._resolveOptions(options));
+            this.chartApi.applyOptions(this._owner.resolveOptions(options));
         }
     }
 
@@ -145,8 +149,24 @@ export class SeriesEntry {
         sortByTime(data);
         this.params.data = data;
         if (this.chartApi) {
-            this.chartApi.setData(data);
+            this.chartApi.setData(this._chartData(data));
         }
+    }
+
+    _chartData(data) {
+        const shift = this._owner.timeShift;
+
+        return data.map(item => shiftItem(item, shift));
+    }
+
+    /** Give the data and markers again to Lightweight Charts, after the time zone of the chart changed. */
+    refreshTimes() {
+        if (!this.chartApi) {
+            return;
+        }
+
+        this.chartApi.setData(this._chartData(this.params.data || []));
+        this.updateMarkers();
     }
 
     updateDataPoint(dataPoint) {
@@ -169,9 +189,9 @@ export class SeriesEntry {
 
         if (this.chartApi) {
             if (canIncrementallyUpdate) {
-                this.chartApi.update(dataPoint);
+                this.chartApi.update(shiftItem(dataPoint, this._owner.timeShift));
             } else {
-                this.chartApi.setData(data);
+                this.chartApi.setData(this._chartData(data));
             }
         }
     }
@@ -183,9 +203,12 @@ export class SeriesEntry {
         }
 
         const markers = this.getMarkers();
-        markers.setMarkers(this.markerData);
+        const shift = this._owner.timeShift;
+        const markerData = this.markerData.map(marker => shiftItem(marker, shift));
+
+        markers.setMarkers(markerData);
         setTimeout(() => {
-            markers.setMarkers(this.markerData);
+            markers.setMarkers(markerData);
         }, 1);
     }
 
