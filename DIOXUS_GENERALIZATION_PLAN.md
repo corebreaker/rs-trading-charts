@@ -2,80 +2,80 @@
 
 ## Status
 
-The plan is implemented as of version 1.0:
+The plan is implemented as of version 1.0. This document keeps the rationale of the core/adapter split,
+and records how each part of the plan was carried out.
 
 - `trading-charts-core`, in the `core` directory, holds the JS binding, the data types and the runtime handles:
-  `ChartHandle`, `PanelId` and `SeriesHandle`.
+  `ChartHandle`, `PanelId`, `SeriesHandle` and `Subscription`.
 - `trading-charts` (Leptos) and `trading-charts-dioxus` (Dioxus web), in the `leptos` and `dioxus` directories,
   are thin adapters on the core.
   The panels are explicit `PanelId` contexts, the series are created once and removed when their component is
   unmounted, and the Dioxus series update the chart only when a prop value changes.
 - `examples/leptos` and `examples/dioxus` are the same gallery of demos, and each crate has its own README.
 
-The file paths below describe the layout of the repository before this work.
+Two items of the plan are only partly done, see [Open items](#open-items):
+there is no automated wasm test, and the behavior is validated by hand with the examples.
 
-## Executive summary
+## Summary
 
-Yes: the `rs-trading-charts` binding can support both Leptos and Dioxus from the same repository, and it can share almost all of the current JS/WASM and data-model code.
+The binding supports Leptos and Dioxus from the same repository, sharing all of the JS/WASM and data-model code.
 
-The part that should be shared is the chart runtime and `lightweight-charts` binding. The part that should not be shared directly is the UI/component layer, because the current public API is Leptos-specific and Dioxus has different render and mount semantics.
+The shared part is the chart runtime and the `lightweight-charts` binding.
+The UI/component layer is not shared: the Leptos API is framework-specific,
+and Dioxus has different render and mount semantics.
 
-My recommendation is:
+The decisions were:
 
 - Keep one repository and one shared JS binding pipeline.
 - Extract a framework-agnostic core crate.
-- Keep the current `trading-charts` crate as the Leptos adapter for backward compatibility.
-- Add a new `trading-charts-dioxus` crate for Dioxus web support.
-- Do not target Dioxus desktop/liveview in the first pass. Target `wasm32-unknown-unknown` and Dioxus `web` only.
+- Keep the `trading-charts` crate as the Leptos adapter, for backward compatibility.
+- Add a `trading-charts-dioxus` crate for Dioxus web support.
+- Do not target Dioxus desktop, mobile or liveview: only `wasm32-unknown-unknown` and the Dioxus `web` renderer.
 
-## Short answer to the “same time” question
+## Meaning of "both frameworks at the same time"
 
-It is possible to make the binding work for Leptos and Dioxus at the same time, but there are two different meanings:
+Making the binding work for Leptos and Dioxus at the same time has several meanings:
 
-- Same repository/workspace: yes, this is the right target.
-- Same shared Rust/JS core: yes, this is the main design goal.
-- Same published crate with feature flags only: technically yes, but not the cleanest long-term API surface.
-- Same end-user app running both frameworks together: technically possible in separate DOM roots, but not a useful design target for this library.
+- Same repository/workspace: yes, this is the chosen layout.
+- Same shared Rust/JS core: yes, this was the main design goal.
+- Same published crate with feature flags only: technically possible, but not the cleanest API surface.
+- Same application running both frameworks together: possible in separate DOM roots,
+  but not a design target for this library.
 
-The important point is that the browser-facing binding can be shared, while the component shell should be framework-specific.
+The browser-facing binding is shared, while the component shell is framework-specific.
 
-## Current state of the repo
+## Repository layout
 
-The current workspace already has a natural split between framework-neutral code and Leptos-only code.
+Before this work, a single `trading-charts` crate held everything, and its example was in `example`.
+The framework-neutral code moved to the core crate, the Leptos-only code stayed in the Leptos crate:
 
-Framework-neutral today:
+| Before                                           | After                                                         |
+|--------------------------------------------------|---------------------------------------------------------------|
+| `trading-charts/src/bindings/binding.rs`         | `core/src/bindings/chart.rs`, `series.rs`, `subscription.rs`  |
+| `trading-charts/src/bindings/js.rs`              | `core/src/bindings/js.rs`                                     |
+| `trading-charts/src/data/**`                     | `core/src/data/**`, `core/src/series/*/options.rs`            |
+| `trading-charts/src/error.rs`                    | `core/src/error.rs`                                           |
+| `trading-charts/build.rs`                        | `core/build.rs`                                               |
+| `trading-charts/bindings/**`                     | `core/bindings/**`                                            |
+| `trading-charts/src/chart.rs`, `panel.rs`        | `leptos/src/chart.rs`, `panel.rs`                             |
+| `trading-charts/src/series/*/component.rs`       | `leptos/src/series/*/component.rs`, `leptos/src/series/mount.rs` |
+| `example/**`                                     | `examples/leptos/**`                                          |
+| (none)                                           | `dioxus/**`, `examples/dioxus/**`                             |
 
-- `trading-charts/src/bindings/binding.rs`
-- `trading-charts/src/bindings/js.rs`
-- `trading-charts/src/data/**`
-- `trading-charts/src/error.rs`
-- `trading-charts/build.rs`
-- `trading-charts/bindings/**`
-
-Leptos-specific today:
-
-- `trading-charts/src/chart.rs`
-- `trading-charts/src/panel.rs`
-- `trading-charts/src/series/candlesticks/component.rs`
-- workspace dependencies on `leptos` and `emitix`
-- `example/**`
-
-Two structural observations matter for the Dioxus plan:
-
-- The low-level binding already only depends on `wasm-bindgen`, `web-sys`, JS, and serde. That is reusable.
-- The current public component API performs some imperative chart/series setup in a way that fits Leptos component setup, but Dioxus function components re-run on render. A direct line-by-line port would be fragile.
+The workspace members are `core`, `leptos`, `dioxus`, `wasmbind-macro` and the two examples;
+`default-members` excludes the examples.
 
 ## Problem model
 
 ### Relevant entities
 
 - The `lightweight-charts` JS module.
-- The wasm-bindgen Rust bridge in `trading-charts/src/bindings/**`.
-- Shared chart data types in `trading-charts/src/data/**`.
-- A chart runtime/handle that owns the JS chart object.
-- Framework adapters for Leptos and Dioxus.
-- A DOM mount point represented as `web_sys::HtmlDivElement`.
-- Optional panel and series handles.
+- The wasm-bindgen Rust bridge, in `core/src/bindings/**`.
+- The shared chart data types, in `core/src/data/**`.
+- The chart runtime that owns the JS chart object: `ChartHandle`, and the `TradingChart` class on the JS side.
+- The framework adapters for Leptos and Dioxus.
+- A DOM mount point, represented as `web_sys::HtmlDivElement`.
+- The panel and series handles: `PanelId` and `SeriesHandle`.
 
 ### State variables
 
@@ -84,300 +84,229 @@ Two structural observations matter for the Dioxus plan:
 - Series registry state.
 - Panel assignment state.
 - Mounted DOM node availability.
-- Framework reactive state for data/options/markers.
+- Framework reactive state for data, options and markers.
 
 ### Actions
 
-- Create chart runtime.
-- Bind chart runtime to a mounted DOM node.
-- Apply chart options after bind.
+- Create the chart runtime.
+- Bind the chart runtime to a mounted DOM node.
+- Apply the chart options, before or after binding.
 - Allocate panel identifiers.
 - Add or remove series.
-- Update series options.
-- Update series data.
-- Update markers.
-- Destroy chart and cleanup series on unmount.
+- Update series options, data and markers.
+- Destroy the chart and clean up the series on unmount.
 
 ### Constraints
 
 - `lightweight-charts` requires a real browser DOM node.
-- The shared binding depends on `wasm-bindgen` and `web-sys`, so this remains a web/WASM integration.
+- The shared binding depends on `wasm-bindgen` and `web-sys`, so it remains a web/WASM integration.
 - Dioxus only matches this path on the `web` renderer.
-- The current Leptos API should remain usable or have a clear compatibility path.
-- The public API must avoid framework lifecycle assumptions leaking into the shared core.
+- The Leptos API should remain usable, or have a clear compatibility path.
+- The public API must not leak framework lifecycle assumptions into the shared core.
 
-## Recommended architecture
+## Architecture
 
-### Preferred structure
+### Crates
 
-Use a core-plus-adapters workspace layout:
+The workspace uses a core-plus-adapters layout:
 
-- `trading-charts-core`
-  - Shared JS build pipeline.
-  - Shared wasm-bindgen layer.
-  - Shared `data`, `error`, and runtime handles.
-- `trading-charts`
-  - Leptos adapter crate.
-  - Keeps or re-exports the current Leptos-facing API.
-- `trading-charts-dioxus`
-  - Dioxus web adapter crate.
-  - Provides Dioxus components/hooks around the shared core.
-- `wasmbind-macro`
-  - Unchanged.
-- `example-leptos`
-  - Current example moved or renamed.
-- `example-dioxus-web`
-  - New example.
+- `trading-charts-core` (`core`): the JS build pipeline, the wasm-bindgen layer, the data types and the handles.
+- `trading-charts` (`leptos`): the Leptos adapter, which keeps the Leptos-facing API.
+- `trading-charts-dioxus` (`dioxus`): the Dioxus web adapter, with components and hooks around the core.
+- `wasmbind-js-file-macro` (`wasmbind-macro`): unchanged.
+- `examples/leptos` and `examples/dioxus`: the same gallery of demos, written with each adapter.
 
-### Why this is better than a single dual-feature crate
+### Why not a single dual-feature crate
 
-A single crate with `leptos` and `dioxus` features would work, but it has weaker separation:
+A single crate with `leptos` and `dioxus` features would work, but it separates the frameworks less well:
 
-- Docs become harder to navigate.
-- Public modules tend to become feature-gated and noisy.
-- Component lifecycle differences still force a runtime abstraction anyway.
+- Docs are harder to navigate.
+- Public modules become feature-gated and noisy.
+- Component lifecycle differences still force a runtime abstraction.
 - Backward compatibility is easier if `trading-charts` remains the Leptos crate users already know.
 
-If you want one user-facing meta-crate later, add it after the core/adapters split is stable.
+A user-facing meta-crate can still be added later, on top of the core and the adapters.
 
-## Key design change: remove ambient panel state
+## Key design change: no ambient panel state
 
-This is the most important refactor for a clean Dioxus integration.
+This was the most important refactor for a clean Dioxus integration.
 
-Today the JS bridge tracks `_currentPanelId` and `ChartPanel` temporarily mutates that state while children render. That works as a render-time DSL, but it is not a good shared abstraction for multiple frameworks.
+The JS bridge tracked a `_currentPanelId`, and `ChartPanel` mutated that state while its children rendered.
+That worked as a render-time DSL, but not as an abstraction shared by several frameworks.
 
-Instead, make panel assignment explicit:
+Panel assignment is now explicit:
 
-- Allocate a `PanelId` from the chart handle.
-- Pass `PanelId` through framework context.
-- Add series with an explicit `panel_id: Option<PanelId>`.
+- `ChartHandle::allocate_panel` allocates a `PanelId` from a counter kept by the handle.
+- `ChartPanel` passes its `PanelId` to its children through the framework context.
+- A series is added with its panel, set in its `Series` description (`Series::set_panel`);
+  the JS `addPanel()` and `removePanel()` methods are gone.
+- Series are explicit handles, so that unmount cleanup removes them with `SeriesHandle::remove`.
 
-That lets both Leptos and Dioxus use the same runtime contract without relying on ambient mutable “current panel” state.
-
-Suggested direction:
-
-- Replace JS `addPanel()` and `removePanel()` with explicit pane assignment on `addSeries(...)`.
-- Keep an internal counter for `PanelId` allocation in Rust or JS.
-- Model series as explicit handles so unmount cleanup can call `removeSeries`.
-
-## Proposed crate responsibilities
+## Crate responsibilities
 
 ### `trading-charts-core`
 
-Move these pieces into the new core crate:
+The core crate holds the bindings, the data types, the error type, the build script and the JS sources,
+and has no dependency on Leptos, Dioxus or `emitix`.
 
-- `bindings/**`
-- `data/**`
-- `error.rs`
-- `build.rs`
-- `bindings/` JS sources and npm build assets
-
-Expose public runtime types such as:
-
-- `ChartHandle`
-- `PanelId`
-- `SeriesHandle`
-- shared option/data/marker types
-- `JsError`
-
-Add or formalize core methods such as:
-
-- `ChartHandle::new`
-- `ChartHandle::bind(HtmlDivElement)`
-- `ChartHandle::apply_chart_options`
-- `ChartHandle::allocate_panel`
-- `ChartHandle::add_series`
-- `ChartHandle::update_series_options`
-- `ChartHandle::update_data`
-- `ChartHandle::set_markers`
-- `ChartHandle::refit_content`
-- `ChartHandle::remove_series`
-
-The core crate should have no dependency on Leptos, Dioxus, or `emitix`.
+It exposes the runtime types `ChartHandle`, `PanelId`, `SeriesHandle`, `Subscription` and `JsError`,
+with the data, option and marker types. The methods planned on `ChartHandle` all exist:
+`new`, `bind`, `apply_chart_options`, `allocate_panel`, `add_series`, `update_series_options`, `update_data`,
+`set_markers`, `refit_content` and `remove_series`.
+`SeriesHandle` offers the same series operations without the series identifier.
 
 ### `trading-charts` Leptos adapter
 
-This crate should:
+The Leptos crate:
 
-- Depend on `trading-charts-core`.
-- Re-export core data types for convenience.
-- Keep `Chart`, `ChartPanel`, and `CandleStickSeries` as Leptos components.
-- Keep Leptos-specific conveniences such as `REFIT_EVENT_KIND` and any `emitix` integration.
-
-Internally, it should stop depending on render-time ambient panel mutation and use explicit panel/series handles from the core.
+- Depends on `trading-charts-core`, and re-exports its types (`data`, `series_data`, `ChartHandle`...).
+- Keeps `Chart`, `ChartPanel` and the series components as Leptos components:
+  `CandleStickSeries`, and also the bar, line, area, baseline, histogram and price/volume series.
+- Keeps the Leptos-specific conveniences: the `refit` prop of `Chart`, with `REFIT_EVENT_KIND` and `emitix`.
+- Uses explicit panel and series handles: `ChartPanel` provides a `PanelId` context,
+  and the series are removed from the chart in `on_cleanup` (`leptos/src/series/mount.rs`).
 
 ### `trading-charts-dioxus`
 
-This crate should:
+The Dioxus crate:
 
-- Depend on `trading-charts-core`.
-- Depend on Dioxus web-facing features only.
-- Use Dioxus `onmounted` to capture a mounted DOM node.
-- Downcast mounted data to `web_sys::Element` and then `web_sys::HtmlDivElement`.
-- Use `use_context_provider` / `use_context` to propagate the chart handle and panel id.
-- Use `use_hook` or `use_hook_with_cleanup` to create series once.
-- Use `use_effect` for reactive updates to options, data, and markers.
-- Use `use_drop` cleanup to remove series and destroy resources cleanly.
+- Depends on `trading-charts-core`, and re-exports it like the Leptos crate.
+- Depends on Dioxus web features only: `dioxus` without default features, with `lib` and `web`,
+  and `dioxus-web` with `mounted`.
+- Binds the chart in the `onmounted` handler of its `div`, casting the web element to `HtmlDivElement`.
+- Provides the chart handle and the panel identifier with `use_context_provider`.
+- Creates the series once with `use_hook`, updates them with `use_effect` and `use_reactive`
+  when a prop value changes, and removes them in `use_drop` (`dioxus/src/series/mount.rs`).
 
 ## Dioxus-specific implementation notes
 
 ### DOM binding
 
-The first pass should be web-only. The Dioxus component should bind only after mount:
-
-- `div { onmounted: ... }`
-- store `MountedData`
-- obtain the underlying web element
-- cast to `web_sys::HtmlDivElement`
-- call the shared core `bind(...)`
-
-This is the right match for the existing `web-sys` + `wasm-bindgen` stack.
+The Dioxus `Chart` binds only after mount: the `onmounted` handler gets the web element of the `div`,
+casts it to `web_sys::HtmlDivElement`, and an effect calls `ChartHandle::bind` with it.
 
 ### State and rerender safety
 
-Dioxus function components re-run. Because of that:
+Dioxus function components re-run on render. Because of that:
 
-- Do not call `add_series` directly in the render body.
-- Create long-lived chart and series handles in hooks.
-- Use effects only for updates.
-- Use drop cleanup for `remove_series`.
+- `add_series` is never called in the render body.
+- The chart and series handles are long-lived, created in hooks.
+- Effects only perform updates.
+- `use_drop` removes the series.
 
-This is the main reason a direct copy of the current Leptos component code is not enough.
+This is why the Leptos component code could not be copied line by line.
 
-### Suggested Dioxus dependency shape
+### JS callbacks
 
-Use a minimal Dioxus feature set for libraries:
+The JS callbacks (events, crosshair) run Rust closures outside of any Dioxus scope:
+they run them in the component scope with `Runtime::in_scope`, so that signals and contexts work.
 
-- `dioxus` with `default-features = false`
-- enable the equivalent of `web`, `hooks`, `signals`, `macro`, and `mounted`
-- add `dioxus-web` if needed for `WebEventExt`
+### Styles
 
-Do not add desktop/native/liveview support in the first iteration.
+Dioxus merges style declarations, so the styles toggling visibility set `display` explicitly.
 
 ## Migration plan
 
-### Phase 1: extract the core
-
-Goal:
-
-- Create a stable, framework-agnostic runtime crate.
+### Phase 1: extract the core — done
 
 Steps:
 
 - Add `trading-charts-core` to the workspace.
-- Move `bindings/**`, `data/**`, `error.rs`, `build.rs`, and JS build assets into the core crate.
+- Move the bindings, the data types, the error type, the build script and the JS build assets into the core crate.
 - Make the runtime types public instead of `pub(crate)`.
-- Add explicit `remove_series` support to the Rust side if it is not already exposed cleanly.
+- Add explicit `remove_series` support.
 - Replace ambient panel mutation with explicit panel identifiers.
 
-Exit criteria:
+Exit criterion: a small wasm test or example creates a chart runtime, binds it to an `HtmlDivElement`,
+adds a series, updates it and destroys it without Leptos.
+The example of the core README does this, and is compiled by `cargo make test`; it is not run in a browser.
 
-- A small wasm test/example can create a chart runtime, bind it to an `HtmlDivElement`, add a series, update it, and destroy it without Leptos.
-
-### Phase 2: refactor the Leptos adapter onto the core
-
-Goal:
-
-- Preserve current behavior while switching implementation to the shared runtime.
+### Phase 2: refactor the Leptos adapter onto the core — done
 
 Steps:
 
-- Update the current `trading-charts` crate to depend on `trading-charts-core`.
-- Keep the public Leptos component names stable where possible.
+- Make the `trading-charts` crate depend on `trading-charts-core`.
+- Keep the public Leptos component names.
 - Re-export the shared data types from the Leptos crate.
-- Refactor `ChartPanel` to provide a `PanelId` context rather than mutating a shared “current panel”.
-- Refactor series components to hold explicit series handles and clean them up on drop if possible.
+- Make `ChartPanel` provide a `PanelId` context instead of mutating a shared "current panel".
+- Make the series components hold explicit series handles, and clean them up on unmount.
 
-Exit criteria:
+Exit criterion: the Leptos example works with the core-backed implementation.
 
-- The existing Leptos example still works with the new core-backed implementation.
-
-### Phase 3: add the Dioxus adapter
-
-Goal:
-
-- Provide a Dioxus web API with parity for the existing Leptos surface.
+### Phase 3: add the Dioxus adapter — done
 
 Steps:
 
 - Add `trading-charts-dioxus` to the workspace.
-- Implement `Chart`, `ChartPanel`, and `CandleStickSeries` in Dioxus terms.
+- Implement `Chart`, `ChartPanel` and the series components in Dioxus terms.
 - Bind the chart on `onmounted`.
-- Provide chart and panel context with Dioxus context hooks.
-- Create series once and update them through `use_effect`.
-- Add a Dioxus web example with the same dataset flow as the Leptos example.
+- Provide the chart and panel contexts with Dioxus context hooks.
+- Create the series once, and update them through `use_effect`.
+- Add a Dioxus web example, with the same demos as the Leptos example.
 
-Exit criteria:
+Exit criterion: the Dioxus example mounts the chart, switches datasets (the interval selector of the price and volume
+demo resamples the data), updates markers and refits the content (the "All" range preset).
 
-- A Dioxus web example can mount the chart, switch datasets, update markers, and refit content.
+The adapters also gained features beyond the plan, in both frameworks:
+`PriceVolumeSeries`, `Tooltip` and `ChartOverlay`, `TextWatermark` and `ImageWatermark`.
 
-### Phase 4: documentation and publishability
-
-Goal:
-
-- Make the new structure understandable and publishable.
+### Phase 4: documentation and publishability — done
 
 Steps:
 
 - Update the root README to describe the workspace layout.
 - Document that the shared binding works for Leptos and Dioxus web.
-- Document that Dioxus desktop/native/liveview are out of scope initially.
-- Add crate-level READMEs for `trading-charts-core` and `trading-charts-dioxus`.
-- Decide whether `trading-charts` remains the Leptos crate name permanently or becomes a thin umbrella later.
+- Document that the Dioxus desktop, mobile and liveview renderers are not supported.
+- Add READMEs for `trading-charts-core` and `trading-charts-dioxus`; the READMEs are also the crate docs.
+- Decide whether `trading-charts` remains the Leptos crate name: it does.
 
-Exit criteria:
+Exit criterion: a user can tell which crate to use for Leptos or Dioxus without reading the source.
 
-- A user can tell which crate to use for Leptos vs Dioxus without reading source.
+## Compatibility and naming
 
-## Compatibility and naming strategy
+The least disruptive naming was chosen:
 
-The least disruptive naming strategy is:
+- `trading-charts` remains the Leptos crate.
+- `trading-charts-core` is added.
+- `trading-charts-dioxus` is added.
 
-- Keep `trading-charts` as the Leptos crate.
-- Add `trading-charts-core`.
-- Add `trading-charts-dioxus`.
+That avoids a breaking change for the users of `trading-charts`.
+Renaming it to `trading-charts-leptos` would have been sound too, but as a larger API migration.
 
-That avoids an immediate breaking change for current users.
+## Testing and validation
 
-If you instead rename the current crate to `trading-charts-leptos`, the architecture is still sound, but you should treat that as a larger API migration.
+The checks run by `cargo make verify`:
 
-## Testing and validation plan
+- `cargo make check-wasm`: `cargo check --workspace --target wasm32-unknown-unknown`, which covers the three crates.
+- `cargo make clippy`: clippy on the workspace, on the same target.
+- `cargo make test`: the tests of the core crate, and the README examples of the three library crates.
+- `cargo make build-examples`: Trunk builds of both examples.
 
-At minimum, add these checks:
-
-- `cargo check -p trading-charts-core --target wasm32-unknown-unknown`
-- `cargo check -p trading-charts --target wasm32-unknown-unknown`
-- `cargo check -p trading-charts-dioxus --target wasm32-unknown-unknown`
-- run the Leptos example in a browser
-- run the Dioxus web example in a browser
-
-Behavior to validate in both frameworks:
+Behavior to validate in both frameworks, by running the examples in a browser
+(`cargo make serve-example` and `cargo make serve-example-dioxus`):
 
 - initial chart render
 - data update
 - marker update
 - options update
 - refit action
-- component unmount/remount
+- component unmount/remount (switching the demo tabs)
 - multiple series
 - multiple panels
 
-## Main risks
+## Open items
 
-- The current render-time panel API is too implicit for a clean multi-framework design.
-- Dioxus lifecycle mistakes will create duplicate series if series creation is done during render instead of hook initialization.
-- If you try to support Dioxus desktop or liveview in the first pass, scope will expand sharply because the current binding is browser/WASM-centric.
-- If the core crate exposes too much raw JS detail, the adapter crates will be harder to keep ergonomic.
+- **Automated wasm test**: no `wasm-bindgen-test` runs the core in a headless browser.
+  Such a test would turn the exit criterion of phase 1 into an automated check.
+- **Automated behavior validation**: the behavior listed above is validated by hand with the examples.
+  Driving the examples with a headless browser would automate it.
 
-## Recommended first implementation slice
+## Risks
 
-Do this in the smallest useful order:
-
-1. Extract `trading-charts-core`.
-2. Replace ambient panel state with explicit `PanelId`.
-3. Move the current Leptos crate onto the core.
-4. Add a minimal Dioxus `Chart` plus one `CandleStickSeries`.
-5. Add Dioxus panel support.
-6. Expand docs and examples.
-
-That order gives you a usable architecture quickly and prevents Dioxus-specific work from being built on top of Leptos-only assumptions.
+- The render-time panel API was too implicit for a multi-framework design: it was replaced by `PanelId` contexts.
+- Creating series during render instead of in hook initialization creates duplicate series in Dioxus:
+  the series are created in `use_hook`.
+- Supporting Dioxus desktop or liveview would expand the scope sharply, the binding being browser/WASM-centric:
+  they stay out of scope.
+- If the core crate exposes too much raw JS detail, the adapter crates are harder to keep ergonomic:
+  the core exposes Rust types and handles only, the JS declarations staying `pub(crate)`.
