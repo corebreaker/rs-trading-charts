@@ -119,6 +119,11 @@ fn formatters() {
         })
     );
 
+    assert_eq!(
+        to_value(PriceFormatter::Default).unwrap(),
+        json!({"$priceFormatter": "default"})
+    );
+
     let tick_marks = TickMarkFormatter::patterns().with_pattern(TickMarkType::Year, "'yy");
     assert_eq!(to_value(&tick_marks).unwrap()["year"], json!("'yy"));
     assert_eq!(to_value(&tick_marks).unwrap()["$tickMarkFormatter"], json!("patterns"));

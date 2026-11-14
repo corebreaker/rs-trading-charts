@@ -43,6 +43,9 @@ pub enum DateTimeStyle {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "$timeFormatter", rename_all = "camelCase", rename_all_fields = "camelCase")]
 pub enum TimeFormatter {
+    /// The built-in formatting of Lightweight Charts, to remove a formatter set before.
+    Default,
+
     /// Format with a pattern, such as `yyyy-MM-dd HH:mm`.
     Pattern {
         pattern: String,

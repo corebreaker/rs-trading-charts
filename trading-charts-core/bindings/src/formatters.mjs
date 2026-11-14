@@ -61,7 +61,10 @@ function fractionDigits(desc) {
     return options;
 }
 
+// The `default` formatters resolve to `null`, which makes Lightweight Charts go back to its built-in formatting.
+
 const priceFormatterFactories = {
+    default: () => null,
     fixed: desc => price => price.toFixed(desc.precision ?? 2),
     locale: desc => numberFormat(desc.locale, fractionDigits(desc)),
     currency: desc => numberFormat(desc.locale, Object.assign({
@@ -209,6 +212,7 @@ function intlDateTimeOptions(desc) {
 // `context.toUtc`.
 
 const timeFormatterFactories = {
+    default: () => null,
     pattern: desc => time => formatDatePattern(timeToDate(time), desc.pattern, desc.locale),
     intl: desc => {
         const formatter = new Intl.DateTimeFormat(desc.locale || undefined, intlDateTimeOptions(desc));
@@ -280,7 +284,7 @@ function resolveValue(key, value, context) {
         const formatter = makePriceFormatter(value);
 
         // The tick mark formatters of the price scale receive all the prices at once.
-        return key && key.startsWith('tickmarks') ? prices => prices.map(formatter) : formatter;
+        return formatter && key && key.startsWith('tickmarks') ? prices => prices.map(formatter) : formatter;
     }
 
     if ('$timeFormatter' in value) {

@@ -29,6 +29,9 @@ pub enum CurrencyDisplay {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "$priceFormatter", rename_all = "camelCase", rename_all_fields = "camelCase")]
 pub enum PriceFormatter {
+    /// The built-in formatting of Lightweight Charts, to remove a formatter set before.
+    Default,
+
     /// Fixed number of decimals, without grouping: `1234.50`.
     Fixed { precision: u8 },
 
