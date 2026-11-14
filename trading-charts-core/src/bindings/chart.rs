@@ -10,6 +10,7 @@ use crate::{
         LogicalRange,
         Marker,
         MouseEventParams,
+        PaneOptions,
         PaneSize,
         SeriesMarkersOptions,
         Size,
@@ -343,6 +344,18 @@ impl ChartHandle {
 
     pub fn get_pane_count(&self) -> Result<u32, JsError> {
         Ok(self.js().getPaneCount()?)
+    }
+
+    /// Configure a pane: its stretch factor, its height and whether it is kept when empty.
+    ///
+    /// The settings are kept and applied again when the chart is bound; the pane is created when needed.
+    pub fn configure_pane(&self, panel: PanelId, options: &PaneOptions) -> Result<(), JsError> {
+        Ok(self.js().configurePane(panel, to_value(options)?)?)
+    }
+
+    /// Height of a pane, in pixels.
+    pub fn get_pane_height(&self, panel: PanelId) -> Result<f64, JsError> {
+        Ok(self.js().getPaneHeight(panel)?)
     }
 
     pub fn get_pane_size(&self, panel: PanelId) -> Result<PaneSize, JsError> {

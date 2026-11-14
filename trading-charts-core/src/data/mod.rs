@@ -7,6 +7,7 @@ mod logical_range;
 mod marker;
 mod marker_style;
 mod marker_type;
+mod pane_options;
 mod pane_size;
 mod price_line;
 mod price_range;
@@ -39,6 +40,7 @@ pub use self::{
         SeriesMarkersOptions,
     },
     marker_type::MarkerType,
+    pane_options::PaneOptions,
     pane_size::PaneSize,
     price_line::PriceLineOptions,
     price_range::PriceRange,

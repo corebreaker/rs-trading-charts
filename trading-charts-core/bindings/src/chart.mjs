@@ -23,6 +23,7 @@ export class TradingChart {
         this._watermarks = new Watermarks(this);
         this._legend = new Legend(this);
         this._subscriptions = new Map();
+        this._paneSettings = new Map();
         this._syncGroup = null;
         this._syncDetach = null;
         this._timeShift = utcShift;
@@ -178,6 +179,10 @@ export class TradingChart {
         }
 
         this._watermarks.bindAll();
+        for (const paneIndex of this._paneSettings.keys()) {
+            this._applyPaneSettings(paneIndex);
+        }
+
         this._legend.mount();
         for (const subscription of this._subscriptions.values()) {
             this._attachSubscription(subscription);
@@ -423,6 +428,38 @@ export class TradingChart {
     // Panes
     // -----------------------------------------------------------------------------------------------------------------
 
+    _applyPaneSettings(paneIndex) {
+        const settings = this._paneSettings.get(paneIndex);
+        if (!settings || !this._chart) {
+            return;
+        }
+
+        const pane = this.ensurePane(paneIndex);
+        if (typeof settings.preserveEmpty === 'boolean') {
+            pane.setPreserveEmptyPane(settings.preserveEmpty);
+        }
+        if (Number.isFinite(settings.stretchFactor)) {
+            pane.setStretchFactor(settings.stretchFactor);
+        }
+        if (Number.isFinite(settings.height)) {
+            pane.setHeight(settings.height);
+        }
+    }
+
+    /**
+     * Configure a pane: `stretchFactor`, `height` and `preserveEmpty` (keep the pane when it has no series).
+     *
+     * The settings are kept and applied again when the chart is bound, the pane being created when needed.
+     */
+    configurePane(paneIndex, settings) {
+        this._paneSettings.set(paneIndex, Object.assign({}, this._paneSettings.get(paneIndex), settings || {}));
+        this._applyPaneSettings(paneIndex);
+    }
+
+    getPaneHeight(paneIndex) {
+        return this._getPane(paneIndex).getHeight();
+    }
+
     getPaneCount() {
         return this._getChart().panes().length;
     }
@@ -443,22 +480,61 @@ export class TradingChart {
         this._getPane(paneIndex).setStretchFactor(stretchFactor);
     }
 
+    _remapPaneSettings(remap) {
+        const settings = new Map();
+        for (const [paneIndex, paneSettings] of this._paneSettings) {
+            const newIndex = remap(paneIndex);
+            if (newIndex !== null) {
+                settings.set(newIndex, paneSettings);
+            }
+        }
+
+        this._paneSettings = settings;
+    }
+
     movePane(paneIndex, targetIndex) {
         this._getPane(paneIndex).moveTo(targetIndex);
         this._syncSeriesPanels();
         this._watermarks.onPaneMoved(paneIndex, targetIndex);
+        this._remapPaneSettings(index => {
+            if (index === paneIndex) {
+                return targetIndex;
+            }
+            if (paneIndex < targetIndex && index > paneIndex && index <= targetIndex) {
+                return index - 1;
+            }
+            if (paneIndex > targetIndex && index >= targetIndex && index < paneIndex) {
+                return index + 1;
+            }
+
+            return index;
+        });
     }
 
     removePane(paneIndex) {
         this._getChart().removePane(paneIndex);
         this._syncSeriesPanels();
         this._watermarks.onPaneRemoved(paneIndex);
+        this._remapPaneSettings(index => {
+            if (index === paneIndex) {
+                return null;
+            }
+
+            return index > paneIndex ? index - 1 : index;
+        });
     }
 
     swapPanes(first, second) {
         this._getChart().swapPanes(first, second);
         this._syncSeriesPanels();
         this._watermarks.onPanesSwapped(first, second);
+        this._remapPaneSettings(index => {
+            if (index === first) {
+                return second;
+            }
+
+            return index === second ? first : index;
+        });
     }
 
     // -----------------------------------------------------------------------------------------------------------------

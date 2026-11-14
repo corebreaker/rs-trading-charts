@@ -118,6 +118,12 @@ extern "C" {
     pub(crate) fn getPaneCount(this: &TradingChart) -> Result<u32, JsValue>;
 
     #[wasm_bindgen(method, catch)]
+    pub(crate) fn configurePane(this: &TradingChart, paneIndex: u32, settings: JsValue) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
+    pub(crate) fn getPaneHeight(this: &TradingChart, paneIndex: u32) -> Result<f64, JsValue>;
+
+    #[wasm_bindgen(method, catch)]
     pub(crate) fn getPaneSize(this: &TradingChart, paneIndex: u32) -> Result<JsValue, JsValue>;
 
     #[wasm_bindgen(method, catch)]
