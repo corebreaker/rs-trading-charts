@@ -13,8 +13,9 @@ Use this crate directly to drive charts without a framework, or to write an adap
 
 A [`ChartHandle`] drives a chart. It is cheap to clone, every clone driving the same chart,
 which is destroyed when the last clone is dropped.
-Series, watermarks, pane settings, event subscriptions and the legend can be set up before the chart is bound
-to a DOM node: they are created when it is bound, and again if it is bound to another node.
+Everything set up on the handle is kept, so it can be done before the chart is bound to a DOM node:
+the options, series, watermarks, pane settings, event subscriptions and the legend
+are given to the chart when it is bound, and again if it is bound to another node.
 
 ```rust
 use trading_charts_core::{

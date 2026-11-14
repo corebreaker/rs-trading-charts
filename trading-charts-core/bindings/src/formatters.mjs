@@ -3,7 +3,8 @@
 // Lightweight Charts takes JS functions for its formatting options. The Rust side cannot put functions in the options,
 // so it sends descriptors instead: objects with a `$priceFormatter`, `$timeFormatter` or `$tickMarkFormatter` key
 // naming a predefined formatter, along with its parameters. `resolveOptions` replaces these descriptors with the
-// matching functions before the options are given to Lightweight Charts.
+// matching functions before the options are given to Lightweight Charts,
+// and `mergeOptions` merges the options kept for a later binding, keeping the descriptors whole.
 //
 // The `custom` formatters refer by name to functions registered with `registerCustomFunction`, which is how Rust
 // closures are bridged.
@@ -310,4 +311,39 @@ function resolveValue(key, value, context) {
  */
 export function resolveOptions(options, context = identityContext) {
     return resolveValue(null, options, context);
+}
+
+const descriptorKeys = ['$priceFormatter', '$timeFormatter', '$tickMarkFormatter'];
+
+/** Return `true` for a group of options, which is merged: an object which is neither an array nor a descriptor. */
+function isOptionGroup(value) {
+    return value !== null
+        && typeof value === 'object'
+        && !Array.isArray(value)
+        && !descriptorKeys.some(key => key in value);
+}
+
+/**
+ * Merge options into kept options the way Lightweight Charts merges the options it applies,
+ * and return the kept options.
+ *
+ * The groups of options are merged recursively,
+ * the other values (including arrays, `null` and the formatter descriptors) replace the kept ones,
+ * and the `undefined` values are ignored.
+ * The groups are copied, so that the kept options never share them with the merged options.
+ */
+export function mergeOptions(kept, options) {
+    for (const [name, value] of Object.entries(options || {})) {
+        if (value === undefined) {
+            continue;
+        }
+
+        if (isOptionGroup(value)) {
+            kept[name] = mergeOptions(isOptionGroup(kept[name]) ? kept[name] : {}, value);
+        } else {
+            kept[name] = value;
+        }
+    }
+
+    return kept;
 }

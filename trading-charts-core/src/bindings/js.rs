@@ -51,7 +51,7 @@ extern "C" {
     ) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
-    pub(crate) fn bindChart(this: &TradingChart, node: HtmlDivElement, options: JsValue) -> Result<(), JsValue>;
+    pub(crate) fn bindChart(this: &TradingChart, node: HtmlDivElement) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method, catch)]
     pub(crate) fn subscribe(this: &TradingChart, kind: &str, callback: &JsValue) -> Result<String, JsValue>;

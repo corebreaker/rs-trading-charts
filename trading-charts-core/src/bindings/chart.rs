@@ -39,17 +39,13 @@ use serde::{de::DeserializeOwned, Serialize};
 use serde_wasm_bindgen::{from_value, to_value};
 use wasm_bindgen::{closure::Closure, JsValue};
 use web_sys::{HtmlCanvasElement, HtmlDivElement};
-use std::{
-    cell::{Cell, RefCell},
-    sync::Arc,
-};
+use std::{cell::Cell, sync::Arc};
 
 /// Identifier of a pane (panel) of a chart, which is its index in the chart.
 pub type PanelId = u32;
 
 pub(super) struct ChartInner {
     pub(super) js: JsChart,
-    options:       RefCell<JsValue>,
     bound:         Cell<bool>,
     next_panel:    Cell<PanelId>,
 }
@@ -62,9 +58,12 @@ impl Drop for ChartInner {
 
 /// Handle on a chart, shared by the framework adapters.
 ///
-/// The handle is cheap to clone: all the clones drive the same JS chart, which is destroyed when the last clone is
-/// dropped. Series, watermarks and the legend can be added before the chart is bound to a DOM node with
-/// [`ChartHandle::bind`]; they are created on binding.
+/// The handle is cheap to clone:
+/// all the clones drive the same JS chart, which is destroyed when the last clone is dropped.
+///
+/// The chart can be set up before it is bound to a DOM node with [`ChartHandle::bind`]:
+/// the handle keeps its options, series, watermarks, pane settings and legend,
+/// to give them to the chart on binding, and again when it is bound to another node.
 ///
 /// The JS objects are only reachable from the browser main thread. The handle implements `Send` and `Sync` so that
 /// it can be stored in framework contexts, but it must not be used from another thread.
@@ -95,23 +94,23 @@ fn pane_index(panel: Option<PanelId>) -> JsValue {
 impl ChartHandle {
     /// Create a chart which is not yet bound to the DOM.
     pub fn new(options: Option<&ChartOptions>) -> Result<Self, JsError> {
-        let options = match options {
-            None => JsValue::NULL,
-            Some(options) => to_value(options)?,
-        };
-
         // The chart is only used from the browser main thread, see the `Send` and `Sync` implementations.
         #[allow(clippy::arc_with_non_send_sync)]
         let inner = Arc::new(ChartInner {
             js:         JsChart::new(),
-            options:    RefCell::new(options),
             bound:      Cell::new(false),
             next_panel: Cell::new(0),
         });
 
-        Ok(Self {
+        let chart = Self {
             inner,
-        })
+        };
+
+        if let Some(options) = options {
+            chart.apply_chart_options(options)?;
+        }
+
+        Ok(chart)
     }
 
     pub(crate) fn js(&self) -> &JsChart {
@@ -128,11 +127,11 @@ impl ChartHandle {
         self.inner.bound.get()
     }
 
-    /// Bind the chart to a DOM node, creating the JS chart and everything added to the handle so far.
+    /// Bind the chart to a DOM node, creating the JS chart with everything set on the handle so far.
+    ///
+    /// The chart can be bound again to another node, which creates it again there.
     pub fn bind(&self, node: HtmlDivElement) -> Result<(), JsError> {
-        let options = self.inner.options.borrow().clone();
-
-        self.js().bindChart(node, options)?;
+        self.js().bindChart(node)?;
         self.inner.bound.set(true);
 
         Ok(())
@@ -199,24 +198,16 @@ impl ChartHandle {
 
     /// Apply chart options.
     ///
-    /// Before the chart is bound, the options replace the ones used for the binding.
+    /// The options are merged into the options of the chart, like Lightweight Charts does:
+    /// the options which are not set are left unchanged.
+    /// The handle keeps them, so they can be applied before the chart is bound,
+    /// and they are applied again when the chart is bound to another node.
     pub fn apply_chart_options(&self, options: &ChartOptions) -> Result<(), JsError> {
-        let options = to_value(options)?;
-
-        if self.is_bound() {
-            self.js().applyChartOptions(options)?;
-        } else {
-            self.inner.options.replace(options);
-        }
-
-        Ok(())
+        Ok(self.js().applyChartOptions(to_value(options)?)?)
     }
 
+    /// Apply time scale options, kept with the chart options (see [`ChartHandle::apply_chart_options`]).
     pub fn apply_time_scale_options(&self, options: &TimeScaleOptions) -> Result<(), JsError> {
-        if !self.is_bound() {
-            return Ok(());
-        }
-
         Ok(self.js().applyTimeScaleOptions(to_value(options)?)?)
     }
 
@@ -289,6 +280,13 @@ impl ChartHandle {
         optional_value(self.js().coordinateToTime(coordinate)?)
     }
 
+    /// Apply options to a price scale of a pane, the first pane when `panel` is `None`.
+    ///
+    /// The price scale is `left`, `right` or the identifier of an overlay price scale.
+    /// The options are merged into its options, and kept by the handle:
+    /// they are applied as soon as the price scale exists, when the chart is bound,
+    /// or later when a pane or a series creates the price scale,
+    /// and they are applied again when the chart is bound to another node.
     pub fn apply_price_scale_options(
         &self,
         price_scale_id: &str,

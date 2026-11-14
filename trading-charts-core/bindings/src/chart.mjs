@@ -1,29 +1,50 @@
 import { createChart } from 'lightweight-charts';
 import { trackChart, untrackChart } from './fonts.mjs';
-import { resolveOptions } from './formatters.mjs';
+import { mergeOptions, resolveOptions } from './formatters.mjs';
 import { eventKinds, toMouseEventParams } from './events.mjs';
 import { Legend } from './legend.mjs';
 import { SeriesEntry } from './series.mjs';
 import { attachSync, joinSyncGroup, leaveSyncGroup } from './sync.mjs';
 import { shiftRange, TimeZoneShift, utcShift } from './timezone.mjs';
-import { newId } from './utils.mjs';
+import { isDefined, newId } from './utils.mjs';
 import { Watermarks } from './watermarks.mjs';
+
+/** Return `true` for the identifier of an overlay price scale, which is neither the left nor the right price scale. */
+function isOverlayPriceScale(priceScaleId) {
+    return isDefined(priceScaleId) && priceScaleId !== 'left' && priceScaleId !== 'right';
+}
+
+/** Return a copy of a map indexed by pane, with the indices changed by `remap`, which returns `null` to drop one. */
+function remapPanes(map, remap) {
+    const result = new Map();
+    for (const [paneIndex, value] of map) {
+        const newIndex = remap(paneIndex);
+        if (newIndex !== null) {
+            result.set(newIndex, value);
+        }
+    }
+
+    return result;
+}
 
 /**
  * Chart object driven from Rust through wasm-bindgen.
  *
- * It owns the Lightweight Charts chart and the registries of series, watermarks and the legend. Everything added
- * before the chart is bound to a DOM node is kept and created on binding.
+ * It owns the Lightweight Charts chart, its options and the registries of series, watermarks and the legend.
+ * Everything applied or added to it is kept, even before the chart is bound to a DOM node,
+ * and given to Lightweight Charts on binding, again when the chart is bound to another node.
  */
 export class TradingChart {
     constructor() {
         this._chart = null;
         this._node = null;
+        this._options = {};
         this._series = {};
         this._watermarks = new Watermarks(this);
         this._legend = new Legend(this);
         this._subscriptions = new Map();
         this._paneSettings = new Map();
+        this._priceScaleOptions = new Map();
         this._syncGroup = null;
         this._syncDetach = null;
         this._timeShift = utcShift;
@@ -74,6 +95,23 @@ export class TradingChart {
         return this._getChart().priceScale(priceScaleId, paneIndex);
     }
 
+    /** Return `true` when the chart is bound and has the price scale in the pane. */
+    _hasPriceScale(paneIndex, priceScaleId) {
+        const pane = this._chart?.panes()[paneIndex];
+        if (!pane) {
+            return false;
+        }
+
+        try {
+            pane.priceScale(priceScaleId);
+
+            return true;
+        } catch (_error) {
+            // Lightweight Charts throws when there is no such overlay price scale.
+            return false;
+        }
+    }
+
     _getPane(paneIndex) {
         const pane = this._getChart().panes()[paneIndex];
         if (!pane) {
@@ -88,6 +126,7 @@ export class TradingChart {
         const chart = this._getChart();
         while (chart.panes().length <= paneIndex) {
             chart.addPane(true);
+            this._applyKeptPriceScaleOptions(chart.panes().length - 1);
         }
 
         return this._getPane(paneIndex);
@@ -115,7 +154,10 @@ export class TradingChart {
             return;
         }
 
-        this._getSeries(seriesId).bind(this._chart);
+        const series = this._getSeries(seriesId);
+
+        series.bind(this._chart);
+        this._applyNewPriceScaleOptions(series);
         this._legend.update();
     }
 
@@ -168,12 +210,19 @@ export class TradingChart {
         this._node = null;
     }
 
-    bindChart(node, options = null) {
+    /**
+     * Bind the chart to a DOM node, creating the Lightweight Charts chart with everything kept so far.
+     *
+     * The price scales get their kept options as they are created:
+     * those of the default pane here, the others with the series and the panes.
+     */
+    bindChart(node) {
         this._unbindAll();
 
         this._node = node;
-        this._chart = createChart(node, this.resolveOptions(options));
+        this._chart = createChart(node, this.resolveOptions(this._options));
         trackChart(this);
+        this._applyKeptPriceScaleOptions(0);
         for (const seriesId of Object.keys(this._series)) {
             this._bindSeries(seriesId);
         }
@@ -314,12 +363,26 @@ export class TradingChart {
     // Chart and scales
     // -----------------------------------------------------------------------------------------------------------------
 
+    /**
+     * Apply chart options, merged into the options of the chart: the options which are not set are left unchanged.
+     *
+     * The options are kept, the chart being created with them when it is bound.
+     */
     applyChartOptions(options) {
-        this._getChart().applyOptions(this.resolveOptions(options));
+        if (this._chart) {
+            this._chart.applyOptions(this.resolveOptions(options));
+        }
+
+        mergeOptions(this._options, options);
     }
 
+    /** Apply time scale options, kept with the chart options. */
     applyTimeScaleOptions(options) {
-        this._getChart().timeScale().applyOptions(this.resolveOptions(options));
+        if (this._chart) {
+            this._chart.timeScale().applyOptions(this.resolveOptions(options));
+        }
+
+        mergeOptions(this._options, { timeScale: options || {} });
     }
 
     /** Redraw the texts of the chart, after a web font has been loaded. */
@@ -333,8 +396,63 @@ export class TradingChart {
         this._watermarks.bindAll();
     }
 
+    /**
+     * Apply options to a price scale of a pane, the first pane when `paneIndex` is not set.
+     *
+     * The options are kept and applied as soon as the price scale exists:
+     * when the chart is bound, or when a pane or a series creates the price scale.
+     */
     applyPriceScaleOptions(priceScaleId, paneIndex, options) {
-        this._getChartPriceScale(priceScaleId, paneIndex).applyOptions(options);
+        const index = paneIndex ?? 0;
+        if (this._hasPriceScale(index, priceScaleId)) {
+            this._chart.priceScale(priceScaleId, index).applyOptions(this.resolveOptions(options));
+        }
+
+        if (!this._priceScaleOptions.has(index)) {
+            this._priceScaleOptions.set(index, new Map());
+        }
+
+        const kept = this._priceScaleOptions.get(index);
+        kept.set(priceScaleId, mergeOptions(kept.get(priceScaleId) || {}, options));
+    }
+
+    /**
+     * Apply the kept options of the price scales of a pane, or of one of them, to the price scales which exist.
+     *
+     * Lightweight Charts may not have checked the kept options yet:
+     * an error is reported on the console, without stopping the binding or the creation of the price scale.
+     */
+    _applyKeptPriceScaleOptions(paneIndex, priceScaleId = null) {
+        for (const [id, options] of this._priceScaleOptions.get(paneIndex) || []) {
+            if ((priceScaleId === null || id === priceScaleId) && this._hasPriceScale(paneIndex, id)) {
+                try {
+                    this._chart.priceScale(id, paneIndex).applyOptions(this.resolveOptions(options));
+                } catch (error) {
+                    const scale = `price scale '${id}' of the pane ${paneIndex}`;
+
+                    console.error(`Failed to apply the kept options of the ${scale}:`, error);
+                }
+            }
+        }
+    }
+
+    /**
+     * Apply the kept price scale options to the price scales created with a bound series:
+     * those of its pane when it is the only series of the pane,
+     * or else its overlay price scale when no other series of the pane uses it.
+     */
+    _applyNewPriceScaleOptions(series) {
+        const paneIndex = series.chartApi.getPane().paneIndex();
+        const priceScaleId = series.options.priceScaleId;
+        const neighbors = Object.values(this._series)
+            .filter(other => other !== series && other.chartApi?.getPane().paneIndex() === paneIndex);
+
+        if (neighbors.length === 0) {
+            this._applyKeptPriceScaleOptions(paneIndex);
+        } else if (isOverlayPriceScale(priceScaleId)
+            && !neighbors.some(other => other.options.priceScaleId === priceScaleId)) {
+            this._applyKeptPriceScaleOptions(paneIndex, priceScaleId);
+        }
     }
 
     /** Set the time zone of the chart (an IANA name such as `Europe/Paris`), or remove it with `null`. */
@@ -576,16 +694,10 @@ export class TradingChart {
         this._getPane(paneIndex).setStretchFactor(stretchFactor);
     }
 
+    /** Follow the panes moved, swapped or removed with the pane settings and the kept price scale options. */
     _remapPaneSettings(remap) {
-        const settings = new Map();
-        for (const [paneIndex, paneSettings] of this._paneSettings) {
-            const newIndex = remap(paneIndex);
-            if (newIndex !== null) {
-                settings.set(newIndex, paneSettings);
-            }
-        }
-
-        this._paneSettings = settings;
+        this._paneSettings = remapPanes(this._paneSettings, remap);
+        this._priceScaleOptions = remapPanes(this._priceScaleOptions, remap);
     }
 
     movePane(paneIndex, targetIndex) {
@@ -735,6 +847,7 @@ export class TradingChart {
         series.panel = paneIndex;
         series.getApi().moveToPane(paneIndex);
         this._syncSeriesPanels();
+        this._applyNewPriceScaleOptions(series);
     }
 
     getSeriesPaneIndex(seriesId) {
