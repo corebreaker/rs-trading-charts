@@ -13,17 +13,21 @@ options, and `ChartHandle` drives a chart imperatively.
 
 ## Components
 
-| Component                                                | Module                 | Role                                          |
-|----------------------------------------------------------|------------------------|-----------------------------------------------|
-| `Chart`                                                  | `chart`                | The chart, which renders its children.        |
-| `ChartPanel`                                             | `panel`                | A pane, with its series and watermarks.       |
-| `CandleStickSeries`, `BarSeries`                         | `series::*`            | OHLC series.                                  |
-| `LineSeries`, `AreaSeries`, `BaselineSeries`             | `series::*`            | Single-value series.                          |
-| `HistogramSeries`                                        | `series::histograms`   | Histogram series.                             |
-| `PriceVolumeSeries`                                      | `series::price_volume` | Prices and volumes on the same chart.         |
-| `Tooltip`                                                | `overlay`              | A tooltip following the crosshair.            |
-| `ChartOverlay`                                           | `overlay`              | An element over the chart, for custom legends.|
-| `TextWatermark`, `ImageWatermark`                        | `watermark`            | Watermarks of a pane.                         |
+| Component           | Module                 | Role                                              |
+|---------------------|------------------------|---------------------------------------------------|
+| `Chart`             | `chart`                | The chart, which renders its children.            |
+| `ChartPanel`        | `panel`                | A pane, with its series and watermarks.           |
+| `CandleStickSeries` | `series::candlesticks` | OHLC data drawn as candlesticks.                  |
+| `BarSeries`         | `series::bars`         | OHLC data drawn as bars.                          |
+| `LineSeries`        | `series::lines`        | Single values drawn as a line.                    |
+| `AreaSeries`        | `series::areas`        | Single values drawn as a filled area.             |
+| `BaselineSeries`    | `series::baselines`    | Single values drawn above and below a base value. |
+| `HistogramSeries`   | `series::histograms`   | Single values drawn as columns.                   |
+| `PriceVolumeSeries` | `series::price_volume` | Prices and volumes on the same chart.             |
+| `Tooltip`           | `overlay`              | A tooltip following the crosshair.                |
+| `ChartOverlay`      | `overlay`              | An element over the chart, for custom legends.    |
+| `TextWatermark`     | `watermark`            | A text watermark of a pane.                       |
+| `ImageWatermark`    | `watermark`            | An image watermark of a pane.                     |
 
 The series components update the chart when the value of a prop changes, and remove their series from the chart
 when they are dropped.
