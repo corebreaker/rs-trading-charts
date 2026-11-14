@@ -246,6 +246,8 @@ impl ChartHandle {
     }
 
     /// Show a range of the data relative to the last data item, such as the last 3 months or the last 100 bars.
+    ///
+    /// Does nothing when the chart is not bound yet.
     pub fn show_range(&self, preset: RangePreset) -> Result<(), JsError> {
         Ok(self.js().showRange(to_value(&preset)?)?)
     }

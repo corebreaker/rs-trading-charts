@@ -379,7 +379,12 @@ export class TradingChart {
      * `weeks`, `months`, `years` or `bars`, or `{ kind: 'yearToDate' }`, or `{ kind: 'all' }`.
      */
     showRange(preset) {
-        const timeScale = this._getChart().timeScale();
+        // Showing a range only makes sense for a bound chart: before the binding, the data is fit anyway.
+        if (!this._chart) {
+            return;
+        }
+
+        const timeScale = this._chart.timeScale();
         if (preset.kind === 'all') {
             timeScale.fitContent();
             return;
