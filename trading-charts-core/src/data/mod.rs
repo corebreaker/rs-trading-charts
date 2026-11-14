@@ -25,7 +25,7 @@ pub use self::{
     events::{EventDataItem, MouseEventParams, Point, SeriesEventData, Size},
     histogram_data::HistogramData,
     image_watermark::ImageWatermarkOptions,
-    legend::LegendOptions,
+    legend::{LegendLayout, LegendOptions, LegendPosition},
     logical_range::LogicalRange,
     marker::Marker,
     marker_style::{

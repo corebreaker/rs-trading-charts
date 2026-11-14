@@ -1,3 +1,4 @@
+import { formatDatePattern, timeToDate } from './formatters.mjs';
 import { closedEye, createSvgIcon, openEye } from './icons.mjs';
 
 const defaultLegendOptions = {
@@ -14,7 +15,24 @@ const defaultLegendOptions = {
     fontFamily: "Avenir Next, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     top: 10,
     left: 10,
+    layout: 'series',
+    position: 'topLeft',
+    seriesId: null,
+    timeFormat: 'yyyy-MM-dd HH:mm',
+    locale: null,
+    priceFontSize: null,
 };
+
+function positionStyle(options) {
+    const horizontal = options.position === 'topRight' || options.position === 'bottomRight' ? 'right' : 'left';
+    const vertical = options.position === 'bottomLeft' || options.position === 'bottomRight' ? 'bottom' : 'top';
+
+    return {
+        [horizontal]: `${options.left}px`,
+        [vertical]: `${options.top}px`,
+        alignItems: horizontal === 'right' ? 'flex-end' : 'flex-start',
+    };
+}
 
 function getSeriesTitle(series) {
     const title = series.options.title;
@@ -206,6 +224,7 @@ export class Legend {
         this._textNode = null;
         this._rowsNode = null;
         this._rows = {};
+        this._threeLines = null;
         this._crosshairHandler = null;
     }
 
@@ -234,7 +253,53 @@ export class Legend {
         this._textNode = null;
         this._rowsNode = null;
         this._rows = {};
+        this._threeLines = null;
         this._crosshairHandler = null;
+    }
+
+    _mountThreeLines(root, options) {
+        const line = (fontSize, fontWeight) => {
+            const element = document.createElement('div');
+            Object.assign(element.style, { fontSize, fontWeight, lineHeight: '1.3' });
+            root.appendChild(element);
+
+            return element;
+        };
+
+        this._threeLines = {
+            title: line(`${options.fontSize}px`, '600'),
+            price: line(`${options.priceFontSize || options.fontSize * 2}px`, '700'),
+            time: line(`${options.fontSize}px`, '400'),
+        };
+    }
+
+    _refreshThreeLines(param) {
+        const options = this._options;
+        const lines = this._threeLines;
+        const series = (options.seriesId && this._owner.series[options.seriesId])
+            || Object.values(this._owner.series)[0];
+
+        if (!series) {
+            lines.title.textContent = options.text || '';
+            lines.price.textContent = '';
+            lines.time.textContent = '';
+            return;
+        }
+
+        const dataPoint = getSeriesLegendData(series, param);
+        const price = extractSeriesPrice(dataPoint);
+        let time = null;
+        if (param) {
+            time = param.time;
+        } else if (dataPoint) {
+            time = this._owner.timeShift.toChart(dataPoint.time);
+        }
+
+        lines.title.textContent = options.text || getSeriesTitle(series);
+        lines.price.textContent = Number.isFinite(price) ? formatSeriesPrice(series, price) : '-';
+        lines.time.textContent = time === null || time === undefined
+            ? ''
+            : formatDatePattern(timeToDate(time), options.timeFormat, options.locale || undefined);
     }
 
     mount() {
@@ -251,10 +316,8 @@ export class Legend {
         }
 
         const root = document.createElement('div');
-        Object.assign(root.style, {
+        Object.assign(root.style, positionStyle(options), {
             position: 'absolute',
-            left: `${options.left}px`,
-            top: `${options.top}px`,
             zIndex: '3000',
             display: 'flex',
             flexDirection: 'column',
@@ -270,19 +333,24 @@ export class Legend {
             pointerEvents: 'none',
         });
 
-        const textNode = document.createElement('span');
-        textNode.style.lineHeight = '1.8';
-        root.appendChild(textNode);
+        if (options.layout === 'threeLines') {
+            this._mountThreeLines(root, options);
+        } else {
+            const textNode = document.createElement('span');
+            textNode.style.lineHeight = '1.8';
+            root.appendChild(textNode);
 
-        const rowsNode = document.createElement('div');
-        rowsNode.style.display = 'flex';
-        rowsNode.style.flexDirection = 'column';
-        root.appendChild(rowsNode);
+            const rowsNode = document.createElement('div');
+            rowsNode.style.display = 'flex';
+            rowsNode.style.flexDirection = 'column';
+            root.appendChild(rowsNode);
+
+            this._textNode = textNode;
+            this._rowsNode = rowsNode;
+        }
 
         node.appendChild(root);
         this._root = root;
-        this._textNode = textNode;
-        this._rowsNode = rowsNode;
         this.rebuildRows();
         this.refresh();
 
@@ -366,6 +434,11 @@ export class Legend {
     refresh(param = null) {
         const options = this._options;
         if (!options || !this._root) {
+            return;
+        }
+
+        if (this._threeLines) {
+            this._refreshThreeLines(param);
             return;
         }
 
