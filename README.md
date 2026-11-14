@@ -9,15 +9,15 @@ Rust bindings of [Lightweight Charts] with shared core support for [Leptos] and 
 - `trading-charts-core`: shared `wasm-bindgen` runtime, JS bridge, data types, and series options.
 - `trading-charts`: Leptos adapter crate.
 - `trading-charts-dioxus`: Dioxus web adapter crate.
-- `example`: Leptos example.
-- `example-dioxus`: Dioxus web example.
+- `examples/leptos`: Leptos example.
+- `examples/dioxus`: Dioxus web example.
 
 ## Example
 The workspace includes side-by-side examples for the Leptos and Dioxus adapters.
 
 ## Updating Lightweight Charts
 
-Run `make update-lightweight-charts` from the workspace root to refresh both binding packages to the latest npm release and update their lockfiles.
+Run `make update-lightweight-charts` from the workspace root to refresh the binding package to the latest npm release and update its lockfile.
 
 Run `make update-lightweight-charts LIGHTWEIGHT_CHARTS_VERSION=5.1.0` to pin to a specific upstream version instead.
 

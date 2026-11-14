@@ -6,9 +6,8 @@ LIGHTWEIGHT_CHARTS_VERSION ?= latest
 TRUNK_ENV := env NO_COLOR=false
 
 CORE_BINDINGS_DIR := trading-charts-core/bindings
-LEPTOS_BINDINGS_DIR := trading-charts/bindings
-LEPTOS_EXAMPLE_DIR := example
-DIOXUS_EXAMPLE_DIR := example-dioxus
+LEPTOS_EXAMPLE_DIR := examples/leptos
+DIOXUS_EXAMPLE_DIR := examples/dioxus
 
 .DEFAULT_GOAL := help
 
@@ -28,7 +27,7 @@ help:
 		'serve-example-dioxus      Serve the Dioxus example on its Trunk.toml port.' \
 		'clean-examples            Remove example dist and .trunk artifacts.' \
 		'verify                    Run fmt, check, check-wasm, and build both examples.' \
-		'update-lightweight-charts Update both JS binding packages to the requested upstream version.'
+		'update-lightweight-charts Update the JS binding package to the requested upstream version.'
 
 .PHONY: format
 format: fmt
@@ -79,6 +78,5 @@ verify: fmt check check-wasm build-examples
 .PHONY: update-lightweight-charts
 update-lightweight-charts:
 	cd $(CORE_BINDINGS_DIR) && $(NPM) install --package-lock-only --ignore-scripts --save-exact lightweight-charts@$(LIGHTWEIGHT_CHARTS_VERSION)
-	cd $(LEPTOS_BINDINGS_DIR) && $(NPM) install --package-lock-only --ignore-scripts --save-exact lightweight-charts@$(LIGHTWEIGHT_CHARTS_VERSION)
 	@printf 'Updated bindings to Lightweight Charts %s\n' \
 		"`node -p \"require('./$(CORE_BINDINGS_DIR)/package-lock.json').packages['node_modules/lightweight-charts'].version\"`"
