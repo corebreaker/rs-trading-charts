@@ -61,6 +61,12 @@ category = "Development"
 command = "cargo"
 args = ["check", "--workspace", "--target", "${WASM_TARGET}"]
 
+[tasks.test]
+description = "Run the tests of the core crate, which do not need a browser."
+category = "Development"
+command = "cargo"
+args = ["test", "-p", "trading-charts-core"]
+
 [tasks.clippy]
 description = "Run clippy for the workspace on the wasm32 target."
 category = "Development"
@@ -68,9 +74,9 @@ command = "cargo"
 args = ["clippy", "--workspace", "--target", "${WASM_TARGET}"]
 
 [tasks.verify]
-description = "Run fmt, check, check-wasm, and build both examples."
+description = "Run fmt, check, check-wasm, test, and build both examples."
 category = "Development"
-dependencies = ["fmt", "check", "check-wasm", "build-examples"]
+dependencies = ["fmt", "check", "check-wasm", "test", "build-examples"]
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Examples

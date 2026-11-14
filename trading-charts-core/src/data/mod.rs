@@ -20,6 +20,9 @@ mod timestamp;
 mod tooltip;
 mod value_data;
 
+#[cfg(test)]
+mod tests;
+
 pub mod format;
 pub mod options;
 pub mod resample;
