@@ -10,6 +10,7 @@ mod marker_type;
 mod pane_size;
 mod price_line;
 mod price_range;
+mod sync;
 mod text_watermark;
 mod time_range;
 mod timestamp;
@@ -41,6 +42,7 @@ pub use self::{
     pane_size::PaneSize,
     price_line::PriceLineOptions,
     price_range::PriceRange,
+    sync::SyncOptions,
     text_watermark::{TextWatermarkLineOptions, TextWatermarkOptions},
     time_range::TimeRange,
     tooltip::{TooltipMode, TooltipPlacement},

@@ -49,6 +49,9 @@ extern "C" {
     pub(crate) fn unsubscribe(this: &TradingChart, subscriptionId: &str) -> bool;
 
     #[wasm_bindgen(method, catch)]
+    pub(crate) fn setSyncGroup(this: &TradingChart, name: Option<String>, options: JsValue) -> Result<(), JsValue>;
+
+    #[wasm_bindgen(method, catch)]
     pub(crate) fn setTimeZone(this: &TradingChart, timeZone: Option<String>) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method)]

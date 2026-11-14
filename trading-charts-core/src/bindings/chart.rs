@@ -13,6 +13,7 @@ use crate::{
         PaneSize,
         SeriesMarkersOptions,
         Size,
+        SyncOptions,
         PriceLineOptions,
         PriceRange,
         TextWatermarkOptions,
@@ -210,6 +211,14 @@ impl ChartHandle {
         }
 
         Ok(self.js().applyTimeScaleOptions(to_value(options)?)?)
+    }
+
+    /// Join the synchronization group `name`, or leave the current group with `None`.
+    ///
+    /// The charts of a group share their crosshair position and their visible range, as chosen by `options`: moving
+    /// the crosshair or scrolling a chart updates the other charts of the group. The groups are global to the page.
+    pub fn set_sync_group(&self, name: Option<&str>, options: &SyncOptions) -> Result<(), JsError> {
+        Ok(self.js().setSyncGroup(name.map(String::from), to_value(options)?)?)
     }
 
     /// Set the time zone in which the times are displayed, an IANA name such as `Europe/Paris` or `America/New_York`,

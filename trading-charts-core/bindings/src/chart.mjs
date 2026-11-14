@@ -1,9 +1,10 @@
 import { createChart } from 'lightweight-charts';
 import { trackChart, untrackChart } from './fonts.mjs';
 import { resolveOptions } from './formatters.mjs';
-import { eventKinds } from './events.mjs';
+import { eventKinds, toMouseEventParams } from './events.mjs';
 import { Legend } from './legend.mjs';
 import { SeriesEntry } from './series.mjs';
+import { attachSync, joinSyncGroup, leaveSyncGroup } from './sync.mjs';
 import { shiftRange, TimeZoneShift, utcShift } from './timezone.mjs';
 import { newId } from './utils.mjs';
 import { Watermarks } from './watermarks.mjs';
@@ -22,10 +23,17 @@ export class TradingChart {
         this._watermarks = new Watermarks(this);
         this._legend = new Legend(this);
         this._subscriptions = new Map();
+        this._syncGroup = null;
+        this._syncDetach = null;
         this._timeShift = utcShift;
         this._timeContext = {
             toUtc: time => this._timeShift.toUtc(time),
         };
+    }
+
+    /** Synchronization group of the chart (`{ name, options }`), or `null`. */
+    get syncGroup() {
+        return this._syncGroup;
     }
 
     /** Converter between the real UTC times and the displayed times of the time zone of the chart. */
@@ -121,7 +129,15 @@ export class TradingChart {
         }
     }
 
+    _detachSync() {
+        if (this._syncDetach) {
+            this._syncDetach();
+            this._syncDetach = null;
+        }
+    }
+
     _unbindAll() {
+        this._detachSync();
         this._legend.clear();
         for (const subscription of this._subscriptions.values()) {
             this._detachSubscription(subscription);
@@ -143,6 +159,7 @@ export class TradingChart {
 
     destroy() {
         untrackChart(this);
+        this.setSyncGroup(null);
         this._unbindAll();
         this._watermarks.destroy();
         this._subscriptions.clear();
@@ -164,6 +181,89 @@ export class TradingChart {
         this._legend.mount();
         for (const subscription of this._subscriptions.values()) {
             this._attachSubscription(subscription);
+        }
+
+        if (this._syncGroup) {
+            this._syncDetach = attachSync(this);
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    // Synchronization
+    // -----------------------------------------------------------------------------------------------------------------
+
+    /**
+     * Join the synchronization group `name`, or leave the current group with `null`.
+     *
+     * The options tell what is synchronized: `crosshair`, `logicalRange` (visible logical range, for charts sharing
+     * the same bars) and `timeRange` (visible time range).
+     */
+    setSyncGroup(name, options = null) {
+        this._detachSync();
+        if (this._syncGroup) {
+            leaveSyncGroup(this, this._syncGroup.name);
+        }
+
+        this._syncGroup = name ? {
+            name,
+            options: Object.assign({ crosshair: true, logicalRange: true, timeRange: false }, options || {}),
+        } : null;
+
+        if (this._syncGroup) {
+            joinSyncGroup(this, name);
+            if (this._chart) {
+                this._syncDetach = attachSync(this);
+            }
+        }
+    }
+
+    /** Move the crosshair to the data item at or before a real UTC time of the first series, or hide it (`null`). */
+    syncCrosshair(time) {
+        if (!this._chart) {
+            return;
+        }
+
+        const series = Object.values(this._series).find(entry => entry.chartApi && entry.params.data?.length);
+        const item = time === null || !series ? null : series.itemAt(time);
+        const price = item ? (typeof item.value === 'number' ? item.value : item.close) : undefined;
+
+        if (typeof price !== 'number') {
+            this._chart.clearCrosshairPosition();
+            this._emitSyntheticCrosshairMove({ seriesData: new Map() });
+            return;
+        }
+
+        const chartTime = this._timeShift.toChart(item.time);
+        this._chart.setCrosshairPosition(price, chartTime, series.chartApi);
+
+        // Lightweight Charts does not fire the crosshair move event for a programmatic move: the subscribers of the
+        // chart (legend, tooltips) are notified with parameters built like the ones of a real move.
+        const seriesData = new Map();
+        for (const entry of Object.values(this._series)) {
+            const entryItem = entry.chartApi ? entry.itemAt(item.time) : null;
+            if (entryItem && entryItem.time === item.time) {
+                seriesData.set(entry.chartApi, Object.assign({}, entryItem, { time: chartTime }));
+            }
+        }
+
+        const x = this._chart.timeScale().timeToCoordinate(chartTime);
+        const y = series.chartApi.priceToCoordinate(price);
+        this._emitSyntheticCrosshairMove({
+            time: chartTime,
+            logical: x === null ? undefined : this._chart.timeScale().coordinateToLogical(x),
+            point: x === null || y === null ? undefined : { x, y },
+            paneIndex: series.chartApi.getPane().paneIndex(),
+            seriesData,
+        });
+    }
+
+    _emitSyntheticCrosshairMove(param) {
+        this._legend.refresh(param.time === undefined ? null : param);
+
+        for (const subscription of this._subscriptions.values()) {
+            if (subscription.kind === 'crosshairMove' && subscription.detach) {
+                subscription.callback(toMouseEventParams(this, param));
+            }
         }
     }
 

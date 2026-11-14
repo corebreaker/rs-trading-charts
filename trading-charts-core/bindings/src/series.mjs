@@ -158,6 +158,26 @@ export class SeriesEntry {
         this.updateMarkers();
     }
 
+    /** Return the last data item at or before a real UTC time, or `null`. */
+    itemAt(time) {
+        const data = this.params.data || [];
+        let low = 0;
+        let high = data.length - 1;
+        let found = null;
+
+        while (low <= high) {
+            const middle = (low + high) >> 1;
+            if (data[middle].time <= time) {
+                found = data[middle];
+                low = middle + 1;
+            } else {
+                high = middle - 1;
+            }
+        }
+
+        return found;
+    }
+
     updateDataPoint(dataPoint) {
         const data = this.params.data || [];
         this.params.data = data;

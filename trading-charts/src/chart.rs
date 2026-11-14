@@ -1,5 +1,5 @@
 use crate::{
-    data::{options::ChartOptions, LegendOptions, LogicalRange, MouseEventParams, TimeRange},
+    data::{options::ChartOptions, LegendOptions, LogicalRange, MouseEventParams, SyncOptions, TimeRange},
     ChartHandle,
     JsError,
     Subscription,
@@ -75,6 +75,12 @@ pub fn Chart(
     /// IANA time zone in which the times are displayed, such as `Europe/Paris`; UTC by default.
     #[prop(optional, into)]
     time_zone: MaybeProp<String>,
+    /// Synchronization group of the chart: the charts of a group share their crosshair and visible range.
+    #[prop(optional, into)]
+    sync_group: MaybeProp<String>,
+    /// What is synchronized with the other charts of the synchronization group.
+    #[prop(optional, into)]
+    sync_options: Option<Signal<SyncOptions>>,
     #[prop(optional, into)] style: Option<String>,
     #[prop(optional, into)] class: Option<String>,
     /// Event channels on which a `REFIT_EVENT_KIND` event scales the time axis to fit the data.
@@ -136,6 +142,18 @@ pub fn Chart(
         move || {
             if let Err(err) = chart.set_time_zone(time_zone.get().as_deref()) {
                 err.with_prefix("Failed to set the time zone").log();
+            }
+        }
+    });
+
+    Effect::new({
+        let chart = chart.clone();
+
+        move || {
+            let options = sync_options.map(|options| options.get()).unwrap_or_default();
+
+            if let Err(err) = chart.set_sync_group(sync_group.get().as_deref(), &options) {
+                err.with_prefix("Failed to set the synchronization group").log();
             }
         }
     });

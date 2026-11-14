@@ -1,5 +1,5 @@
 use crate::{
-    data::{options::ChartOptions, LegendOptions, LogicalRange, MouseEventParams, TimeRange},
+    data::{options::ChartOptions, LegendOptions, LogicalRange, MouseEventParams, SyncOptions, TimeRange},
     ChartHandle,
     JsError,
     Subscription,
@@ -36,6 +36,12 @@ pub struct ChartProps {
     /// IANA time zone in which the times are displayed, such as `Europe/Paris`; UTC by default.
     #[props(default, into)]
     time_zone:                       Option<String>,
+    /// Synchronization group of the chart: the charts of a group share their crosshair and visible range.
+    #[props(default, into)]
+    sync_group:                      Option<String>,
+    /// What is synchronized with the other charts of the synchronization group.
+    #[props(default)]
+    sync_options:                    SyncOptions,
     #[props(default, into)]
     style:                           Option<String>,
     #[props(default, into)]
@@ -199,6 +205,16 @@ pub fn Chart(props: ChartProps) -> Element {
         move |(time_zone,)| {
             if let Err(err) = chart.set_time_zone(time_zone.as_deref()) {
                 err.with_prefix("Failed to set the time zone").log();
+            }
+        }
+    }));
+
+    use_effect(use_reactive((&props.sync_group, &props.sync_options), {
+        let chart = chart.clone();
+
+        move |(sync_group, sync_options)| {
+            if let Err(err) = chart.set_sync_group(sync_group.as_deref(), &sync_options) {
+                err.with_prefix("Failed to set the synchronization group").log();
             }
         }
     }));
