@@ -86,6 +86,9 @@ pub fn Chart(
     /// Event channels on which a `REFIT_EVENT_KIND` event scales the time axis to fit the data.
     #[prop(optional)]
     refit: Option<LeptosEventChannels>,
+    /// Called once with the chart handle, when the chart is created, to control the chart from outside.
+    #[prop(optional, into)]
+    on_ready: Option<Callback<ChartHandle>>,
     #[prop(optional, into)] on_crosshair_move: Option<Callback<MouseEventParams>>,
     #[prop(optional, into)] on_click: Option<Callback<MouseEventParams>>,
     #[prop(optional, into)] on_dbl_click: Option<Callback<MouseEventParams>>,
@@ -101,6 +104,10 @@ pub fn Chart(
             return ().into_any();
         }
     };
+
+    if let Some(on_ready) = on_ready {
+        on_ready.run(chart.clone());
+    }
 
     let crosshair = RwSignal::new(None::<MouseEventParams>);
     keep_subscription(

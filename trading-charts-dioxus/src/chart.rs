@@ -46,6 +46,9 @@ pub struct ChartProps {
     style:                           Option<String>,
     #[props(default, into)]
     class:                           Option<String>,
+    /// Called once with the chart handle, when the chart is created, to control the chart from outside.
+    #[props(default)]
+    on_ready:                        Option<EventHandler<ChartHandle>>,
     #[props(default)]
     on_crosshair_move:               Option<EventHandler<MouseEventParams>>,
     #[props(default)]
@@ -107,6 +110,15 @@ pub fn Chart(props: ChartProps) -> Element {
     };
 
     use_context_provider(|| chart.clone());
+    use_hook({
+        let chart = chart.clone();
+
+        move || {
+            if let Some(on_ready) = props.on_ready {
+                on_ready.call(chart);
+            }
+        }
+    });
 
     let mut crosshair = use_signal(|| None::<MouseEventParams>);
     use_context_provider(|| CrosshairState(crosshair));
